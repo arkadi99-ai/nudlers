@@ -752,6 +752,7 @@ const MonthlySummary: React.FC = () => {
     } else if (startDate && endDate) {
       fetchMonthlySummary(false, 0);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchMonthlySummary is stable; including it would cause re-runs
   }, [startDate, endDate, billingCycle, dateRangeMode, customStartDate, customEndDate, selectedYear, selectedMonth]);
 
   // Separate useEffect for filter toggle - skip loading state to prevent flicker

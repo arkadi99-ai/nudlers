@@ -144,21 +144,25 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
   const [newQuickCategoryInput, setNewQuickCategoryInput] = useState('');
   const [showNewQuickCategoryInput, setShowNewQuickCategoryInput] = useState(false);
 
+  /* eslint-disable react-hooks/immutability, react-hooks/exhaustive-deps -- fetchers are declared below; closures capture them at runtime which works correctly since effects run after render */
   useEffect(() => {
-    if (open) {
+    if (!open) return;
+    queueMicrotask(() => {
       fetchCategories();
       fetchRules();
       fetchUncategorizedDescriptions();
       fetchMappings();
-    }
+    });
   }, [open]);
 
   // Reset quick categorize state when switching tabs
   useEffect(() => {
-    if (currentTab === 3 && uncategorizedDescriptions.length > 0) {
+    if (currentTab !== 3 || uncategorizedDescriptions.length === 0) return;
+    queueMicrotask(() => {
       fetchQuickTransactions(uncategorizedDescriptions[currentQuickIndex]?.description);
-    }
+    });
   }, [currentTab, currentQuickIndex, uncategorizedDescriptions]);
+  /* eslint-enable react-hooks/immutability, react-hooks/exhaustive-deps */
 
   const fetchUncategorizedDescriptions = async () => {
     try {

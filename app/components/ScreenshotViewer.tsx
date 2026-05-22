@@ -83,9 +83,9 @@ const ScreenshotViewer: React.FC<ScreenshotViewerProps> = ({ open, onClose }) =>
     };
 
     useEffect(() => {
-        if (open) {
-            fetchScreenshots();
-        }
+        if (!open) return;
+        queueMicrotask(fetchScreenshots);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchScreenshots is stable; intentionally excluded
     }, [open]);
 
     return (

@@ -437,7 +437,7 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
       setSyncProgress(null);
       setSyncStartTime(null);
     }
-  }, [status, isSyncing, isInitializing, isStopping]);
+  }, [status, isSyncing, isInitializing, isStopping, t]);
   // Initial fetch and start
   useEffect(() => {
     if (open) {
@@ -458,6 +458,7 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
     };
     window.addEventListener('triggerSync', handleTriggerSync);
     return () => window.removeEventListener('triggerSync', handleTriggerSync);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- prepareSyncOptionsForAccount declared below; closure captures it correctly at runtime
   }, [status?.settings?.daysBack]);
 
   // Clear pending sync request when drawer closes

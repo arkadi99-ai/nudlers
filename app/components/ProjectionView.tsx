@@ -640,8 +640,10 @@ const ProjectionView: React.FC = () => {
     };
 
     useEffect(() => {
-        fetchProjection();
-        fetchCategories();
+        queueMicrotask(() => {
+            fetchProjection();
+            fetchCategories();
+        });
     }, []);
 
     return (

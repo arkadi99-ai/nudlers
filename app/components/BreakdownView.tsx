@@ -177,18 +177,19 @@ const BreakdownView: React.FC = () => {
             setLoading(false);
             setLoadingMore(false);
         }
-    }, [startDate, endDate, billingCycle, dateRangeMode, customStartDate, customEndDate, showBankTransactions, selectedYear, selectedMonth, sortField, sortDirection]);
+    }, [startDate, endDate, billingCycle, dateRangeMode, customStartDate, customEndDate, showBankTransactions, selectedYear, selectedMonth, sortField, sortDirection, t]);
 
     useEffect(() => {
-        // Debounce or just check required fields
-        if (dateRangeMode === 'custom') {
-            if (customStartDate && customEndDate) {
+        queueMicrotask(() => {
+            if (dateRangeMode === 'custom') {
+                if (customStartDate && customEndDate) {
+                    fetchBreakdown(false, false);
+                }
+            } else if (startDate && endDate) {
                 fetchBreakdown(false, false);
             }
-        } else if (startDate && endDate) {
-            fetchBreakdown(false, false);
-        }
-    }, [startDate, endDate, billingCycle, dateRangeMode, customStartDate, customEndDate, selectedYear, selectedMonth, sortField, sortDirection, showBankTransactions]); // Added showBankTransactions here to trigger refetch
+        });
+    }, [startDate, endDate, billingCycle, dateRangeMode, customStartDate, customEndDate, selectedYear, selectedMonth, sortField, sortDirection, showBankTransactions, fetchBreakdown]);
 
     const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedYear(event.target.value);

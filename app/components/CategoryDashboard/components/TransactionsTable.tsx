@@ -129,7 +129,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
       setSnackbar({ open: true, message: t('tx:snackbar.deleteError'), severity: 'error' });
     }
     setConfirmDeleteTransaction(null);
-  }, [confirmDeleteTransaction, onDelete]);
+  }, [confirmDeleteTransaction, onDelete, t]);
 
   const handleEditClick = React.useCallback((transaction: Transaction) => {
     setEditingTransaction(transaction);
@@ -185,7 +185,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
         setEditingTransaction(null);
       }
     }
-  }, [editingTransaction, editPrice, editCategory, applyToAll, onUpdate, isBankView]);
+  }, [editingTransaction, editPrice, editCategory, applyToAll, onUpdate, isBankView, t]);
 
   const handleCancelClick = React.useCallback(() => {
     setEditingTransaction(null);

@@ -134,7 +134,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ screenContext }) => {
         setInitialPrompt('');
       }
     }
-  }, [initialPrompt, isOpen]); // removed dependency on sendMessage to avoid loop, it's useCallback anyway
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sendMessage/setInitialPrompt/isLoading intentionally excluded to avoid send loop
+  }, [initialPrompt, isOpen]);
 
   const fetchSessions = async () => {
     try {
@@ -343,7 +344,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ screenContext }) => {
       // If session was created, ensure title is updated
       fetchSessions();
     }
-  }, [isLoading, screenContext, currentSessionId]);
+  }, [isLoading, screenContext, currentSessionId, t]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

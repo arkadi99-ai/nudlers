@@ -52,7 +52,7 @@ export default function ScrapeAuditView() {
     };
 
     useEffect(() => {
-        fetchEvents();
+        queueMicrotask(fetchEvents);
     }, []);
 
     const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {

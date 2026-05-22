@@ -208,7 +208,7 @@ const BudgetDashboard: React.FC = () => {
       }
     };
     init();
-  }, [startDate, endDate, dateRangeMode, fetchBudgets, fetchAllCategories, fetchSpendingData]);
+  }, [startDate, endDate, dateRangeMode, fetchBudgets, fetchAllCategories, fetchSpendingData, selectedMonth, selectedYear]);
 
   const handleRefresh = async () => {
     const budgetList = await fetchBudgets();

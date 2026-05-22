@@ -89,7 +89,11 @@ const Layout: React.FC<LayoutProps> = ({ children, defaultView = 'summary' }) =>
   const [currentView, setCurrentView] = useState<ViewType>(defaultView);
   const [screenContext, setScreenContext] = useState<ScreenContext>({ view: 'summary' });
   const [syncDrawerOpen, setSyncDrawerOpen] = useState(false);
-  const [syncDrawerWidth, setSyncDrawerWidth] = useState(600);
+  const [syncDrawerWidth, setSyncDrawerWidth] = useState(() => {
+    if (typeof window === 'undefined') return 600;
+    const saved = localStorage.getItem('syncStatusDrawerWidth');
+    return saved ? parseInt(saved, 10) : 600;
+  });
   const { dbError, checkDb } = useStatus();
   const [isRetrying, setIsRetrying] = useState(false);
   const [initialCheckDone, setInitialCheckDone] = useState(false);
@@ -108,14 +112,6 @@ const Layout: React.FC<LayoutProps> = ({ children, defaultView = 'summary' }) =>
     return () => clearTimeout(timer);
   }, []);
 
-  // Load saved width on mount
-  React.useEffect(() => {
-    const savedWidth = localStorage.getItem('syncStatusDrawerWidth');
-    if (savedWidth) {
-      setSyncDrawerWidth(parseInt(savedWidth, 10));
-    }
-  }, []);
-
   // Update screen context when view changes
   const handleViewChange = React.useCallback((view: ViewType) => {
     setCurrentView(view);
@@ -132,7 +128,7 @@ const Layout: React.FC<LayoutProps> = ({ children, defaultView = 'summary' }) =>
     setSyncDrawerOpen,
     syncDrawerWidth,
     setSyncDrawerWidth
-  }), [currentView, screenContext, syncDrawerOpen, syncDrawerWidth]);
+  }), [currentView, screenContext, syncDrawerOpen, syncDrawerWidth, handleViewChange]);
 
   const renderView = () => {
     switch (currentView) {

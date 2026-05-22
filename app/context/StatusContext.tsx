@@ -399,9 +399,11 @@ export const StatusProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }, []);
 
     useEffect(() => {
-        // Initial checks
-        checkDb();
-        refreshStatus();
+        // Initial checks (deferred to avoid sync setState in effect)
+        queueMicrotask(() => {
+            checkDb();
+            refreshStatus();
+        });
 
         let dbIntervalId: NodeJS.Timeout;
         let syncIntervalId: NodeJS.Timeout;

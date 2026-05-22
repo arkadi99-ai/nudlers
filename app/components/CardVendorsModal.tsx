@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { logger } from '../utils/client-logger';
 import {
@@ -200,7 +200,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
     customBankNickname: ''
   });
   const [originalValues, setOriginalValues] = useState<typeof editValues | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [, setIsSaving] = useState(false);
   const [_lastSaved, setLastSaved] = useState<Date | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
@@ -208,14 +208,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
     severity: 'success',
   });
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchCards();
-      fetchBankAccounts();
-    }
-  }, [isOpen]);
-
-  const fetchCards = async () => {
+  const fetchCards = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch('/api/cards');
@@ -233,9 +226,9 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
-  const fetchBankAccounts = async () => {
+  const fetchBankAccounts = useCallback(async () => {
     try {
       const response = await fetch('/api/credentials');
       if (response.ok) {
@@ -248,9 +241,17 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
     } catch (err) {
       logger.error('Failed to fetch bank accounts', err as Error);
     }
-  };
+  }, []);
 
-  const handleEdit = (card: CardData, field: string = 'vendor', event?: React.MouseEvent) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    queueMicrotask(() => {
+      fetchCards();
+      fetchBankAccounts();
+    });
+  }, [isOpen, fetchCards, fetchBankAccounts]);
+
+  const handleEdit = useCallback((card: CardData, field: string = 'vendor', event?: React.MouseEvent) => {
     if (event) {
       event.stopPropagation();
     }
@@ -268,6 +269,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
     if (editingCard && originalValues) {
       const hasChanges = JSON.stringify(editValues) !== JSON.stringify(originalValues);
       if (hasChanges) {
+        // eslint-disable-next-line react-hooks/immutability -- handleSave is declared below; closure captures it at runtime
         handleSave(editingCard, editValues);
       }
     }
@@ -286,11 +288,12 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
     setOriginalValues(initialValues);
     setLastSaved(null);
     setIsSaving(false);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleSave is declared below; depending on it would create circular deps
+  }, [editingCard, editValues, originalValues]);
 
 
 
-  const handleSave = async (last4_digits: string, values: typeof editValues): Promise<boolean> => {
+  const handleSave = useCallback(async (last4_digits: string, values: typeof editValues): Promise<boolean> => {
     try {
       setIsSaving(true);
 
@@ -376,7 +379,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [bankAccounts, cards, t]);
 
   useEffect(() => {
     if (!editingCard || !originalValues) return;
@@ -388,7 +391,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
     }, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [editValues, editingCard, originalValues]);
+  }, [editValues, editingCard, originalValues, handleSave]);
 
   const columns = React.useMemo(() => [
     {
@@ -684,7 +687,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
         </Typography>
       )
     }
-  ], [editingCard, editValues, originalValues, bankAccounts, isSaving, theme, focusedField, t]);
+  ], [editingCard, editValues, originalValues, bankAccounts, theme, focusedField, t, handleEdit, handleSave]);
 
   return (
     <>

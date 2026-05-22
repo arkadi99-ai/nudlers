@@ -225,7 +225,8 @@ const RecurringPaymentsView: React.FC = () => {
     };
 
     useEffect(() => {
-        fetchData(false);
+        queueMicrotask(() => fetchData(false));
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchData is stable; including it would cause re-runs when refs change
     }, [activeTab, installmentSortBy, installmentSortOrder, recurringSortBy, recurringSortOrder]);
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {

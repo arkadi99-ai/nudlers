@@ -64,10 +64,10 @@ const RecentTransactionsModule: React.FC = () => {
     }, [billingCycle, startDate, endDate, page]);
 
     useEffect(() => {
-        if (billingCycle || (startDate && endDate)) {
-            fetchRecentTransactions(false);
-        }
-    }, [billingCycle, startDate, endDate]); // Only refetch when dates change, not when fetchRecentTransactions changes (to avoid loop with page dependency)
+        if (!billingCycle && !(startDate && endDate)) return;
+        queueMicrotask(() => fetchRecentTransactions(false));
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchRecentTransactions intentionally excluded; it depends on page which would loop
+    }, [billingCycle, startDate, endDate]);
 
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
         const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;

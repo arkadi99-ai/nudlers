@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/client-logger';
 import {
   Dialog,
@@ -168,14 +168,7 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
   });
   const [isTruncating, setIsTruncating] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchAccounts();
-      fetchCardOwnership();
-    }
-  }, [isOpen]);
-
-  const fetchAccounts = async () => {
+  const fetchAccounts = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch('/api/credentials');
@@ -189,9 +182,9 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
-  const fetchCardOwnership = async () => {
+  const fetchCardOwnership = useCallback(async () => {
     try {
       const response = await fetch('/api/cards/ownerships');
       if (response.ok) {
@@ -202,7 +195,15 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
       // Silent fail - card ownership is supplementary info
       logger.error('Failed to fetch card ownership', err as Error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    queueMicrotask(() => {
+      fetchAccounts();
+      fetchCardOwnership();
+    });
+  }, [isOpen, fetchAccounts, fetchCardOwnership]);
 
   // Helper to get owned cards for a specific credential
   const getOwnedCards = (credentialId: number): CardOwnership[] => {

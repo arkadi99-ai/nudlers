@@ -107,7 +107,7 @@ const VaultLockScreen: React.FC = () => {
             setPassphrase('');
         }
         setLoading(false);
-    }, [unlockWithPasskey, setIsVaultModalOpen]);
+    }, [unlockWithPasskey, setIsVaultModalOpen, t]);
 
     // Auto-trigger passkey when modal opens and passkeys are available.
     useEffect(() => {

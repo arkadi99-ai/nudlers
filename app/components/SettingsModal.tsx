@@ -345,6 +345,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
   const [showPasskeyRegister, setShowPasskeyRegister] = useState(false);
   const [passkeyRegPass, setPasskeyRegPass] = useState('');
   const [registeringPasskey, setRegisteringPasskey] = useState(false);
+  const [hasInitialLoad, setHasInitialLoad] = useState(false);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -395,13 +396,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
   }, []);
 
   useEffect(() => {
-    if (open) {
+    if (!open) return;
+    queueMicrotask(() => {
       setLoading(true);
       fetchSettings();
-    }
+    });
   }, [open, fetchSettings]);
-
-  const [hasInitialLoad, setHasInitialLoad] = useState(false);
 
   const handleSave = useCallback(async () => {
     setSaving(true);

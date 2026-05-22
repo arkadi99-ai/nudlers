@@ -176,13 +176,13 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
   const [sessionReport, setSessionReport] = useState<ScrapeReportTransaction[]>([]);
 
   useEffect(() => {
-    if (initialConfig) {
-      setConfig(initialConfig);
-    }
+    if (!initialConfig) return;
+    queueMicrotask(() => setConfig(initialConfig));
   }, [initialConfig]);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen) return;
+    queueMicrotask(() => {
       setConfig(initialConfig || defaultConfig);
       setError(null);
       setIsLoading(false);
@@ -202,11 +202,11 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
       setOtpCode('');
       setOtpSubmitting(false);
       setOtpError(null);
-      // Abort any ongoing scrape when modal closes
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-        abortControllerRef.current = null;
-      }
+    });
+    // Abort any ongoing scrape when modal closes
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
     }
   }, [isOpen, initialConfig, defaultConfig]);
 

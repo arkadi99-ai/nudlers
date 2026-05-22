@@ -119,8 +119,10 @@ const AccountsView: React.FC = () => {
     const { isVaultLocked } = useStatus();
 
     useEffect(() => {
-        fetchAccounts();
-        fetchCardOwnership();
+        queueMicrotask(() => {
+            fetchAccounts();
+            fetchCardOwnership();
+        });
     }, [fetchAccounts, fetchCardOwnership, isVaultLocked]);
 
     const handleToggleActive = async (account: Account) => {

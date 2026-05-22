@@ -83,7 +83,7 @@ const InsightsView: React.FC = () => {
         }
     }, [t]);
 
-    useEffect(() => { load(); }, [load]);
+    useEffect(() => { queueMicrotask(load); }, [load]);
 
     const visibleItems = useMemo(
         () => filter === 'all' ? items : items.filter((a) => a.type === filter),

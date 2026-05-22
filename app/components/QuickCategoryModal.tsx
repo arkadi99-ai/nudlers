@@ -108,10 +108,11 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
   }, [t]);
 
   useEffect(() => {
-    if (open) {
-      fetchData();
+    if (!open) return;
+    queueMicrotask(() => {
       setTotalProcessed(0);
-    }
+      fetchData();
+    });
   }, [open, fetchData]);
 
   // Fetch transactions when current description changes
@@ -136,11 +137,13 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
 
   useEffect(() => {
     const currentDescription = descriptions[currentIndex];
-    if (currentDescription?.description) {
-      fetchTransactions(currentDescription.description);
-    } else {
-      setTransactions([]);
-    }
+    queueMicrotask(() => {
+      if (currentDescription?.description) {
+        fetchTransactions(currentDescription.description);
+      } else {
+        setTransactions([]);
+      }
+    });
   }, [currentIndex, descriptions, fetchTransactions]);
 
   const handleCategorySelect = async (category: string) => {

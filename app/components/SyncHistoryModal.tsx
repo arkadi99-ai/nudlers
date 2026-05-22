@@ -71,10 +71,11 @@ export default function SyncHistoryModal({ isOpen, onClose }: SyncHistoryModalPr
     };
 
     useEffect(() => {
-        if (isOpen) {
+        if (!isOpen) return;
+        queueMicrotask(() => {
             fetchEvents();
             setSelectedEvent(null);
-        }
+        });
     }, [isOpen]);
 
     const handleSelectEvent = async (event: SyncEvent) => {

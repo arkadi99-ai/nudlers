@@ -286,7 +286,7 @@ const ChatView: React.FC = () => {
             setIsLoading(false);
             setCurrentStatus('');
         }
-    }, [isLoading, currentSessionId, screenContext]);
+    }, [isLoading, currentSessionId, screenContext, t]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

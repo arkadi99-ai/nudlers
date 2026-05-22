@@ -92,7 +92,7 @@ export function useTransactions() {
         setLoadingMore(false);
       }
     }
-  }, [selectedYear, selectedMonth, sortBy, sortOrder, favoritesOnly]);
+  }, [selectedYear, selectedMonth, sortBy, sortOrder, favoritesOnly, transactions.length]);
 
   const handleSearch = React.useCallback(async (e?: React.FormEvent, isLoadMore: boolean = false) => {
     e?.preventDefault();
@@ -159,7 +159,8 @@ export function useTransactions() {
     fetchTransactionsWithRange, dateRangeMode,
     customStartDate, customEndDate,
     selectedYear, selectedMonth,
-    sortBy, sortOrder, favoritesOnly, showNotification
+    sortBy, sortOrder, favoritesOnly, showNotification,
+    transactions.length
   ]);
 
   const handleSort = (field: string) => {
@@ -169,7 +170,7 @@ export function useTransactions() {
     pageRef.current = 0;
   };
 
-  const handleLoadMore = () => {
+  const handleLoadMore = React.useCallback(() => {
     if (!loadingTransactions && !loadingMore && hasMore) {
       if (searchQuery.trim()) {
         handleSearch(undefined, true);
@@ -177,7 +178,7 @@ export function useTransactions() {
         fetchTransactionsWithRange(startDate, endDate, billingCycle, true);
       }
     }
-  };
+  }, [loadingTransactions, loadingMore, hasMore, searchQuery, startDate, endDate, billingCycle, handleSearch, fetchTransactionsWithRange]);
 
   const handleRefreshClick = () => {
     if (searchQuery.trim()) {
@@ -203,13 +204,14 @@ export function useTransactions() {
 
   // Initial data fetch
   React.useEffect(() => {
-    if (startDate && endDate) {
+    if (!startDate || !endDate) return;
+    queueMicrotask(() => {
       if (searchQuery.trim()) {
         handleSearch();
       } else {
         fetchTransactionsWithRange(startDate, endDate, billingCycle);
       }
-    }
+    });
   }, [startDate, endDate, billingCycle, fetchTransactionsWithRange, searchQuery, favoritesOnly, handleSearch]);
 
   // Stable event listener - attached once, never re-attached
