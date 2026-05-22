@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Box, Typography, Paper, Grid, Card, CardContent, CircularProgress, Chip, IconButton, Tooltip as MuiTooltip } from '@mui/material';
+import { Box, Typography, CircularProgress, Chip, IconButton, Tooltip as MuiTooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { LineChart } from '@mui/x-charts/LineChart';
 import PageHeader from './PageHeader';
 import TimelineIcon from '@mui/icons-material/Timeline';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import RepeatIcon from '@mui/icons-material/Repeat';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import BlockIcon from '@mui/icons-material/Block';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
@@ -39,7 +37,7 @@ interface NewRecurringState {
 interface ProjectionViewContentProps {
     loading: boolean;
     data: ProjectionData[];
-    accounts: any[];
+    accounts: Array<{ id?: number; account_number: string; nickname?: string; credential_id?: number; balance?: number }>;
     selectedAccount: string | 'total';
     setSelectedAccount: (val: string | 'total') => void;
     categories: string[];
@@ -69,7 +67,7 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
     snackbar,
     setSnackbar,
     onRefresh,
-    onToggleVisibility,
+    onToggleVisibility: _onToggleVisibility,
     onMarkNotRecurring,
     onAddRecurring
 }) => {
@@ -173,7 +171,6 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
                 icon={<TimelineIcon sx={{ fontSize: 32 }} className="gradient-text" />}
                 onRefresh={onRefresh}
             />
-
             <Box sx={{
                 display: 'flex',
                 flexDirection: { xs: 'column', md: 'row' },
@@ -287,9 +284,7 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
                                             scale: '0.6',
                                         }
                                     }}
-                                    slotProps={{
-                                        legend: { hidden: true }
-                                    }}
+                                    hideLegend
                                 >
                                     <defs>
                                         <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
@@ -314,7 +309,7 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
                                 {accounts.map(acc => (
                                     <Box key={acc.account_number} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main' }} />
-                                        <Typography variant="caption" sx={{ fontWeight: 700 }}>{formatCurrency(acc.balance)}</Typography>
+                                        <Typography variant="caption" sx={{ fontWeight: 700 }}>{formatCurrency(acc.balance ?? 0)}</Typography>
                                     </Box>
                                 ))}
                             </Box>
@@ -391,7 +386,7 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
                                                     <Box sx={{ flexGrow: 1 }}>
                                                         <Typography variant="body2" sx={{ fontWeight: 700 }}>
                                                             {br.name}
-                                                            {(br as any).is_manual && <Chip label={t('projection.manualBadge')} size="small" sx={{ height: 16, fontSize: '9px', ml: 1, bgcolor: 'secondary.main', color: 'white' }} />}
+                                                            {(br as { is_manual?: boolean }).is_manual && <Chip label={t('projection.manualBadge')} size="small" sx={{ height: 16, fontSize: '9px', ml: 1, bgcolor: 'secondary.main', color: 'white' }} />}
                                                         </Typography>
                                                         <Typography variant="caption" sx={{ color: 'text.secondary' }}>{t('projection.standardRecurring')}</Typography>
                                                     </Box>
@@ -433,7 +428,6 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
                     </Box>
                 </Box>
             </Box>
-
             <Snackbar
                 open={snackbar.open}
                 autoHideDuration={4000}
@@ -444,14 +438,15 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
                     {snackbar.message}
                 </Alert>
             </Snackbar>
-
             {/* Add Recurring Dialog */}
             <Dialog
                 open={isAddDialogOpen}
                 onClose={() => setIsAddDialogOpen(false)}
-                PaperProps={{
-                    className: 'n-glass',
-                    sx: { borderRadius: '24px', width: { xs: '100%', sm: '400px' }, maxWidth: '100%', m: 2 }
+                slotProps={{
+                    paper: {
+                        className: 'n-glass',
+                        sx: { borderRadius: '24px', width: { xs: '100%', sm: '400px' }, maxWidth: '100%', m: 2 }
+                    }
                 }}
             >
                 <DialogTitle sx={{ fontWeight: 800 }}>{t('projection.dialogTitle')}</DialogTitle>
@@ -501,9 +496,11 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
                             type="number"
                             fullWidth
                             variant="outlined"
-                            inputProps={{ min: 1, max: 31 }}
                             value={newRecurring.day_of_month}
                             onChange={(e) => setNewRecurring(prev => ({ ...prev, day_of_month: parseInt(e.target.value) || 1 }))}
+                            slotProps={{
+                                htmlInput: { min: 1, max: 31 }
+                            }}
                         />
                     </Box>
                 </DialogContent>
@@ -528,7 +525,7 @@ const ProjectionView: React.FC = () => {
     const { t } = useTranslation('views');
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<ProjectionData[]>([]);
-    const [accounts, setAccounts] = useState<any[]>([]);
+    const [accounts, setAccounts] = useState<ProjectionViewContentProps['accounts']>([]);
     const [selectedAccount, setSelectedAccount] = useState<string | 'total'>('total');
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [categories, setCategories] = useState<string[]>([]);
@@ -606,7 +603,7 @@ const ProjectionView: React.FC = () => {
             const res = await fetch('/api/categories');
             const result = await res.json();
             if (Array.isArray(result)) {
-                setCategories(result.map((c: any) => c.name || c));
+                setCategories(result.map((c: { name?: string } | string) => (typeof c === 'string' ? c : c.name || '')));
             }
         } catch (err) {
             console.error('Failed to fetch categories', err);
@@ -643,8 +640,10 @@ const ProjectionView: React.FC = () => {
     };
 
     useEffect(() => {
-        fetchProjection();
-        fetchCategories();
+        queueMicrotask(() => {
+            fetchProjection();
+            fetchCategories();
+        });
     }, []);
 
     return (

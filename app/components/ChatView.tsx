@@ -16,16 +16,14 @@ import {
     Divider,
     Button,
     useMediaQuery,
-    Tooltip,
     Skeleton,
 } from '@mui/material';
 import ForumIcon from '@mui/icons-material/Forum';
 import AddIcon from '@mui/icons-material/Add';
 import SendIcon from '@mui/icons-material/Send';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ChatIcon from '@mui/icons-material/Chat';
 import { useScreenContext } from './Layout';
 import { useTranslation } from 'react-i18next';
@@ -94,7 +92,7 @@ const InputContainer = styled(Box)(({ theme }) => ({
 
 const ChatView: React.FC = () => {
     const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const _isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const { screenContext } = useScreenContext();
     const { t } = useTranslation('views');
     const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -135,7 +133,7 @@ const ChatView: React.FC = () => {
             const response = await fetch(`/api/chat/messages?sessionId=${sessionId}`);
             if (response.ok) {
                 const data = await response.json();
-                setMessages(data.map((m: any) => ({
+                setMessages(data.map((m: { timestamp: string;[key: string]: unknown }) => ({
                     ...m,
                     timestamp: new Date(m.timestamp),
                     status: 'complete'
@@ -288,7 +286,7 @@ const ChatView: React.FC = () => {
             setIsLoading(false);
             setCurrentStatus('');
         }
-    }, [isLoading, currentSessionId, screenContext]);
+    }, [isLoading, currentSessionId, screenContext, t]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

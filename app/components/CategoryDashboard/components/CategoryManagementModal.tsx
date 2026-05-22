@@ -33,7 +33,7 @@ import FlashOnIcon from '@mui/icons-material/FlashOn';
 import CheckIcon from '@mui/icons-material/Check';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutlineOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import { useCategoryColors } from '../utils/categoryUtils';
 import ModalHeader from '../../ModalHeader';
@@ -144,21 +144,25 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
   const [newQuickCategoryInput, setNewQuickCategoryInput] = useState('');
   const [showNewQuickCategoryInput, setShowNewQuickCategoryInput] = useState(false);
 
+  /* eslint-disable react-hooks/immutability, react-hooks/exhaustive-deps -- fetchers are declared below; closures capture them at runtime which works correctly since effects run after render */
   useEffect(() => {
-    if (open) {
+    if (!open) return;
+    queueMicrotask(() => {
       fetchCategories();
       fetchRules();
       fetchUncategorizedDescriptions();
       fetchMappings();
-    }
+    });
   }, [open]);
 
   // Reset quick categorize state when switching tabs
   useEffect(() => {
-    if (currentTab === 3 && uncategorizedDescriptions.length > 0) {
+    if (currentTab !== 3 || uncategorizedDescriptions.length === 0) return;
+    queueMicrotask(() => {
       fetchQuickTransactions(uncategorizedDescriptions[currentQuickIndex]?.description);
-    }
+    });
   }, [currentTab, currentQuickIndex, uncategorizedDescriptions]);
+  /* eslint-enable react-hooks/immutability, react-hooks/exhaustive-deps */
 
   const fetchUncategorizedDescriptions = async () => {
     try {
@@ -804,19 +808,20 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
       onClose={handleClose}
       maxWidth="md"
       fullWidth
-      PaperProps={{
-        style: {
-          background: theme.palette.mode === 'dark'
-            ? 'linear-gradient(135deg, var(--modal-backdrop) 0%, var(--modal-backdrop-alt) 100%)'
-            : 'var(--modal-backdrop)',
-          borderRadius: '24px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-          border: `1px solid ${theme.palette.divider}`
+      slotProps={{
+        paper: {
+          style: {
+            background: theme.palette.mode === 'dark'
+              ? 'linear-gradient(135deg, var(--modal-backdrop) 0%, var(--modal-backdrop-alt) 100%)'
+              : 'var(--modal-backdrop)',
+            borderRadius: '24px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+            border: `1px solid ${theme.palette.divider}`
+          }
         }
       }}
     >
       <ModalHeader title={t('categoryMgmt:modal.title')} onClose={handleClose} />
-
       <DialogContent style={{ padding: '0 24px 24px 24px' }}>
         {error && (
           <Alert severity="error" style={{ marginBottom: '16px' }}>
@@ -867,7 +872,11 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
             {/* Top Row: Selected Categories + Merge Form */}
             <Grid container spacing={2} sx={{ mb: 2 }}>
               {/* Selected Categories - Compact */}
-              <Grid item xs={12} md={6}>
+              <Grid
+                size={{
+                  xs: 12,
+                  md: 6
+                }}>
                 <Box
                   sx={{
                     background: theme.palette.mode === 'dark'
@@ -890,7 +899,14 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                   </Box>
 
                   {selectedCategories.length === 0 ? (
-                    <Typography variant="body2" color="text.secondary" sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: "text.secondary",
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}>
                       {t('categoryMgmt:categories.clickToSelect')}
                     </Typography>
                   ) : (
@@ -915,7 +931,11 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
               </Grid>
 
               {/* Merge Form - Compact */}
-              <Grid item xs={12} md={6}>
+              <Grid
+                size={{
+                  xs: 12,
+                  md: 6
+                }}>
                 <Box
                   sx={{
                     background: theme.palette.mode === 'dark'
@@ -964,7 +984,13 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                   >
                     {isLoading ? <CircularProgress size={20} color="inherit" /> : t('categoryMgmt:categories.mergeCategories')}
                   </Button>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "text.secondary",
+                      display: 'block',
+                      mt: 1
+                    }}>
                     {t('categoryMgmt:categories.autoMappingHint')}
                   </Typography>
                 </Box>
@@ -989,25 +1015,32 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                       background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : '#fff'
                     }
                   }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon sx={{ color: theme.palette.text.secondary, fontSize: 20 }} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: categorySearchFilter && (
-                      <InputAdornment position="end">
-                        <IconButton size="small" onClick={() => setCategorySearchFilter('')}>
-                          <CloseIcon sx={{ fontSize: 16 }} />
-                        </IconButton>
-                      </InputAdornment>
-                    )
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: theme.palette.text.secondary, fontSize: 20 }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: categorySearchFilter && (
+                        <InputAdornment position="end">
+                          <IconButton size="small" onClick={() => setCategorySearchFilter('')}>
+                            <CloseIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }
                   }}
                 />
               </Box>
 
               {isLoading ? (
-                <Box display="flex" justifyContent="center" padding="32px">
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    padding: "32px"
+                  }}>
                   <CircularProgress />
                 </Box>
               ) : (
@@ -1107,7 +1140,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
               </Typography>
 
               <Grid container spacing={2} style={{ marginBottom: '16px' }}>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <TextField
                     fullWidth
                     label={t('categoryMgmt:rules.patternLabel')}
@@ -1117,7 +1150,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                     disabled={isLoading}
                   />
                 </Grid>
-                <Grid item xs={4}>
+                <Grid size={4}>
                   <TextField
                     fullWidth
                     label={t('categoryMgmt:rules.targetCategoryLabel')}
@@ -1127,7 +1160,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                     disabled={isLoading}
                   />
                 </Grid>
-                <Grid item xs={2}>
+                <Grid size={2}>
                   <Button
                     variant="contained"
                     startIcon={<AddIcon />}
@@ -1175,7 +1208,12 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
               </Typography>
 
               {isLoadingRules ? (
-                <Box display="flex" justifyContent="center" padding="32px">
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    padding: "32px"
+                  }}>
                   <CircularProgress />
                 </Box>
               ) : rules.length === 0 ? (
@@ -1185,15 +1223,22 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
               ) : (
                 <Grid container spacing={2}>
                   {rules.map((rule) => (
-                    <Grid item xs={12} key={rule.id}>
+                    <Grid key={rule.id} size={12}>
                       <Card style={{
                         borderRadius: '12px',
                         backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#fff',
                         border: theme.palette.mode === 'dark' ? `1px solid ${theme.palette.divider}` : 'none'
                       }}>
                         <CardContent style={{ padding: '16px' }}>
-                          <Box display="flex" alignItems="center" justifyContent="space-between">
-                            <Box flex={1}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between"
+                            }}>
+                            <Box sx={{
+                              flex: 1
+                            }}>
                               <Typography variant="body1" style={{ fontWeight: 600, marginBottom: '4px' }}>
                                 IF transaction name contains "{rule.name_pattern}"
                               </Typography>
@@ -1201,7 +1246,12 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                                 THEN set category to "{rule.target_category}"
                               </Typography>
                             </Box>
-                            <Box display="flex" alignItems="center" gap="8px">
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px"
+                              }}>
                               <FormControlLabel
                                 control={
                                   <Switch
@@ -1251,19 +1301,25 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
             <Dialog
               open={Boolean(editingRule)}
               onClose={() => setEditingRule(null)}
-              PaperProps={{
-                sx: {
-                  borderRadius: '16px',
-                  padding: '8px',
-                  width: '100%',
-                  maxWidth: '500px'
+              slotProps={{
+                paper: {
+                  sx: {
+                    borderRadius: '16px',
+                    padding: '8px',
+                    width: '100%',
+                    maxWidth: '500px'
+                  }
                 }
               }}
             >
               <DialogTitle sx={{ fontWeight: 700 }}>{t('categoryMgmt:rules.editRuleTitle')}</DialogTitle>
               <DialogContent>
                 <Grid container spacing={2} sx={{ mt: 1 }}>
-                  <Grid item xs={12} sm={6}>
+                  <Grid
+                    size={{
+                      xs: 12,
+                      sm: 6
+                    }}>
                     <TextField
                       fullWidth
                       label={t('categoryMgmt:rules.patternLabel')}
@@ -1272,7 +1328,11 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                       disabled={isLoading}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid
+                    size={{
+                      xs: 12,
+                      sm: 6
+                    }}>
                     <TextField
                       fullWidth
                       label={t('categoryMgmt:rules.targetCategoryLabel')}
@@ -1330,7 +1390,12 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
             )}
 
             {isLoadingQuick ? (
-              <Box display="flex" justifyContent="center" padding="64px">
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  padding: "64px"
+                }}>
                 <CircularProgress />
               </Box>
             ) : uncategorizedDescriptions.length === 0 ? (
@@ -1582,20 +1647,6 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                       autoFocus
                       placeholder={t('categoryMgmt:quick.newCategoryPlaceholder')}
                       disabled={isSavingQuick}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              size="small"
-                              onClick={handleAddNewQuickCategory}
-                              disabled={!newQuickCategoryInput.trim() || isSavingQuick}
-                              sx={{ color: '#22c55e' }}
-                            >
-                              <CheckIcon fontSize="small" />
-                            </IconButton>
-                          </InputAdornment>
-                        )
-                      }}
                       sx={{
                         minWidth: '160px',
                         '& .MuiOutlinedInput-root': {
@@ -1605,6 +1656,22 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                             borderColor: '#22c55e',
                             borderWidth: '2px'
                           }
+                        }
+                      }}
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                size="small"
+                                onClick={handleAddNewQuickCategory}
+                                disabled={!newQuickCategoryInput.trim() || isSavingQuick}
+                                sx={{ color: '#22c55e' }}
+                              >
+                                <CheckIcon fontSize="small" />
+                              </IconButton>
+                            </InputAdornment>
+                          )
                         }
                       }}
                     />
@@ -1662,8 +1729,14 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                 <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 700, color: theme.palette.text.primary }}>
                   {t('categoryMgmt:mappings.createManual')}
                 </Typography>
-                <Grid container spacing={2} alignItems="flex-end">
-                  <Grid item xs={12} sm={5}>
+                <Grid container spacing={2} sx={{
+                  alignItems: "flex-end"
+                }}>
+                  <Grid
+                    size={{
+                      xs: 12,
+                      sm: 5
+                    }}>
                     <TextField
                       size="small"
                       label={t('categoryMgmt:mappings.sourceLabel')}
@@ -1674,10 +1747,19 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                       sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={1} sx={{ display: 'flex', justifyContent: 'center', pb: 1.5 }}>
+                  <Grid
+                    sx={{ display: 'flex', justifyContent: 'center', pb: 1.5 }}
+                    size={{
+                      xs: 12,
+                      sm: 1
+                    }}>
                     <ArrowForwardIcon sx={{ opacity: 0.3 }} />
                   </Grid>
-                  <Grid item xs={12} sm={4}>
+                  <Grid
+                    size={{
+                      xs: 12,
+                      sm: 4
+                    }}>
                     <TextField
                       size="small"
                       label={t('categoryMgmt:mappings.targetLabel')}
@@ -1688,7 +1770,11 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                       sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={2}>
+                  <Grid
+                    size={{
+                      xs: 12,
+                      sm: 2
+                    }}>
                     <Button
                       variant="contained"
                       onClick={handleAddMapping}
@@ -1718,7 +1804,12 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
               </Typography>
 
               {isLoadingMappings ? (
-                <Box display="flex" justifyContent="center" padding="32px">
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    padding: "32px"
+                  }}>
                   <CircularProgress />
                 </Box>
               ) : mappings.length === 0 ? (
@@ -1728,17 +1819,30 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
               ) : (
                 <Grid container spacing={2}>
                   {mappings.map((mapping) => (
-                    <Grid item xs={12} key={mapping.id}>
+                    <Grid key={mapping.id} size={12}>
                       <Card style={{
                         borderRadius: '12px',
                         backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#fff',
                         border: theme.palette.mode === 'dark' ? `1px solid ${theme.palette.divider}` : 'none'
                       }}>
                         <CardContent style={{ padding: '16px' }}>
-                          <Box display="flex" alignItems="center" justifyContent="space-between">
-                            <Box display="flex" alignItems="center" gap={2} flex={1}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between"
+                            }}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                                flex: 1
+                              }}>
                               <Box sx={{ flex: 1 }}>
-                                <Typography variant="caption" color="textSecondary" display="block">{t('categoryMgmt:mappings.sourceColumn')}</Typography>
+                                <Typography variant="caption" color="textSecondary" sx={{
+                                  display: "block"
+                                }}>{t('categoryMgmt:mappings.sourceColumn')}</Typography>
                                 <Chip
                                   label={mapping.source_category}
                                   size="small"
@@ -1751,7 +1855,9 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                               </Box>
                               <ArrowForwardIcon sx={{ color: theme.palette.text.secondary, opacity: 0.5 }} />
                               <Box sx={{ flex: 1 }}>
-                                <Typography variant="caption" color="textSecondary" display="block">{t('categoryMgmt:mappings.targetColumn')}</Typography>
+                                <Typography variant="caption" color="textSecondary" sx={{
+                                  display: "block"
+                                }}>{t('categoryMgmt:mappings.targetColumn')}</Typography>
                                 {editingMapping?.id === mapping.id ? (
                                   <TextField
                                     size="small"
@@ -1840,18 +1946,25 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
             setDeletingCategory(null);
             setDeleteOptions({ deleteRules: true, deleteBudget: true });
           }}
-          PaperProps={{
-            sx: {
-              borderRadius: '16px',
-              padding: '8px',
-              width: '100%',
-              maxWidth: '450px'
+          slotProps={{
+            paper: {
+              sx: {
+                borderRadius: '16px',
+                padding: '8px',
+                width: '100%',
+                maxWidth: '450px'
+              }
             }
           }}
         >
           <DialogTitle sx={{ fontWeight: 700, color: '#ef4444' }}>{t('categoryMgmt:deleteDialog.title')}</DialogTitle>
           <DialogContent>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: "text.secondary",
+                mb: 3
+              }}>
               {t('categoryMgmt:deleteDialog.description', { name: deletingCategory })}
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -1913,18 +2026,25 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
             setRenamingCategory(null);
             setRenameNewName('');
           }}
-          PaperProps={{
-            sx: {
-              borderRadius: '16px',
-              padding: '8px',
-              width: '100%',
-              maxWidth: '400px'
+          slotProps={{
+            paper: {
+              sx: {
+                borderRadius: '16px',
+                padding: '8px',
+                width: '100%',
+                maxWidth: '400px'
+              }
             }
           }}
         >
           <DialogTitle sx={{ fontWeight: 700 }}>{t('categoryMgmt:renameDialog.title')}</DialogTitle>
           <DialogContent>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: "text.secondary",
+                mb: 3
+              }}>
               {t('categoryMgmt:renameDialog.description', { name: renamingCategory })}
             </Typography>
             <TextField
@@ -1971,7 +2091,6 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
           </DialogActions>
         </Dialog>
       </DialogContent>
-
       <DialogActions style={{ padding: '16px 24px 24px 24px' }}>
         <Button
           onClick={handleClose}

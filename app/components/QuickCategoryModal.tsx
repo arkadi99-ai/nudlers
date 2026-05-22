@@ -108,10 +108,11 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
   }, [t]);
 
   useEffect(() => {
-    if (open) {
-      fetchData();
+    if (!open) return;
+    queueMicrotask(() => {
       setTotalProcessed(0);
-    }
+      fetchData();
+    });
   }, [open, fetchData]);
 
   // Fetch transactions when current description changes
@@ -136,11 +137,13 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
 
   useEffect(() => {
     const currentDescription = descriptions[currentIndex];
-    if (currentDescription?.description) {
-      fetchTransactions(currentDescription.description);
-    } else {
-      setTransactions([]);
-    }
+    queueMicrotask(() => {
+      if (currentDescription?.description) {
+        fetchTransactions(currentDescription.description);
+      } else {
+        setTransactions([]);
+      }
+    });
   }, [currentIndex, descriptions, fetchTransactions]);
 
   const handleCategorySelect = async (category: string) => {
@@ -252,14 +255,16 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
       onClose={handleClose}
       maxWidth="md"
       fullWidth
-      PaperProps={{
-        style: {
-          backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#ffffff',
-          borderRadius: '24px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-          minHeight: '600px',
-          maxHeight: '90vh',
-          backgroundImage: theme.palette.mode === 'dark' ? 'linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05))' : 'none',
+      slotProps={{
+        paper: {
+          style: {
+            backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#ffffff',
+            borderRadius: '24px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+            minHeight: '600px',
+            maxHeight: '90vh',
+            backgroundImage: theme.palette.mode === 'dark' ? 'linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05))' : 'none',
+          }
         }
       }}
     >
@@ -282,7 +287,6 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
         }
         onClose={handleClose}
       />
-
       {descriptions.length > 0 && (
         <LinearProgress
           variant="determinate"
@@ -296,7 +300,6 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
           }}
         />
       )}
-
       <DialogContent sx={{ padding: '24px 32px 32px' }}>
         {error && (
           <Alert severity="error" sx={{ marginBottom: 2 }}>
@@ -593,20 +596,6 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
                   autoFocus
                   placeholder={t('misc:quickCategory.newCategoryPlaceholder')}
                   disabled={isSaving}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          size="small"
-                          onClick={handleAddNewCategory}
-                          disabled={!newCategoryInput.trim() || isSaving}
-                          sx={{ color: '#22c55e' }}
-                        >
-                          <CheckIcon fontSize="small" />
-                        </IconButton>
-                      </InputAdornment>
-                    )
-                  }}
                   sx={{
                     minWidth: '200px',
                     '& .MuiOutlinedInput-root': {
@@ -622,6 +611,22 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
                       '&.Mui-focused fieldset': {
                         borderColor: '#22c55e'
                       }
+                    }
+                  }}
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            size="small"
+                            onClick={handleAddNewCategory}
+                            disabled={!newCategoryInput.trim() || isSaving}
+                            sx={{ color: '#22c55e' }}
+                          >
+                            <CheckIcon fontSize="small" />
+                          </IconButton>
+                        </InputAdornment>
+                      )
                     }
                   }}
                 />

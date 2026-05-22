@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/client-logger';
 import {
   Dialog,
@@ -19,13 +19,13 @@ import {
   useTheme,
   alpha
 } from '@mui/material';
-import Table from './Table';
+import Table, { Column } from './Table';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import SyncIcon from '@mui/icons-material/Sync';
-import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
+import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutlineOutlined';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import CloseIcon from '@mui/icons-material/Close';
@@ -128,7 +128,7 @@ const SectionHeader = styled(Box)(({ theme }) => ({
   },
 }));
 
-const AccountSection = styled(Box)(({ theme }) => ({
+const AccountSection = styled(Box)(() => ({
   marginBottom: '32px',
   '&:last-child': {
     marginBottom: 0,
@@ -168,14 +168,7 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
   });
   const [isTruncating, setIsTruncating] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchAccounts();
-      fetchCardOwnership();
-    }
-  }, [isOpen]);
-
-  const fetchAccounts = async () => {
+  const fetchAccounts = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch('/api/credentials');
@@ -189,9 +182,9 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
-  const fetchCardOwnership = async () => {
+  const fetchCardOwnership = useCallback(async () => {
     try {
       const response = await fetch('/api/cards/ownerships');
       if (response.ok) {
@@ -202,7 +195,15 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
       // Silent fail - card ownership is supplementary info
       logger.error('Failed to fetch card ownership', err as Error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    queueMicrotask(() => {
+      fetchAccounts();
+      fetchCardOwnership();
+    });
+  }, [isOpen, fetchAccounts, fetchCardOwnership]);
 
   // Helper to get owned cards for a specific credential
   const getOwnedCards = (credentialId: number): CardOwnership[] => {
@@ -255,7 +256,7 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
       await fetchCardOwnership();
       showNotification(isHidden ? t('accounts.notifications.accountHidden') : t('accounts.notifications.accountShown'), 'success');
       window.dispatchEvent(new CustomEvent('dataRefresh'));
-    } catch (err) {
+    } catch (_err) {
       showNotification(t('accounts.notifications.accountVisibilityFailed'), 'error');
     }
   };
@@ -534,11 +535,11 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
       );
     }
 
-    const columns = [
+    const columns: Column<Account>[] = [
       {
         id: 'nickname',
         label: t('accounts.table.nickname'),
-        format: (_: any, account: Account) => (
+        format: (_: unknown, account: Account) => (
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Typography variant="body2" sx={{ fontWeight: 600 }}>{account.nickname}</Typography>
@@ -576,10 +577,12 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
                               height: '24px',
                             },
                           }}
-                          SelectProps={{
-                            native: true,
-                          }}
                           onClick={(e) => e.stopPropagation()}
+                          slotProps={{
+                            select: {
+                              native: true,
+                            }
+                          }}
                         >
                           <option value="">{t('accounts.table.noBankAccount')}</option>
                           {getBankAccounts().map((bankAccount) => (
@@ -709,12 +712,12 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
       {
         id: 'username',
         label: type === 'bank' ? t('accounts.table.username') : t('accounts.table.idNumber'),
-        format: (_: any, account: Account) => account.username || account.id_number || '-'
+        format: (_: unknown, account: Account) => account.username || account.id_number || '-'
       },
       {
         id: 'identifier',
         label: type === 'bank' ? t('accounts.table.accountNumber') : t('accounts.table.cardLastDigits'),
-        format: (_: any, account: Account) => type === 'bank' ? (account.bank_account_number || '-') : (account.card6_digits || '-')
+        format: (_: unknown, account: Account) => type === 'bank' ? (account.bank_account_number || '-') : (account.card6_digits || '-')
       },
       {
         id: 'last_synced_at',
@@ -749,7 +752,7 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
         id: 'actions',
         label: t('accounts.table.actions'),
         align: 'right',
-        format: (_: any, account: Account) => (
+        format: (_: unknown, account: Account) => (
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
             <Tooltip title={t('accounts.table.editAccount')}>
               <IconButton
@@ -814,20 +817,32 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
     return (
       <Table
         rows={accounts}
-        columns={columns as any}
+        columns={columns}
         rowKey={(row) => row.id}
         emptyMessage={type === 'bank' ? t('accounts.noBankAccountsTable') : t('accounts.noCreditCardsTable')}
         mobileCardRenderer={(account) => (
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant="subtitle2" fontWeight={700}>{account.nickname}</Typography>
+              <Typography variant="subtitle2" sx={{
+                fontWeight: 700
+              }}>{account.nickname}</Typography>
               <Chip label={account.vendor} size="small" variant="outlined" />
             </Box>
             <Box sx={{ mb: 1 }}>
-              <Typography variant="caption" display="block" color="text.secondary">
+              <Typography
+                variant="caption"
+                sx={{
+                  display: "block",
+                  color: "text.secondary"
+                }}>
                 {type === 'bank' ? `${t('accounts.table.username')}: ` : `${t('accounts.table.idNumber')}: `} {account.username || account.id_number || '-'}
               </Typography>
-              <Typography variant="caption" display="block" color="text.secondary">
+              <Typography
+                variant="caption"
+                sx={{
+                  display: "block",
+                  color: "text.secondary"
+                }}>
                 {type === 'bank' ? `${t('accounts.table.accountNumber')}: ` : `${t('accounts.table.cardLastDigits')}: `} {type === 'bank' ? (account.bank_account_number || '-') : (account.card6_digits || '-')}
               </Typography>
             </Box>
@@ -867,24 +882,26 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
         }}
         maxWidth="md"
         fullWidth
-        PaperProps={{
-          style: {
-            background: theme.palette.mode === 'dark'
-              ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.background.default, 0.98)} 100%)`
-              : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '28px',
-            boxShadow: '0 24px 64px rgba(0, 0, 0, 0.15)',
-            border: `1px solid ${theme.palette.divider}`
+        slotProps={{
+          backdrop: {
+            style: {
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              backdropFilter: 'blur(8px)'
+            }
+          },
+
+          paper: {
+            style: {
+              background: theme.palette.mode === 'dark'
+                ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.background.default, 0.98)} 100%)`
+                : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '28px',
+              boxShadow: '0 24px 64px rgba(0, 0, 0, 0.15)',
+              border: `1px solid ${theme.palette.divider}`
+            }
           }
-        }}
-        BackdropProps={{
-          style: {
-            backgroundColor: 'rgba(0, 0, 0, 0.4)',
-            backdropFilter: 'blur(8px)'
-          }
-        }}
-      >
+        }}>
         <ModalHeader
           title={isEditing ? t('accounts.editAccount') : t('accounts.title')}
           onClose={() => {
@@ -1138,20 +1155,20 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
           credentialId: selectedAccount.id
         } : undefined}
       />
-
       <SyncHistoryModal
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
       />
-
       {/* Truncate Confirmation Dialog */}
       <Dialog
         open={truncateConfirm.isOpen}
         onClose={handleTruncateCancel}
-        PaperProps={{
-          style: {
-            borderRadius: '16px',
-            padding: '8px',
+        slotProps={{
+          paper: {
+            style: {
+              borderRadius: '16px',
+              padding: '8px',
+            }
           }
         }}
       >

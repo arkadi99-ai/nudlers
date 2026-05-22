@@ -66,7 +66,7 @@ interface SyncStatusModalProps {
   onSyncSuccess?: () => void;
 }
 
-interface SyncStatus {
+interface _SyncStatus {
   syncHealth: string;
   settings: {
     enabled: boolean;
@@ -437,7 +437,7 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
       setSyncProgress(null);
       setSyncStartTime(null);
     }
-  }, [status, isSyncing, isInitializing, isStopping]);
+  }, [status, isSyncing, isInitializing, isStopping, t]);
   // Initial fetch and start
   useEffect(() => {
     if (open) {
@@ -458,6 +458,7 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
     };
     window.addEventListener('triggerSync', handleTriggerSync);
     return () => window.removeEventListener('triggerSync', handleTriggerSync);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- prepareSyncOptionsForAccount declared below; closure captures it correctly at runtime
   }, [status?.settings?.daysBack]);
 
   // Clear pending sync request when drawer closes
@@ -1256,7 +1257,6 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
           </Tooltip>
         </Box>
       </Box>
-
       {/* Content */}
       <Box sx={{ p: 2, overflowY: 'auto', flex: 1 }}>
         {pendingSyncRequest && !isSyncing && !showReport ? (
@@ -1819,17 +1819,18 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
           </>
         )}
       </Box>
-
       {/* Screenshot Overlay Viewer */}
       <Dialog
         open={!!selectedScreenshot}
         onClose={() => setSelectedScreenshot(null)}
         maxWidth="xl"
         fullWidth
-        PaperProps={{
-          sx: {
-            background: 'transparent',
-            boxShadow: 'none'
+        slotProps={{
+          paper: {
+            sx: {
+              background: 'transparent',
+              boxShadow: 'none'
+            }
           }
         }}
       >
@@ -1862,21 +1863,22 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
           )}
         </DialogContent>
       </Dialog>
-
       {/* Error Details Modal */}
       <Dialog
         open={!!selectedErrorEvent}
         onClose={() => setSelectedErrorEvent(null)}
         maxWidth="sm"
         fullWidth
-        PaperProps={{
-          sx: {
-            background: theme.palette.mode === 'dark'
-              ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%)'
-              : 'rgba(255, 255, 255, 0.98)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '12px',
-            border: '1px solid rgba(239, 68, 68, 0.3)'
+        slotProps={{
+          paper: {
+            sx: {
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%)'
+                : 'rgba(255, 255, 255, 0.98)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '12px',
+              border: '1px solid rgba(239, 68, 68, 0.3)'
+            }
           }
         }}
       >

@@ -1,7 +1,7 @@
 import React from 'react';
 import { logger } from '../../../utils/client-logger';
-import { useTheme } from '@mui/material/styles';
-import { Table, TableBody, TableCell, TableHead, TableRow, Paper, Box, Typography, IconButton, TextField, Autocomplete, Snackbar, Alert, FormControlLabel, Checkbox, Tooltip, TableSortLabel, useMediaQuery, Button } from '@mui/material';
+import { useTheme, type Theme } from '@mui/material/styles';
+import { Table, TableBody, TableCell, TableHead, TableRow, Paper, Box, Typography, IconButton, TextField, Snackbar, Alert, Tooltip, TableSortLabel, useMediaQuery, Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
@@ -13,14 +13,12 @@ import { useCardVendors } from '../utils/useCardVendors';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import NotesIcon from '@mui/icons-material/Notes';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { CardVendorIcon } from '../../CardVendorsModal';
 import { getTableHeaderCellStyle, getTableBodyCellStyle, TABLE_ROW_HOVER_STYLE, getTableRowHoverBackground } from '../utils/tableStyles';
 import DeleteConfirmationDialog from '../../DeleteConfirmationDialog';
 import CategoryAutocomplete from '../../CategoryAutocomplete';
 import AccountDisplay from '../../AccountDisplay';
 import MobileSortableTable, { SortOption } from '../../MobileSortableTable';
-import { Theme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../../../context/LocaleContext';
 
@@ -130,7 +128,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
       setSnackbar({ open: true, message: t('tx:snackbar.deleteError'), severity: 'error' });
     }
     setConfirmDeleteTransaction(null);
-  }, [confirmDeleteTransaction, onDelete]);
+  }, [confirmDeleteTransaction, onDelete, t]);
 
   const handleEditClick = React.useCallback((transaction: Transaction) => {
     setEditingTransaction(transaction);
@@ -186,7 +184,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
         setEditingTransaction(null);
       }
     }
-  }, [editingTransaction, editPrice, editCategory, applyToAll, onUpdate, isBankView]);
+  }, [editingTransaction, editPrice, editCategory, applyToAll, onUpdate, isBankView, t]);
 
   const handleCancelClick = React.useCallback(() => {
     setEditingTransaction(null);
@@ -198,7 +196,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
     }
   }, [editingTransaction, handleSaveClick]);
 
-  const handleTableClick = React.useCallback((e: React.MouseEvent) => {
+  const _handleTableClick = React.useCallback((e: React.MouseEvent) => {
     if (editingTransaction && (e.target as HTMLElement).tagName === 'TABLE') {
       handleSaveClick();
     }
@@ -445,8 +443,8 @@ const TransactionRow = React.memo(({
   handleSaveClick,
   handleCancelClick,
   setConfirmDeleteTransaction,
-  getCardVendor,
-  getCardNickname,
+  getCardVendor: _getCardVendor,
+  getCardNickname: _getCardNickname,
   onToggleFavorite,
   onNotesUpdate,
   editingNotes,
@@ -454,7 +452,7 @@ const TransactionRow = React.memo(({
   isWidget,
   hideActions,
   hideInstallmentsColumn,
-  showProcessedDate,
+  showProcessedDate: _showProcessedDate,
   isBankView,
   groupByDate
 }: TransactionRowProps) => {
@@ -588,7 +586,7 @@ TransactionRow.displayName = 'TransactionRow';
 
 interface TransactionMobileCardProps {
   transaction: Transaction;
-  theme: any;
+  theme: Theme;
   onEdit: () => void;
   onDelete: () => void;
   getCardVendor: (accountNumber: string | undefined | null) => string | null;
@@ -625,8 +623,8 @@ const TransactionMobileCardContent = ({
   availableCategories,
   applyToAll,
   setApplyToAll,
-  editPrice,
-  setEditPrice,
+  editPrice: _editPrice,
+  setEditPrice: _setEditPrice,
   onSave,
   onCancel,
   isBankView = false
@@ -656,8 +654,19 @@ const TransactionMobileCardContent = ({
           </IconButton>
           <Box sx={{ ml: 1, minWidth: 0 }}>
             <Typography variant="subtitle2" noWrap sx={{ fontWeight: 700 }}>{transaction.name}</Typography>
-            {showDate && <Typography variant="caption" display="block" color="text.secondary">{dateUtils.formatDate(transaction.date)}</Typography>}
-            {transaction.notes && !showNoteInput && <Typography variant="caption" fontStyle="italic" color="text.secondary" display="block">{transaction.notes}</Typography>}
+            {showDate && <Typography
+              variant="caption"
+              sx={{
+                display: "block",
+                color: "text.secondary"
+              }}>{dateUtils.formatDate(transaction.date)}</Typography>}
+            {transaction.notes && !showNoteInput && <Typography
+              variant="caption"
+              sx={{
+                fontStyle: "italic",
+                color: "text.secondary",
+                display: "block"
+              }}>{transaction.notes}</Typography>}
           </Box>
         </Box>
         <Typography variant="subtitle2" sx={{ fontWeight: 800, color: transaction.price < 0 ? '#ef4444' : '#10b981' }}>
@@ -711,11 +720,5 @@ const TransactionMobileCardContent = ({
     </Box>
   );
 };
-
-const TransactionMobileCard = (props: any) => (
-  <Paper elevation={0} sx={{ p: 2, borderRadius: '16px', border: 1, borderColor: 'divider' }}>
-    <TransactionMobileCardContent {...props} />
-  </Paper>
-);
 
 export default TransactionsTable;

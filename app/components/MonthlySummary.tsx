@@ -3,37 +3,21 @@ import { useTheme } from '@mui/material/styles';
 import Button from '@mui/material/Button';
 import LinearProgress from '@mui/material/LinearProgress';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import DescriptionIcon from '@mui/icons-material/Description';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import DateRangeIcon from '@mui/icons-material/DateRange';
 import TuneIcon from '@mui/icons-material/Tune';
-import SortIcon from '@mui/icons-material/Sort';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import SettingsIcon from '@mui/icons-material/Settings';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import SearchIcon from '@mui/icons-material/Search';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import EditIcon from '@mui/icons-material/Edit';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useAI } from '../context/AIContext';
 
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
-import Autocomplete from '@mui/material/Autocomplete';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Tooltip from '@mui/material/Tooltip';
-import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Link from 'next/link';
 import PageHeader from './PageHeader';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -46,13 +30,12 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import ExpensesModal from './CategoryDashboard/components/ExpensesModal';
 import Typography from '@mui/material/Typography';
 import { ModalData } from './CategoryDashboard/types';
-import { useCategories } from './CategoryDashboard/utils/useCategories';
 import { CardVendorIcon, CARD_VENDORS } from './CardVendorsModal';
 import { useScreenContext } from './Layout';
 import { useDateSelection, DateRangeMode } from '../context/DateSelectionContext';
 import { logger } from '../utils/client-logger';
 import { isBankTransaction, BankCheckTransaction } from '../utils/transactionUtils';
-import { CREDIT_CARD_VENDORS, BANK_VENDORS } from '../utils/constants';
+import { BANK_VENDORS } from '../utils/constants';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../context/LocaleContext';
 
@@ -121,7 +104,7 @@ interface Account {
   };
 }
 
-type GroupByType = 'vendor' | 'description' | 'last4digits';
+type _GroupByType = 'vendor' | 'description' | 'last4digits';
 // DateRangeMode imported from context
 
 
@@ -258,12 +241,12 @@ const MonthlySummary: React.FC = () => {
 
   // Date range error (local validation for custom range UI feedback if needed, 
   // though context handles valid start/end dates for fetching)
-  const [dateRangeError, setDateRangeError] = useState<string>('');
+  const [_dateRangeError, setDateRangeError] = useState<string>('');
 
   // Modal for transaction details
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalData, setModalData] = useState<ModalData | undefined>();
-  const [loadingLast4, setLoadingLast4] = useState<string | null>(null);
+  const [_loadingLast4, setLoadingLast4] = useState<string | null>(null);
 
   // Card summary for cards display (grouped by last 4 digits)
   const [cardSummary, setCardSummary] = useState<CardSummary[]>([]);
@@ -350,7 +333,7 @@ const MonthlySummary: React.FC = () => {
       } else {
         throw new Error('Failed to save');
       }
-    } catch (e) {
+    } catch (_e) {
       setSnackbar({ open: true, message: t('summary.snackbarFailedUpdateBudget'), severity: 'error' });
     }
   };
@@ -517,7 +500,7 @@ const MonthlySummary: React.FC = () => {
 
   // fetchAvailableMonths removed
 
-  const fetchMonthlySummary = useCallback(async (skipLoadingState = false, offsetValue = 0) => {
+  const fetchMonthlySummary = useCallback(async (skipLoadingState = false, _offsetValue = 0) => {
     // For custom mode, we need custom dates; for other modes, we need year/month
     if (dateRangeMode === 'custom') {
       if (!customStartDate || !customEndDate) return;
@@ -769,6 +752,7 @@ const MonthlySummary: React.FC = () => {
     } else if (startDate && endDate) {
       fetchMonthlySummary(false, 0);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchMonthlySummary is stable; including it would cause re-runs
   }, [startDate, endDate, billingCycle, dateRangeMode, customStartDate, customEndDate, selectedYear, selectedMonth]);
 
   // Separate useEffect for filter toggle - skip loading state to prevent flicker
@@ -826,7 +810,7 @@ const MonthlySummary: React.FC = () => {
 
 
 
-  const [loadingAll, setLoadingAll] = useState(false);
+  const [_loadingAll, setLoadingAll] = useState(false);
 
   const handleAllTransactionsClick = async () => {
     if (dateRangeMode === 'custom') {
@@ -880,7 +864,7 @@ const MonthlySummary: React.FC = () => {
 
 
 
-  const handleBankAccountClick = async (bank: ScrapedBankSummary) => {
+  const _handleBankAccountClick = async (bank: ScrapedBankSummary) => {
     if (dateRangeMode === 'custom') {
       if (!customStartDate || !customEndDate) return;
     } else {
@@ -1127,8 +1111,6 @@ const MonthlySummary: React.FC = () => {
       overflow: 'hidden'
     }}>
       {/* Background elements removed - handled by Layout.tsx */}
-
-
       {/* Main content container */}
       <Box sx={{
         padding: { xs: '12px 8px', sm: '16px 12px', md: '24px 16px' },
@@ -1363,7 +1345,7 @@ const MonthlySummary: React.FC = () => {
                     alignItems: 'start'
                   }}>
                     {creditCardBankSummary.map((bank) => {
-                      const percentage = totals.card_expenses > 0
+                      const _percentage = totals.card_expenses > 0
                         ? Math.round((bank.total_cc_expenses / totals.card_expenses) * 100)
                         : 0;
 
@@ -1653,15 +1635,17 @@ const MonthlySummary: React.FC = () => {
               anchorEl={vendorMenuAnchor}
               open={Boolean(vendorMenuAnchor)}
               onClose={handleVendorMenuClose}
-              PaperProps={{
-                sx: {
-                  borderRadius: '16px',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                  minWidth: '240px',
-                  maxHeight: '500px',
-                  background: theme.palette.mode === 'dark' ? 'rgba(30, 41, 59, 0.95)' : undefined,
-                  backdropFilter: 'blur(10px)',
-                  border: `1px solid ${theme.palette.divider}`
+              slotProps={{
+                paper: {
+                  sx: {
+                    borderRadius: '16px',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+                    minWidth: '240px',
+                    maxHeight: '500px',
+                    background: theme.palette.mode === 'dark' ? 'rgba(30, 41, 59, 0.95)' : undefined,
+                    backdropFilter: 'blur(10px)',
+                    border: `1px solid ${theme.palette.divider}`
+                  }
                 }
               }}
             >
@@ -1683,27 +1667,29 @@ const MonthlySummary: React.FC = () => {
                     e.stopPropagation();
                   }}
                   onClick={(e) => e.stopPropagation()}
-                  InputProps={{
-                    endAdornment: editingNickname !== (cardNicknameMap[selectedCardForVendor || ''] || '') && (
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (selectedCardForVendor) {
-                            handleNicknameSave(selectedCardForVendor, editingNickname);
-                          }
-                        }}
-                        sx={{ color: '#10b981' }}
-                      >
-                        <CheckIcon sx={{ fontSize: '18px' }} />
-                      </IconButton>
-                    )
-                  }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: '10px',
                       backgroundColor: theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.5)' : '#f8fafc',
                       color: 'text.primary'
+                    }
+                  }}
+                  slotProps={{
+                    input: {
+                      endAdornment: editingNickname !== (cardNicknameMap[selectedCardForVendor || ''] || '') && (
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (selectedCardForVendor) {
+                              handleNicknameSave(selectedCardForVendor, editingNickname);
+                            }
+                          }}
+                          sx={{ color: '#10b981' }}
+                        >
+                          <CheckIcon sx={{ fontSize: '18px' }} />
+                        </IconButton>
+                      )
                     }
                   }}
                 />
@@ -1746,7 +1732,11 @@ const MonthlySummary: React.FC = () => {
             }}>
               <Grid container spacing={3}>
                 {/* Left Side: Budget Module */}
-                <Grid item xs={12} md={6}>
+                <Grid
+                  size={{
+                    xs: 12,
+                    md: 6
+                  }}>
                   <BudgetModule onViewTransactions={async (category) => {
                     try {
                       let queryParams = `category=${encodeURIComponent(category)}`;
@@ -1774,7 +1764,11 @@ const MonthlySummary: React.FC = () => {
                 </Grid>
 
                 {/* Right Side: Recent Transactions Module */}
-                <Grid item xs={12} md={6}>
+                <Grid
+                  size={{
+                    xs: 12,
+                    md: 6
+                  }}>
                   <RecentTransactionsModule />
                 </Grid>
               </Grid>

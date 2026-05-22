@@ -107,7 +107,7 @@ const DeleteAllTransactionsDialog: React.FC<DeleteAllTransactionsDialogProps> = 
                 throw new Error('Failed to delete transactions');
             }
 
-            const result = await response.json();
+            const _result = await response.json();
             onSuccess();
             handleClose();
         } catch (err) {
@@ -125,14 +125,16 @@ const DeleteAllTransactionsDialog: React.FC<DeleteAllTransactionsDialogProps> = 
             onClose={handleClose}
             maxWidth="sm"
             fullWidth
-            PaperProps={{
-                style: {
-                    borderRadius: '16px',
-                    background: theme.palette.mode === 'dark'
-                        ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%)'
-                        : 'rgba(255, 255, 255, 0.98)',
-                    backdropFilter: 'blur(20px)',
-                    border: `2px solid ${theme.palette.error.main}`
+            slotProps={{
+                paper: {
+                    style: {
+                        borderRadius: '16px',
+                        background: theme.palette.mode === 'dark'
+                            ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%)'
+                            : 'rgba(255, 255, 255, 0.98)',
+                        backdropFilter: 'blur(20px)',
+                        border: `2px solid ${theme.palette.error.main}`
+                    }
                 }
             }}
         >
@@ -148,7 +150,6 @@ const DeleteAllTransactionsDialog: React.FC<DeleteAllTransactionsDialogProps> = 
                 <WarningAmberIcon />
                 {t('misc:deleteAll.title')}
             </DialogTitle>
-
             <DialogContent sx={{ pt: 3 }}>
                 {error && (
                     <Alert severity="error" icon={<ErrorIcon />} sx={{ mb: 2 }}>
@@ -231,7 +232,6 @@ const DeleteAllTransactionsDialog: React.FC<DeleteAllTransactionsDialogProps> = 
                     />
                 </Box>
             </DialogContent>
-
             <DialogActions sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
                 <Button
                     onClick={handleClose}

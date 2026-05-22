@@ -3,34 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { logger } from '../../../utils/client-logger';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-import CloseIcon from '@mui/icons-material/Close';
-import IconButton from '@mui/material/IconButton';
 import ModalHeader from '../../ModalHeader';
 
-import Table, { Column } from '../../Table';
-import TextField from '@mui/material/TextField';
-import Autocomplete from '@mui/material/Autocomplete';
-import CheckIcon from '@mui/icons-material/Check';
-import EditIcon from '@mui/icons-material/Edit';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { ExpensesModalProps, Expense } from '../types';
-import { formatNumber } from '../utils/format';
-import { dateUtils } from '../utils/dateUtils';
 import Box from '@mui/material/Box';
-import DeleteIcon from '@mui/icons-material/Delete';
-import SortIcon from '@mui/icons-material/Sort';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import { useCategories } from '../utils/useCategories';
-import { useCardVendors } from '../utils/useCardVendors';
-import { CardVendorIcon } from '../../CardVendorsModal';
 import TransactionsTable from './TransactionsTable';
 
 type SortField = 'date' | 'processed_date' | 'price' | 'installments_number' | 'name' | 'category' | 'card';
@@ -38,7 +18,7 @@ type SortDirection = 'asc' | 'desc';
 
 
 
-const ExpensesModal: React.FC<ExpensesModalProps> = ({ open, onClose, data, color, setModalData, currentMonth }) => {
+const ExpensesModal: React.FC<ExpensesModalProps> = ({ open, onClose, data, setModalData }) => {
   const theme = useTheme();
   const { t } = useTranslation('tx');
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -208,25 +188,27 @@ const ExpensesModal: React.FC<ExpensesModalProps> = ({ open, onClose, data, colo
       maxWidth="lg"
       fullWidth
       fullScreen={isMobile}
-      PaperProps={{
-        sx: {
-          background: theme.palette.mode === 'dark'
-            ? 'rgba(15, 23, 42, 0.95)'
-            : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: isMobile ? 0 : '28px',
-          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.15)',
-          border: isMobile ? 'none' : `1px solid ${theme.palette.divider}`,
-          margin: isMobile ? 0 : undefined,
+      slotProps={{
+        backdrop: {
+          style: {
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            backdropFilter: 'blur(8px)'
+          }
+        },
+
+        paper: {
+          sx: {
+            background: theme.palette.mode === 'dark'
+              ? 'rgba(15, 23, 42, 0.95)'
+              : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: isMobile ? 0 : '28px',
+            boxShadow: '0 24px 64px rgba(0, 0, 0, 0.15)',
+            border: isMobile ? 'none' : `1px solid ${theme.palette.divider}`,
+            margin: isMobile ? 0 : undefined,
+          }
         }
-      }}
-      BackdropProps={{
-        style: {
-          backgroundColor: 'rgba(0, 0, 0, 0.4)',
-          backdropFilter: 'blur(8px)'
-        }
-      }}
-    >
+      }}>
       <ModalHeader title={data.type} onClose={onClose} />
       <DialogContent sx={{ padding: { xs: '12px', sm: '16px', md: '32px' } }}>
 
@@ -253,7 +235,6 @@ const ExpensesModal: React.FC<ExpensesModalProps> = ({ open, onClose, data, colo
           />
         </Box>
       </DialogContent >
-
       {/* Snackbar for feedback messages */}
       < Snackbar
         open={snackbar.open}

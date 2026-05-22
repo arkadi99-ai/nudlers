@@ -1,7 +1,6 @@
 import React from 'react';
 import { SvgIconComponent } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
-import Box from '@mui/material/Box';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { formatNumber } from '../utils/format';
@@ -95,7 +94,7 @@ const Card: React.FC<CardProps> = ({
   const padding = isMobile ? '16px' : (size === 'large' ? '32px' : '20px');
   const titleSize = isMobile ? '14px' : (size === 'large' ? '16px' : '20px');
   const valueSize = isMobile ? '20px' : (size === 'large' ? '36px' : '24px');
-  const secondaryValueSize = isMobile ? '14px' : (size === 'large' ? '20px' : '16px');
+  const _secondaryValueSize = isMobile ? '14px' : (size === 'large' ? '20px' : '16px');
   const iconSize = isMobile ? '20px' : '24px';
   const iconPadding = isMobile ? '8px' : (size === 'large' ? '10px' : '12px');
   const iconBorderRadius = isMobile ? '12px' : (size === 'large' ? '12px' : '16px');

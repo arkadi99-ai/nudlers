@@ -55,7 +55,7 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
   }
 }));
 
-const ActionCard = styled(Box)(({ theme }) => ({
+const ActionCard = styled(Box)(() => ({
   padding: '24px',
   borderRadius: '12px',
   border: '1px solid var(--action-card-border)',
@@ -107,8 +107,8 @@ const DatabaseBackupModal: React.FC<DatabaseBackupModalProps> = ({ open, onClose
       URL.revokeObjectURL(url);
 
       // Count total rows
-      const totalRows = Object.values(data.tables).reduce(
-        (sum: number, table: any) => sum + (table.rowCount || 0),
+      const totalRows = (Object.values(data.tables) as Array<{ rowCount?: number }>).reduce(
+        (sum, table) => sum + (table.rowCount || 0),
         0
       );
 
@@ -163,7 +163,7 @@ const DatabaseBackupModal: React.FC<DatabaseBackupModalProps> = ({ open, onClose
       const importRes: ImportResult = await response.json();
 
       if (!response.ok) {
-        throw new Error((importRes as any).error || t('misc:databaseBackup.import.errorGeneric'));
+        throw new Error((importRes as { error?: string }).error || t('misc:databaseBackup.import.errorGeneric'));
       }
 
       setImportResult(importRes);
@@ -185,11 +185,11 @@ const DatabaseBackupModal: React.FC<DatabaseBackupModalProps> = ({ open, onClose
           message: t('misc:databaseBackup.import.warningMessage')
         });
       }
-    } catch (error: any) {
-      logger.error('Import error', error);
+    } catch (error: unknown) {
+      logger.error('Import error', error as Error);
       setResult({
         type: 'error',
-        message: error.message || t('misc:databaseBackup.import.errorMessage')
+        message: (error instanceof Error ? error.message : '') || t('misc:databaseBackup.import.errorMessage')
       });
     } finally {
       setImporting(false);

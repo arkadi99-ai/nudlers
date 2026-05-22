@@ -577,6 +577,11 @@ export async function checkCardOwnership(client, accountNumber, vendor, currentC
 
 /**
  * Claim ownership of a card for a specific credential
+ * @param {any} client
+ * @param {string} accountNumber
+ * @param {string} vendor
+ * @param {number} credentialId
+ * @param {number | null} [balance]
  */
 export async function claimCardOwnership(client, accountNumber, vendor, credentialId, balance = null) {
   // Insert or update card ownership
@@ -613,6 +618,13 @@ export async function insertScrapeAudit(client, triggeredBy, vendor, startDate, 
 
 /**
  * Update a scrape audit row
+ * @param {any} client
+ * @param {number} auditId
+ * @param {string} status
+ * @param {string} message
+ * @param {any} [report]
+ * @param {number | null} [retryCount]
+ * @param {number | null} [durationSeconds]
  */
 export async function updateScrapeAudit(client, auditId, status, message, report = null, retryCount = null, durationSeconds = null) {
   if (!auditId) return;
@@ -773,10 +785,11 @@ export async function stopAllScrapers(client) {
 
 /**
  * Runs the scraper directly in the main process
- * @param {Object} client - DB Client (optional, required for smart scraping)
- * @param {Object} scraperOptions - Options for createScraper
- * @param {Object} credentials - Scraper credentials
- * @param {Function} onProgress - Progress callback
+ * @param {any} client - DB Client (optional, required for smart scraping)
+ * @param {any} scraperOptions - Options for createScraper
+ * @param {any} credentials - Scraper credentials
+ * @param {Function | null} onProgress - Progress callback
+ * @param {Function | null} [checkCancelled]
  */
 export async function runScraper(client, scraperOptions, credentials, onProgress, checkCancelled = null) {
   logger.info({ companyId: scraperOptions.companyId }, '[Scraper] Starting Direct Scrape');
@@ -1416,6 +1429,7 @@ export async function processScrapedAccounts({
   onTransactionProcessed = null,
   onAccountStarted = null
 }) {
+  /** @type {{ accounts: number; transactions: number; savedTransactions: number; duplicateTransactions: number; updatedTransactions: number; bankTransactions: number; cachedCategories: number; ruleCategories: number; scraperCategories: number; skippedCards: number; processedTransactions: any[] }} */
   const stats = {
     accounts: 0,
     transactions: 0,
