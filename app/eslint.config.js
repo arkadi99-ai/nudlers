@@ -33,7 +33,9 @@ const eslintConfig = [...nextConfig, {
     }
 }, {
     rules: {
-        "react-hooks/preserve-manual-memoization": "off"
+        "react-hooks/preserve-manual-memoization": "off",
+        "react-hooks/immutability": "warn",
+        "react-hooks/set-state-in-effect": "warn"
     }
 }];
 

@@ -339,7 +339,6 @@ const AccountsView: React.FC = () => {
                     </Box>
                 }
             />
-
             <Container maxWidth="xl" sx={{ mt: 4 }}>
                 {isLoading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -351,12 +350,20 @@ const AccountsView: React.FC = () => {
                         <Box sx={{ mb: 6 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
                                 <AccountBalanceIcon color="primary" />
-                                <Typography variant="h5" fontWeight={700}>{t('accounts.bankAccounts')}</Typography>
+                                <Typography variant="h5" sx={{
+                                    fontWeight: 700
+                                }}>{t('accounts.bankAccounts')}</Typography>
                                 <Typography variant="body2" sx={{ color: 'text.secondary', ml: 1 }}>{bankAccounts.length}</Typography>
                             </Box>
                             <Grid container spacing={3}>
                                 {bankAccounts.map(account => (
-                                    <Grid item xs={12} sm={6} lg={4} key={account.id}>
+                                    <Grid
+                                        key={account.id}
+                                        size={{
+                                            xs: 12,
+                                            sm: 6,
+                                            lg: 4
+                                        }}>
                                         <AccountCard
                                             account={account}
                                             isVaultLocked={isVaultLocked}
@@ -369,9 +376,11 @@ const AccountsView: React.FC = () => {
                                     </Grid>
                                 ))}
                                 {bankAccounts.length === 0 && (
-                                    <Grid item xs={12}>
+                                    <Grid size={12}>
                                         <Box sx={{ p: 4, textAlign: 'center', borderRadius: '24px', border: `1px dashed ${theme.palette.divider}` }}>
-                                            <Typography color="text.secondary">{t('accounts.noBankAccounts')}</Typography>
+                                            <Typography sx={{
+                                                color: "text.secondary"
+                                            }}>{t('accounts.noBankAccounts')}</Typography>
                                         </Box>
                                     </Grid>
                                 )}
@@ -382,12 +391,20 @@ const AccountsView: React.FC = () => {
                         <Box sx={{ mb: 6 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
                                 <CreditCardIcon sx={{ color: '#8b5cf6' }} />
-                                <Typography variant="h5" fontWeight={700}>{t('accounts.creditCards')}</Typography>
+                                <Typography variant="h5" sx={{
+                                    fontWeight: 700
+                                }}>{t('accounts.creditCards')}</Typography>
                                 <Typography variant="body2" sx={{ color: 'text.secondary', ml: 1 }}>{creditAccounts.length}</Typography>
                             </Box>
                             <Grid container spacing={3}>
                                 {creditAccounts.map(account => (
-                                    <Grid item xs={12} sm={6} lg={4} key={account.id}>
+                                    <Grid
+                                        key={account.id}
+                                        size={{
+                                            xs: 12,
+                                            sm: 6,
+                                            lg: 4
+                                        }}>
                                         <AccountCard
                                             account={account}
                                             isVaultLocked={isVaultLocked}
@@ -403,9 +420,11 @@ const AccountsView: React.FC = () => {
                                     </Grid>
                                 ))}
                                 {creditAccounts.length === 0 && (
-                                    <Grid item xs={12}>
+                                    <Grid size={12}>
                                         <Box sx={{ p: 4, textAlign: 'center', borderRadius: '24px', border: `1px dashed ${theme.palette.divider}` }}>
-                                            <Typography color="text.secondary">{t('accounts.noCreditCards')}</Typography>
+                                            <Typography sx={{
+                                                color: "text.secondary"
+                                            }}>{t('accounts.noCreditCards')}</Typography>
                                         </Box>
                                     </Grid>
                                 )}
@@ -414,21 +433,21 @@ const AccountsView: React.FC = () => {
                     </>
                 )}
             </Container>
-
             {/* Sync History Modal */}
             <SyncHistoryModal
                 isOpen={isHistoryOpen}
                 onClose={() => setIsHistoryOpen(false)}
             />
-
             {/* Add/Edit Modal */}
             <Dialog
                 open={isAdding || isEditing}
                 onClose={() => { setIsAdding(false); setIsEditing(false); }}
                 maxWidth="sm"
                 fullWidth
-                PaperProps={{
-                    sx: { borderRadius: '24px', p: 1 }
+                slotProps={{
+                    paper: {
+                        sx: { borderRadius: '24px', p: 1 }
+                    }
                 }}
             >
                 <DialogTitle sx={{ fontWeight: 700 }}>
@@ -534,12 +553,13 @@ const AccountsView: React.FC = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
-
             {/* Truncate Confirm Dialog */}
             <Dialog
                 open={truncateConfirm.isOpen}
                 onClose={() => setTruncateConfirm({ isOpen: false, account: null })}
-                PaperProps={{ sx: { borderRadius: '24px' } }}
+                slotProps={{
+                    paper: { sx: { borderRadius: '24px' } }
+                }}
             >
                 <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'error.main' }}>
                     <WarningAmberIcon />

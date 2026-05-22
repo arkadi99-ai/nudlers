@@ -113,13 +113,15 @@ export default function SyncHistoryModal({ isOpen, onClose }: SyncHistoryModalPr
             onClose={onClose}
             maxWidth="md"
             fullWidth
-            PaperProps={{
-                style: {
-                    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#ffffff',
-                    borderRadius: '24px',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                    height: '80vh',
-                    backgroundImage: theme.palette.mode === 'dark' ? 'linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05))' : 'none',
+            slotProps={{
+                paper: {
+                    style: {
+                        backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#ffffff',
+                        borderRadius: '24px',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                        height: '80vh',
+                        backgroundImage: theme.palette.mode === 'dark' ? 'linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05))' : 'none',
+                    }
                 }
             }}
         >

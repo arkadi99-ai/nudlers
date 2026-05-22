@@ -660,11 +660,13 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
             handleConfigChange('options.startDate', new Date(v));
           }
         }}
-        InputLabelProps={{
-          shrink: true,
-        }}
-        inputProps={{ max: todayStr }}
-      />
+        slotProps={{
+          htmlInput: { max: todayStr },
+
+          inputLabel: {
+            shrink: true,
+          }
+        }} />
 
       <Tooltip title={t('form.debugModeTooltip')}>
         <FormControlLabel
@@ -745,11 +747,13 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
             handleConfigChange('options.startDate', new Date(v));
           }
         }}
-        InputLabelProps={{
-          shrink: true,
-        }}
-        inputProps={{ max: todayStr }}
-      />
+        slotProps={{
+          htmlInput: { max: todayStr },
+
+          inputLabel: {
+            shrink: true,
+          }
+        }} />
 
       <Tooltip title={t('form.debugModeTooltip')}>
         <FormControlLabel
@@ -825,7 +829,6 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
             </Typography>
           </Box>
         </Box>
-
         <LinearProgress
           variant="determinate"
           value={progress?.percent || 0}
@@ -841,7 +844,6 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
             }
           }}
         />
-
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: stepHistory.length > 0 ? 2 : 0 }}>
           <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
             {Math.round(progress?.percent || 0)}%
@@ -858,7 +860,6 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
             </Typography>
           )}
         </Box>
-
         {/* Rate Limit / Retry Warning */}
         {rateLimitState && !scrapeResult && (
           <Fade in={true}>
@@ -894,7 +895,6 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
             </Box>
           </Fade>
         )}
-
         {/* Step History (Collapsible or scrollable) */}
         {stepHistory.length > 0 && !scrapeResult && (
           <Box sx={{
@@ -925,7 +925,6 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
             ))}
           </Box>
         )}
-
         {/* 2FA / OTP Input */}
         {otpRequired && (
           <Fade in={otpRequired}>
@@ -969,20 +968,22 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
                   disabled={otpSubmitting}
                   error={!!otpError}
                   helperText={otpError}
-                  inputProps={{
-                    maxLength: 8,
-                    style: {
-                      textAlign: 'center',
-                      fontSize: '1.3rem',
-                      fontWeight: 700,
-                      letterSpacing: '0.3em',
-                      fontFamily: 'monospace',
-                    }
-                  }}
                   sx={{
                     flex: 1,
                     '& .MuiOutlinedInput-root': {
                       backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.3)' : '#fff',
+                    }
+                  }}
+                  slotProps={{
+                    htmlInput: {
+                      maxLength: 8,
+                      style: {
+                        textAlign: 'center',
+                        fontSize: '1.3rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.3em',
+                        fontFamily: 'monospace',
+                      }
                     }
                   }}
                 />
@@ -1014,7 +1015,6 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
             </Box>
           </Fade>
         )}
-
         {/* Network Logs */}
         {networkLogs.length > 0 && !scrapeResult && (
           <Box sx={{
@@ -1059,7 +1059,6 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
             ))}
           </Box>
         )}
-
         {/* Screenshot Debug Tools */}
         {isLoading && !scrapeResult && (
           <Box sx={{ mt: 2, display: 'flex', gap: 1, justifyContent: 'center' }}>
@@ -1105,7 +1104,6 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
             )}
           </Box>
         )}
-
         {scrapeResult && (
           <Fade in={true}>
             <Box sx={{ mt: 3 }}>
@@ -1126,13 +1124,15 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
       onClose={handleClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{
-        style: {
-          background: 'var(--modal-backdrop)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '24px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-          border: `1px solid ${theme.palette.divider}`
+      slotProps={{
+        paper: {
+          style: {
+            background: 'var(--modal-backdrop)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '24px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+            border: `1px solid ${theme.palette.divider}`
+          }
         }
       }}
     >
@@ -1224,13 +1224,12 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
 
         {isLoading || scrapeResult ? (
           // Show progress view when scraping or after completion
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+          (<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
               {config.credentials.nickname
                 ? t('modal.scrapingVendorWithNickname', { vendor: config.options.companyId, nickname: config.credentials.nickname })
                 : t('modal.scrapingVendor', { vendor: config.options.companyId })}
             </Typography>
-
             {config.options.showBrowser && isLoading && (
               <Box sx={{
                 p: 2,
@@ -1257,20 +1256,19 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
                 </Box>
               </Box>
             )}
-
             {renderProgress()}
-          </Box>
+          </Box>)
         ) : (
           // Show form when not scraping
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+          (<Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
             {initialConfig ? renderExistingAccountForm() : renderNewScrapeForm()}
-          </Box>
+          </Box>)
         )}
       </DialogContent>
       <DialogActions style={{ padding: '16px 24px' }}>
         {scrapeResult ? (
           // Show done button after successful scrape
-          <Button
+          (<Button
             onClick={() => {
               onClose();
               onSuccess?.();
@@ -1286,12 +1284,12 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
             }}
           >
             {t('actions.done')}
-          </Button>
+          </Button>)
         ) : retryState?.canRetry ? (
           // Show only close button when in retry mode (retry options are in the error box)
-          <Button onClick={handleClose} style={{ color: theme.palette.text.secondary }}>
+          (<Button onClick={handleClose} style={{ color: theme.palette.text.secondary }}>
             {t('actions.close')}
-          </Button>
+          </Button>)
         ) : (
           <>
             <Button onClick={handleClose} style={{ color: theme.palette.text.secondary }}>
@@ -1317,17 +1315,18 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
           </>
         )}
       </DialogActions>
-
       {/* Manual Screenshot Viewer Dialog */}
       <Dialog
         open={!!selectedScreenshot}
         onClose={() => setSelectedScreenshot(null)}
         maxWidth="xl"
         fullWidth
-        PaperProps={{
-          sx: {
-            background: 'transparent',
-            boxShadow: 'none'
+        slotProps={{
+          paper: {
+            sx: {
+              background: 'transparent',
+              boxShadow: 'none'
+            }
           }
         }}
       >

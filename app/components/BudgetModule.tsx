@@ -463,7 +463,6 @@ const BudgetModule: React.FC<BudgetModuleProps> = ({ onViewTransactions }) => {
                     </Box>
                 </Box>
             </Box>
-
             <Collapse in={isExpanded}>
                 {/* Scrollable Container with explicit max-height */}
                 <Box
@@ -539,16 +538,17 @@ const BudgetModule: React.FC<BudgetModuleProps> = ({ onViewTransactions }) => {
                     </Box>
                 </Box>
             </Collapse>
-
             {/* Add/Edit Budget Modal */}
             <Dialog
                 open={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
-                PaperProps={{
-                    style: {
-                        borderRadius: '24px',
-                        padding: '8px',
-                        minWidth: '400px'
+                slotProps={{
+                    paper: {
+                        style: {
+                            borderRadius: '24px',
+                            padding: '8px',
+                            minWidth: '400px'
+                        }
                     }
                 }}
             >
@@ -618,10 +618,12 @@ const BudgetModule: React.FC<BudgetModuleProps> = ({ onViewTransactions }) => {
                             type="number"
                             value={newBudgetLimit}
                             onChange={(e) => setNewBudgetLimit(e.target.value)}
-                            InputProps={{
-                                startAdornment: <span style={{ marginRight: '4px' }}>₪</span>
-                            }}
                             variant="outlined"
+                            slotProps={{
+                                input: {
+                                    startAdornment: <span style={{ marginRight: '4px' }}>₪</span>
+                                }
+                            }}
                         />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>

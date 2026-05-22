@@ -435,9 +435,6 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
           select
           size="small"
           autoFocus={focusedField === 'vendor'}
-          SelectProps={{
-            defaultOpen: focusedField === 'vendor',
-          }}
           value={editValues.vendor}
           onClick={(e) => e.stopPropagation()}
           onChange={(e) => {
@@ -463,6 +460,11 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
             '& .MuiOutlinedInput-root': {
               borderRadius: '12px',
             },
+          }}
+          slotProps={{
+            select: {
+              defaultOpen: focusedField === 'vendor',
+            }
           }}
         >
           <MenuItem value="">
@@ -572,9 +574,6 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
             select
             size="small"
             autoFocus={focusedField === 'bankAccount'}
-            SelectProps={{
-              defaultOpen: focusedField === 'bankAccount',
-            }}
             value={editValues.bankAccountId !== null ? editValues.bankAccountId : ''}
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
@@ -602,6 +601,11 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
               '& .MuiOutlinedInput-root': {
                 borderRadius: '12px',
               },
+            }}
+            slotProps={{
+              select: {
+                defaultOpen: focusedField === 'bankAccount',
+              }
             }}
           >
             <MenuItem value="">
@@ -693,25 +697,27 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
         onClose={onClose}
         maxWidth="xl"
         fullWidth
-        PaperProps={{
-          style: {
-            background: theme.palette.mode === 'dark'
-              ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.background.default, 0.98)} 100%)`
-              : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '28px',
-            boxShadow: '0 24px 64px rgba(0, 0, 0, 0.15)',
-            border: `1px solid ${theme.palette.divider}`,
-            maxWidth: '1200px',
+        slotProps={{
+          backdrop: {
+            style: {
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              backdropFilter: 'blur(8px)',
+            },
           },
-        }}
-        BackdropProps={{
-          style: {
-            backgroundColor: 'rgba(0, 0, 0, 0.4)',
-            backdropFilter: 'blur(8px)',
-          },
-        }}
-      >
+
+          paper: {
+            style: {
+              background: theme.palette.mode === 'dark'
+                ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.background.default, 0.98)} 100%)`
+                : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '28px',
+              boxShadow: '0 24px 64px rgba(0, 0, 0, 0.15)',
+              border: `1px solid ${theme.palette.divider}`,
+              maxWidth: '1200px',
+            },
+          }
+        }}>
         <ModalHeader title={t('misc:cardVendors.title')} onClose={onClose} />
         <DialogContent style={{ padding: '0 32px 32px', color: theme.palette.text.primary }}>
           <Typography variant="body2" sx={{ mb: 3, color: theme.palette.text.secondary }}>
@@ -814,7 +820,9 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
                     {editingCard === card.last4_digits && (
                       <Box sx={{ borderTop: `1px solid ${theme.palette.divider}`, pt: 2, mt: 2 }}>
                         {/* Re-use edit fields for mobile if needed, or just show a message to use desktop */}
-                        <Typography variant="caption" color="warning.main">{t('misc:cardVendors.editingDesktopHint')}</Typography>
+                        <Typography variant="caption" sx={{
+                          color: "warning.main"
+                        }}>{t('misc:cardVendors.editingDesktopHint')}</Typography>
                       </Box>
                     )}
                   </Box>
@@ -825,7 +833,6 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
           }
         </DialogContent >
       </Dialog >
-
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

@@ -13,7 +13,7 @@ import { useCardVendors } from '../utils/useCardVendors';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import NotesIcon from '@mui/icons-material/Notes';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlined';
 import { CardVendorIcon } from '../../CardVendorsModal';
 import { getTableHeaderCellStyle, getTableBodyCellStyle, TABLE_ROW_HOVER_STYLE, getTableRowHoverBackground } from '../utils/tableStyles';
 import DeleteConfirmationDialog from '../../DeleteConfirmationDialog';
@@ -656,8 +656,19 @@ const TransactionMobileCardContent = ({
           </IconButton>
           <Box sx={{ ml: 1, minWidth: 0 }}>
             <Typography variant="subtitle2" noWrap sx={{ fontWeight: 700 }}>{transaction.name}</Typography>
-            {showDate && <Typography variant="caption" display="block" color="text.secondary">{dateUtils.formatDate(transaction.date)}</Typography>}
-            {transaction.notes && !showNoteInput && <Typography variant="caption" fontStyle="italic" color="text.secondary" display="block">{transaction.notes}</Typography>}
+            {showDate && <Typography
+              variant="caption"
+              sx={{
+                display: "block",
+                color: "text.secondary"
+              }}>{dateUtils.formatDate(transaction.date)}</Typography>}
+            {transaction.notes && !showNoteInput && <Typography
+              variant="caption"
+              sx={{
+                fontStyle: "italic",
+                color: "text.secondary",
+                display: "block"
+              }}>{transaction.notes}</Typography>}
           </Box>
         </Box>
         <Typography variant="subtitle2" sx={{ fontWeight: 800, color: transaction.price < 0 ? '#ef4444' : '#10b981' }}>

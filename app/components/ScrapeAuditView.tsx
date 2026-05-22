@@ -95,7 +95,6 @@ export default function ScrapeAuditView() {
                 icon={<HistoryIcon sx={{ fontSize: '32px', color: '#ffffff' }} />}
                 onRefresh={fetchEvents}
             />
-
             <Box sx={{ mb: 3 }}>
                 <Tabs
                     value={currentTab}
@@ -116,7 +115,6 @@ export default function ScrapeAuditView() {
                     <Tab label={t('audit.tabAuditHistory')} />
                 </Tabs>
             </Box>
-
             {/* Content Section */}
             <Box sx={{
                 background: theme.palette.mode === 'dark' ? 'rgba(30, 41, 59, 0.7)' : 'rgba(255, 255, 255, 0.95)',
@@ -132,7 +130,9 @@ export default function ScrapeAuditView() {
                     </Box>
                 ) : displayEvents.length === 0 ? (
                     <Box sx={{ p: 4, textAlign: 'center' }}>
-                        <Typography color="text.secondary">{currentTab === 0 ? t('audit.noScrapeEvents') : t('audit.noAuditEvents')}</Typography>
+                        <Typography sx={{
+                            color: "text.secondary"
+                        }}>{currentTab === 0 ? t('audit.noScrapeEvents') : t('audit.noAuditEvents')}</Typography>
                     </Box>
                 ) : (
                     <Table
@@ -199,7 +199,9 @@ export default function ScrapeAuditView() {
                         mobileCardRenderer={(row) => (
                             <Box>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                    <Typography variant="subtitle2" fontWeight={700}>{row.vendor}</Typography>
+                                    <Typography variant="subtitle2" sx={{
+                                        fontWeight: 700
+                                    }}>{row.vendor}</Typography>
                                     <Chip
                                         label={row.status === 'success' ? t('audit.success') : row.status === 'failed' ? t('audit.failed') : row.status === 'started' ? t('audit.running') : row.status}
                                         color={statusColor(row.status) as any}
@@ -208,8 +210,12 @@ export default function ScrapeAuditView() {
                                     />
                                 </Box>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Typography variant="caption" color="text.secondary">{new Date(row.created_at).toLocaleString(dateLocale)}</Typography>
-                                    <Typography variant="caption" color="text.secondary">{row.message || t('audit.emptyDash')}</Typography>
+                                    <Typography variant="caption" sx={{
+                                        color: "text.secondary"
+                                    }}>{new Date(row.created_at).toLocaleString(dateLocale)}</Typography>
+                                    <Typography variant="caption" sx={{
+                                        color: "text.secondary"
+                                    }}>{row.message || t('audit.emptyDash')}</Typography>
                                 </Box>
                                 {(row.report_json || row.message) && (
                                     <Typography variant="caption" color="primary" sx={{ mt: 1, display: 'block', fontWeight: 600 }}>

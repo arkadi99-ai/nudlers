@@ -372,7 +372,6 @@ const BreakdownView: React.FC = () => {
                 startDate={startDate}
                 endDate={endDate}
             />
-
             <Box sx={{
                 marginTop: '24px',
                 background: theme.palette.mode === 'dark' ? 'rgba(30, 41, 59, 0.4)' : 'rgba(255, 255, 255, 0.95)',
@@ -661,15 +660,21 @@ const BreakdownView: React.FC = () => {
                                             zIndex: 10,
                                             boxShadow: '0 -2px 10px rgba(0,0,0,0.05)'
                                         }}>
-                                            <TableCell style={tableBodyCellStyle}><Typography fontWeight={700}>{t('breakdown.totalLabel')}</Typography></TableCell>
+                                            <TableCell style={tableBodyCellStyle}><Typography sx={{
+                                                fontWeight: 700
+                                            }}>{t('breakdown.totalLabel')}</Typography></TableCell>
                                             <TableCell style={tableBodyCellStyle} />
                                             <TableCell align="center" style={tableBodyCellStyle}>
-                                                <Typography fontWeight={700} color="textSecondary">
+                                                <Typography color="textSecondary" sx={{
+                                                    fontWeight: 700
+                                                }}>
                                                     {totals.count}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="right" style={tableBodyCellStyle}>
-                                                <Typography fontWeight={700} color="primary">
+                                                <Typography color="primary" sx={{
+                                                    fontWeight: 700
+                                                }}>
                                                     {`${totals.amount >= 0 ? '+' : ''}₪${formatNumber(Math.abs(totals.amount))}`}
                                                 </Typography>
                                             </TableCell>
@@ -693,7 +698,6 @@ const BreakdownView: React.FC = () => {
                     </>
                 )}
             </Box>
-
             {modalData && (
                 <ExpensesModal
                     open={isModalOpen}
@@ -704,7 +708,6 @@ const BreakdownView: React.FC = () => {
                     currentMonth={dateRangeMode === "custom" ? `${customStartDate}` : `${selectedYear}-${selectedMonth}`}
                 />
             )}
-
             <Snackbar
                 open={snackbar.open}
                 autoHideDuration={5000}

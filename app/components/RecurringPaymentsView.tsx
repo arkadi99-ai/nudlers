@@ -372,7 +372,6 @@ const RecurringPaymentsView: React.FC = () => {
                 description={t('recurring.description')}
                 icon={<RepeatIcon sx={{ fontSize: '32px', color: '#ffffff' }} />}
             />
-
             <Box sx={{
                 borderRadius: '32px',
                 border: `1px solid ${theme.palette.divider}`,
@@ -552,7 +551,9 @@ const RecurringPaymentsView: React.FC = () => {
                                             return (
                                                 <Box>
                                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                                        <Typography variant="subtitle2" fontWeight={700}>{row.name}</Typography>
+                                                        <Typography variant="subtitle2" sx={{
+                                                            fontWeight: 700
+                                                        }}>{row.name}</Typography>
                                                         <Typography variant="subtitle2" sx={{ fontWeight: 800, color: theme.palette.primary.main }}>
                                                             ₪{formatNumber(row.price)}
                                                         </Typography>
@@ -575,10 +576,17 @@ const RecurringPaymentsView: React.FC = () => {
                                                             )}
                                                         </Box>
                                                         <Box sx={{ textAlign: 'right' }}>
-                                                            <Typography variant="caption" color="text.secondary" display="block">
+                                                            <Typography
+                                                                variant="caption"
+                                                                sx={{
+                                                                    color: "text.secondary",
+                                                                    display: "block"
+                                                                }}>
                                                                 {row.current_installment}/{row.total_installments}
                                                             </Typography>
-                                                            <Typography variant="caption" color="text.secondary">
+                                                            <Typography variant="caption" sx={{
+                                                                color: "text.secondary"
+                                                            }}>
                                                                 {row.next_payment_date ? formatDate(row.next_payment_date) : t('recurring.completed')}
                                                             </Typography>
                                                         </Box>
@@ -668,7 +676,9 @@ const RecurringPaymentsView: React.FC = () => {
                                             return (
                                                 <Box>
                                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                                        <Typography variant="subtitle2" fontWeight={700}>{row.name}</Typography>
+                                                        <Typography variant="subtitle2" sx={{
+                                                            fontWeight: 700
+                                                        }}>{row.name}</Typography>
                                                         <Typography variant="subtitle2" sx={{ fontWeight: 800, color: theme.palette.primary.main }}>
                                                             ₪{formatNumber(row.price)}
                                                         </Typography>
@@ -691,10 +701,17 @@ const RecurringPaymentsView: React.FC = () => {
                                                             )}
                                                         </Box>
                                                         <Box sx={{ textAlign: 'right' }}>
-                                                            <Typography variant="caption" color="text.secondary" display="block">
+                                                            <Typography
+                                                                variant="caption"
+                                                                sx={{
+                                                                    color: "text.secondary",
+                                                                    display: "block"
+                                                                }}>
                                                                 {t('recurring.monthsLabel', { count: row.month_count })}
                                                             </Typography>
-                                                            <Typography variant="caption" color="text.secondary">
+                                                            <Typography variant="caption" sx={{
+                                                                color: "text.secondary"
+                                                            }}>
                                                                 {t('recurring.lastLabel', { date: formatDate(row.last_charge_date) })}
                                                             </Typography>
                                                         </Box>
@@ -766,11 +783,19 @@ const RecurringPaymentsView: React.FC = () => {
                                         mobileCardRenderer={(row) => (
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                 <Box>
-                                                    <Typography variant="subtitle2" fontWeight={700}>{row.name}</Typography>
+                                                    <Typography variant="subtitle2" sx={{
+                                                        fontWeight: 700
+                                                    }}>{row.name}</Typography>
                                                     <Box sx={{ mt: 0.5 }}>
                                                         {renderAccountInfo(row as any)}
                                                     </Box>
-                                                    <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                                                    <Typography
+                                                        variant="caption"
+                                                        sx={{
+                                                            color: "text.secondary",
+                                                            display: "block",
+                                                            mt: 0.5
+                                                        }}>
                                                         {t('recurring.disabledLabel', { date: formatDate(row.created_at) })}
                                                     </Typography>
                                                 </Box>
@@ -798,7 +823,6 @@ const RecurringPaymentsView: React.FC = () => {
                     )}
                 </Box>
             </Box>
-
             <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
                 <Alert severity={snackbar.severity} sx={{ borderRadius: '12px', fontWeight: 600 }}>{snackbar.message}</Alert>
             </Snackbar>

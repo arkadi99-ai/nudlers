@@ -173,7 +173,6 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
                 icon={<TimelineIcon sx={{ fontSize: 32 }} className="gradient-text" />}
                 onRefresh={onRefresh}
             />
-
             <Box sx={{
                 display: 'flex',
                 flexDirection: { xs: 'column', md: 'row' },
@@ -287,9 +286,7 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
                                             scale: '0.6',
                                         }
                                     }}
-                                    slotProps={{
-                                        legend: { hidden: true }
-                                    }}
+                                    hideLegend
                                 >
                                     <defs>
                                         <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
@@ -433,7 +430,6 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
                     </Box>
                 </Box>
             </Box>
-
             <Snackbar
                 open={snackbar.open}
                 autoHideDuration={4000}
@@ -444,14 +440,15 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
                     {snackbar.message}
                 </Alert>
             </Snackbar>
-
             {/* Add Recurring Dialog */}
             <Dialog
                 open={isAddDialogOpen}
                 onClose={() => setIsAddDialogOpen(false)}
-                PaperProps={{
-                    className: 'n-glass',
-                    sx: { borderRadius: '24px', width: { xs: '100%', sm: '400px' }, maxWidth: '100%', m: 2 }
+                slotProps={{
+                    paper: {
+                        className: 'n-glass',
+                        sx: { borderRadius: '24px', width: { xs: '100%', sm: '400px' }, maxWidth: '100%', m: 2 }
+                    }
                 }}
             >
                 <DialogTitle sx={{ fontWeight: 800 }}>{t('projection.dialogTitle')}</DialogTitle>
@@ -501,9 +498,11 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
                             type="number"
                             fullWidth
                             variant="outlined"
-                            inputProps={{ min: 1, max: 31 }}
                             value={newRecurring.day_of_month}
                             onChange={(e) => setNewRecurring(prev => ({ ...prev, day_of_month: parseInt(e.target.value) || 1 }))}
+                            slotProps={{
+                                htmlInput: { min: 1, max: 31 }
+                            }}
                         />
                     </Box>
                 </DialogContent>

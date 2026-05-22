@@ -1127,8 +1127,6 @@ const MonthlySummary: React.FC = () => {
       overflow: 'hidden'
     }}>
       {/* Background elements removed - handled by Layout.tsx */}
-
-
       {/* Main content container */}
       <Box sx={{
         padding: { xs: '12px 8px', sm: '16px 12px', md: '24px 16px' },
@@ -1653,15 +1651,17 @@ const MonthlySummary: React.FC = () => {
               anchorEl={vendorMenuAnchor}
               open={Boolean(vendorMenuAnchor)}
               onClose={handleVendorMenuClose}
-              PaperProps={{
-                sx: {
-                  borderRadius: '16px',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                  minWidth: '240px',
-                  maxHeight: '500px',
-                  background: theme.palette.mode === 'dark' ? 'rgba(30, 41, 59, 0.95)' : undefined,
-                  backdropFilter: 'blur(10px)',
-                  border: `1px solid ${theme.palette.divider}`
+              slotProps={{
+                paper: {
+                  sx: {
+                    borderRadius: '16px',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+                    minWidth: '240px',
+                    maxHeight: '500px',
+                    background: theme.palette.mode === 'dark' ? 'rgba(30, 41, 59, 0.95)' : undefined,
+                    backdropFilter: 'blur(10px)',
+                    border: `1px solid ${theme.palette.divider}`
+                  }
                 }
               }}
             >
@@ -1683,27 +1683,29 @@ const MonthlySummary: React.FC = () => {
                     e.stopPropagation();
                   }}
                   onClick={(e) => e.stopPropagation()}
-                  InputProps={{
-                    endAdornment: editingNickname !== (cardNicknameMap[selectedCardForVendor || ''] || '') && (
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (selectedCardForVendor) {
-                            handleNicknameSave(selectedCardForVendor, editingNickname);
-                          }
-                        }}
-                        sx={{ color: '#10b981' }}
-                      >
-                        <CheckIcon sx={{ fontSize: '18px' }} />
-                      </IconButton>
-                    )
-                  }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: '10px',
                       backgroundColor: theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.5)' : '#f8fafc',
                       color: 'text.primary'
+                    }
+                  }}
+                  slotProps={{
+                    input: {
+                      endAdornment: editingNickname !== (cardNicknameMap[selectedCardForVendor || ''] || '') && (
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (selectedCardForVendor) {
+                              handleNicknameSave(selectedCardForVendor, editingNickname);
+                            }
+                          }}
+                          sx={{ color: '#10b981' }}
+                        >
+                          <CheckIcon sx={{ fontSize: '18px' }} />
+                        </IconButton>
+                      )
                     }
                   }}
                 />
@@ -1746,7 +1748,11 @@ const MonthlySummary: React.FC = () => {
             }}>
               <Grid container spacing={3}>
                 {/* Left Side: Budget Module */}
-                <Grid item xs={12} md={6}>
+                <Grid
+                  size={{
+                    xs: 12,
+                    md: 6
+                  }}>
                   <BudgetModule onViewTransactions={async (category) => {
                     try {
                       let queryParams = `category=${encodeURIComponent(category)}`;
@@ -1774,7 +1780,11 @@ const MonthlySummary: React.FC = () => {
                 </Grid>
 
                 {/* Right Side: Recent Transactions Module */}
-                <Grid item xs={12} md={6}>
+                <Grid
+                  size={{
+                    xs: 12,
+                    md: 6
+                  }}>
                   <RecentTransactionsModule />
                 </Grid>
               </Grid>

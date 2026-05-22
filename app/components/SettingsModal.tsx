@@ -158,7 +158,7 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   },
 }));
 
-const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
+const StyledAutocomplete = styled(Autocomplete<string, true, false, true>)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
     padding: '4px 8px',
     backgroundColor: theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.3)' : 'transparent',
@@ -637,7 +637,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                   onChange={(e) => setSettings({ ...settings, sync_hour: parseInt(e.target.value) || 0 })}
                   size="small"
                   sx={{ width: '100px' }}
-                  inputProps={{ min: 0, max: 23 }}
+                  slotProps={{ htmlInput: { min: 0, max: 23 }}}
                 />
               </SettingRow>
 
@@ -656,7 +656,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                   onChange={(e) => setSettings({ ...settings, sync_days_back: parseInt(e.target.value) || 30 })}
                   size="small"
                   sx={{ width: '100px' }}
-                  inputProps={{ min: 1, max: 365 }}
+                  slotProps={{ htmlInput: { min: 1, max: 365 }}}
                 />
               </SettingRow>
             </SettingSection>
@@ -684,7 +684,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                   onChange={(e) => setSettings({ ...settings, default_currency: e.target.value.toUpperCase() })}
                   size="small"
                   sx={{ width: '100px' }}
-                  inputProps={{ maxLength: 3 }}
+                  slotProps={{ htmlInput: { maxLength: 3 }}}
                 />
               </SettingRow>
 
@@ -720,7 +720,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                   onChange={(e) => setSettings({ ...settings, billing_cycle_start_day: parseInt(e.target.value) || 10 })}
                   size="small"
                   sx={{ width: '100px' }}
-                  inputProps={{ min: 1, max: 28 }}
+                  slotProps={{ htmlInput: { min: 1, max: 28 }}}
                 />
               </SettingRow>
             </SettingSection>
@@ -781,7 +781,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                   onChange={(e) => setSettings({ ...settings, scrape_retries: parseInt(e.target.value) || 0 })}
                   size="small"
                   sx={{ width: '100px' }}
-                  inputProps={{ min: 0, max: 10 }}
+                  slotProps={{ htmlInput: { min: 0, max: 10 }}}
                 />
               </SettingRow>
 
@@ -800,7 +800,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                   onChange={(e) => setSettings({ ...settings, scraper_timeout: parseInt(e.target.value) || 90 })}
                   size="small"
                   sx={{ width: '120px' }}
-                  inputProps={{ min: 1, step: 1 }}
+                  slotProps={{ htmlInput: { min: 1, step: 1 }}}
                 />
               </SettingRow>
 
@@ -1175,7 +1175,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                   onChange={(e) => setSettings({ ...settings, whatsapp_hour: parseInt(e.target.value) || 8 })}
                   size="small"
                   sx={{ width: '100px' }}
-                  inputProps={{ min: 0, max: 23 }}
+                  slotProps={{ htmlInput: { min: 0, max: 23 }}}
                 />
               </SettingRow>
 
@@ -1198,15 +1198,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                   <StyledAutocomplete
                     multiple
                     freeSolo
-                    options={[]} // No pre-defined options
+                    options={[] as string[]} // No pre-defined options
                     value={(settings.whatsapp_to || '').split(',').map(s => s.trim()).filter(Boolean)}
                     onChange={(_, newValue) => {
                       const tags = newValue as string[];
                       setSettings({ ...settings, whatsapp_to: tags.join(',') });
                     }}
-                    renderTags={(value: unknown[], getTagProps) =>
-                      (value as string[]).map((option: string, index: number) => {
-                        const { key, ...tagProps } = getTagProps({ index });
+                    renderValue={(value, getItemProps) =>
+                      value.map((option: string, index: number) => {
+                        const { key, ...tagProps } = getItemProps({ index });
                         return (
                           <Chip
                             key={key}
@@ -1374,15 +1374,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                   <StyledAutocomplete
                     multiple
                     freeSolo
-                    options={[]}
+                    options={[] as string[]}
                     value={(settings.telegram_to || '').split(',').map(s => s.trim()).filter(Boolean)}
                     onChange={(_, newValue) => {
                       const tags = newValue as string[];
                       setSettings({ ...settings, telegram_to: tags.join(',') });
                     }}
-                    renderTags={(value: unknown[], getTagProps) =>
-                      (value as string[]).map((option: string, index: number) => {
-                        const { key, ...tagProps } = getTagProps({ index });
+                    renderValue={(value, getItemProps) =>
+                      value.map((option: string, index: number) => {
+                        const { key, ...tagProps } = getItemProps({ index });
                         return (
                           <Chip key={key} label={option} {...tagProps} deleteIcon={<CloseIcon />} />
                         );

@@ -408,7 +408,6 @@ const BudgetDashboard: React.FC = () => {
           zIndex: 0
         }} />
       </Box>
-
       <Box sx={{
         padding: { xs: '12px 8px', sm: '16px 12px', md: '24px 16px' },
         maxWidth: '1440px',
@@ -741,16 +740,17 @@ const BudgetDashboard: React.FC = () => {
           </>
         )}
       </Box>
-
       {/* Add/Edit Budget Modal */}
       <Dialog
         open={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        PaperProps={{
-          style: {
-            borderRadius: '24px',
-            padding: '8px',
-            minWidth: '400px'
+        slotProps={{
+          paper: {
+            style: {
+              borderRadius: '24px',
+              padding: '8px',
+              minWidth: '400px'
+            }
           }
         }}
       >
@@ -840,8 +840,10 @@ const BudgetDashboard: React.FC = () => {
               value={newBudgetLimit}
               onChange={(e) => setNewBudgetLimit(e.target.value)}
               fullWidth
-              InputProps={{
-                startAdornment: <span style={{ color: theme.palette.text.secondary, marginRight: '8px' }}>₪</span>
+              slotProps={{
+                input: {
+                  startAdornment: <span style={{ color: theme.palette.text.secondary, marginRight: '8px' }}>₪</span>
+                }
               }}
             />
             <div style={{
@@ -878,16 +880,17 @@ const BudgetDashboard: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* Total Spend Budget Modal */}
       <Dialog
         open={isTotalBudgetModalOpen}
         onClose={() => setIsTotalBudgetModalOpen(false)}
-        PaperProps={{
-          style: {
-            borderRadius: '24px',
-            padding: '8px',
-            minWidth: '400px'
+        slotProps={{
+          paper: {
+            style: {
+              borderRadius: '24px',
+              padding: '8px',
+              minWidth: '400px'
+            }
           }
         }}
       >
@@ -919,10 +922,12 @@ const BudgetDashboard: React.FC = () => {
               onChange={(e) => setNewTotalBudgetLimit(e.target.value)}
               fullWidth
               autoFocus
-              InputProps={{
-                startAdornment: <span style={{ color: theme.palette.text.secondary, marginRight: '8px' }}>₪</span>
-              }}
               helperText={t('budget.totalLimitHelper')}
+              slotProps={{
+                input: {
+                  startAdornment: <span style={{ color: theme.palette.text.secondary, marginRight: '8px' }}>₪</span>
+                }
+              }}
             />
             <div style={{
               background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)',

@@ -1256,7 +1256,6 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
           </Tooltip>
         </Box>
       </Box>
-
       {/* Content */}
       <Box sx={{ p: 2, overflowY: 'auto', flex: 1 }}>
         {pendingSyncRequest && !isSyncing && !showReport ? (
@@ -1819,17 +1818,18 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
           </>
         )}
       </Box>
-
       {/* Screenshot Overlay Viewer */}
       <Dialog
         open={!!selectedScreenshot}
         onClose={() => setSelectedScreenshot(null)}
         maxWidth="xl"
         fullWidth
-        PaperProps={{
-          sx: {
-            background: 'transparent',
-            boxShadow: 'none'
+        slotProps={{
+          paper: {
+            sx: {
+              background: 'transparent',
+              boxShadow: 'none'
+            }
           }
         }}
       >
@@ -1862,21 +1862,22 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
           )}
         </DialogContent>
       </Dialog>
-
       {/* Error Details Modal */}
       <Dialog
         open={!!selectedErrorEvent}
         onClose={() => setSelectedErrorEvent(null)}
         maxWidth="sm"
         fullWidth
-        PaperProps={{
-          sx: {
-            background: theme.palette.mode === 'dark'
-              ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%)'
-              : 'rgba(255, 255, 255, 0.98)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '12px',
-            border: '1px solid rgba(239, 68, 68, 0.3)'
+        slotProps={{
+          paper: {
+            sx: {
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%)'
+                : 'rgba(255, 255, 255, 0.98)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '12px',
+              border: '1px solid rgba(239, 68, 68, 0.3)'
+            }
           }
         }}
       >

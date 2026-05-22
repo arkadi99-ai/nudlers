@@ -136,7 +136,9 @@ const paymentColumns: Column<Payment>[] = [
                     </Box>
                 </Box>
             ) : (
-                <Typography variant="caption" color="text.secondary">Monthly</Typography>
+                <Typography variant="caption" sx={{
+                    color: "text.secondary"
+                }}>Monthly</Typography>
             )
         )
     },
@@ -203,13 +205,19 @@ export const MobileView: Story = {
         mobileCardRenderer: (row: any) => (
             <Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="subtitle2" fontWeight={700}>{row.desc}</Typography>
-                    <Typography variant="subtitle2" fontWeight={700} color={row.amount > 0 ? 'success.main' : row.amount < 0 ? 'error.main' : 'text.primary'}>
+                    <Typography variant="subtitle2" sx={{
+                        fontWeight: 700
+                    }}>{row.desc}</Typography>
+                    <Typography variant="subtitle2" color={row.amount > 0 ? 'success.main' : row.amount < 0 ? 'error.main' : 'text.primary'} sx={{
+                        fontWeight: 700
+                    }}>
                         {row.amount < 0 ? `-₪${Math.abs(row.amount)}` : `₪${row.amount}`}
                     </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="caption" color="text.secondary">{row.date}</Typography>
+                    <Typography variant="caption" sx={{
+                        color: "text.secondary"
+                    }}>{row.date}</Typography>
                     <Box sx={{
                         px: 1.5, py: 0.5,
                         borderRadius: '999px',

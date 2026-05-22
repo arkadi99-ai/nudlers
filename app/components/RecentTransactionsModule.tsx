@@ -105,7 +105,6 @@ const RecentTransactionsModule: React.FC = () => {
                     </Typography>
                 )}
             </Box>
-
             <Box
                 onScroll={handleScroll}
                 sx={{
@@ -164,7 +163,9 @@ const RecentTransactionsModule: React.FC = () => {
                         )}
                         {!hasMore && transactions.length > PAGE_SIZE && (
                             <Box sx={{ p: 2, textAlign: 'center' }}>
-                                <Typography variant="caption" color="text.secondary">
+                                <Typography variant="caption" sx={{
+                                    color: "text.secondary"
+                                }}>
                                     {t('recentTransactions.endOfList')}
                                 </Typography>
                             </Box>

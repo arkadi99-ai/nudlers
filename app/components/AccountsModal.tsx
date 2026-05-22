@@ -25,7 +25,7 @@ import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import SyncIcon from '@mui/icons-material/Sync';
-import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
+import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutlined';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import CloseIcon from '@mui/icons-material/Close';
@@ -576,10 +576,12 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
                               height: '24px',
                             },
                           }}
-                          SelectProps={{
-                            native: true,
-                          }}
                           onClick={(e) => e.stopPropagation()}
+                          slotProps={{
+                            select: {
+                              native: true,
+                            }
+                          }}
                         >
                           <option value="">{t('accounts.table.noBankAccount')}</option>
                           {getBankAccounts().map((bankAccount) => (
@@ -820,14 +822,26 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
         mobileCardRenderer={(account) => (
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant="subtitle2" fontWeight={700}>{account.nickname}</Typography>
+              <Typography variant="subtitle2" sx={{
+                fontWeight: 700
+              }}>{account.nickname}</Typography>
               <Chip label={account.vendor} size="small" variant="outlined" />
             </Box>
             <Box sx={{ mb: 1 }}>
-              <Typography variant="caption" display="block" color="text.secondary">
+              <Typography
+                variant="caption"
+                sx={{
+                  display: "block",
+                  color: "text.secondary"
+                }}>
                 {type === 'bank' ? `${t('accounts.table.username')}: ` : `${t('accounts.table.idNumber')}: `} {account.username || account.id_number || '-'}
               </Typography>
-              <Typography variant="caption" display="block" color="text.secondary">
+              <Typography
+                variant="caption"
+                sx={{
+                  display: "block",
+                  color: "text.secondary"
+                }}>
                 {type === 'bank' ? `${t('accounts.table.accountNumber')}: ` : `${t('accounts.table.cardLastDigits')}: `} {type === 'bank' ? (account.bank_account_number || '-') : (account.card6_digits || '-')}
               </Typography>
             </Box>
@@ -867,24 +881,26 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
         }}
         maxWidth="md"
         fullWidth
-        PaperProps={{
-          style: {
-            background: theme.palette.mode === 'dark'
-              ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.background.default, 0.98)} 100%)`
-              : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '28px',
-            boxShadow: '0 24px 64px rgba(0, 0, 0, 0.15)',
-            border: `1px solid ${theme.palette.divider}`
+        slotProps={{
+          backdrop: {
+            style: {
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              backdropFilter: 'blur(8px)'
+            }
+          },
+
+          paper: {
+            style: {
+              background: theme.palette.mode === 'dark'
+                ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.background.default, 0.98)} 100%)`
+                : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '28px',
+              boxShadow: '0 24px 64px rgba(0, 0, 0, 0.15)',
+              border: `1px solid ${theme.palette.divider}`
+            }
           }
-        }}
-        BackdropProps={{
-          style: {
-            backgroundColor: 'rgba(0, 0, 0, 0.4)',
-            backdropFilter: 'blur(8px)'
-          }
-        }}
-      >
+        }}>
         <ModalHeader
           title={isEditing ? t('accounts.editAccount') : t('accounts.title')}
           onClose={() => {
@@ -1138,20 +1154,20 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
           credentialId: selectedAccount.id
         } : undefined}
       />
-
       <SyncHistoryModal
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
       />
-
       {/* Truncate Confirmation Dialog */}
       <Dialog
         open={truncateConfirm.isOpen}
         onClose={handleTruncateCancel}
-        PaperProps={{
-          style: {
-            borderRadius: '16px',
-            padding: '8px',
+        slotProps={{
+          paper: {
+            style: {
+              borderRadius: '16px',
+              padding: '8px',
+            }
           }
         }}
       >
