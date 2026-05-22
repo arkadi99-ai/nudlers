@@ -25,7 +25,7 @@ import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import SyncIcon from '@mui/icons-material/Sync';
-import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutlined';
+import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutlineOutlined';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import CloseIcon from '@mui/icons-material/Close';

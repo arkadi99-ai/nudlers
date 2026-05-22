@@ -92,7 +92,8 @@ export function useTransactions() {
         setLoadingMore(false);
       }
     }
-  }, [selectedYear, selectedMonth, sortBy, sortOrder, favoritesOnly, transactions.length]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- transactions.length is intentionally excluded; including it would cause a refetch loop after every page append
+  }, [selectedYear, selectedMonth, sortBy, sortOrder, favoritesOnly]);
 
   const handleSearch = React.useCallback(async (e?: React.FormEvent, isLoadMore: boolean = false) => {
     e?.preventDefault();
@@ -154,13 +155,13 @@ export function useTransactions() {
       }
       setIsSearching(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- transactions.length is intentionally excluded; including it would cause a refetch loop after every page append
   }, [
     searchQuery, startDate, endDate, billingCycle,
     fetchTransactionsWithRange, dateRangeMode,
     customStartDate, customEndDate,
     selectedYear, selectedMonth,
-    sortBy, sortOrder, favoritesOnly, showNotification,
-    transactions.length
+    sortBy, sortOrder, favoritesOnly, showNotification
   ]);
 
   const handleSort = (field: string) => {

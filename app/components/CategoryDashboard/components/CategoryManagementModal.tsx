@@ -33,7 +33,7 @@ import FlashOnIcon from '@mui/icons-material/FlashOn';
 import CheckIcon from '@mui/icons-material/Check';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutlined';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutlineOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import { useCategoryColors } from '../utils/categoryUtils';
 import ModalHeader from '../../ModalHeader';
