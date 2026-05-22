@@ -19,7 +19,7 @@ import {
   useTheme,
   alpha
 } from '@mui/material';
-import Table from './Table';
+import Table, { Column } from './Table';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import AddIcon from '@mui/icons-material/Add';
@@ -535,11 +535,11 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
       );
     }
 
-    const columns = [
+    const columns: Column<Account>[] = [
       {
         id: 'nickname',
         label: t('accounts.table.nickname'),
-        format: (_: any, account: Account) => (
+        format: (_: unknown, account: Account) => (
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Typography variant="body2" sx={{ fontWeight: 600 }}>{account.nickname}</Typography>
@@ -712,12 +712,12 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
       {
         id: 'username',
         label: type === 'bank' ? t('accounts.table.username') : t('accounts.table.idNumber'),
-        format: (_: any, account: Account) => account.username || account.id_number || '-'
+        format: (_: unknown, account: Account) => account.username || account.id_number || '-'
       },
       {
         id: 'identifier',
         label: type === 'bank' ? t('accounts.table.accountNumber') : t('accounts.table.cardLastDigits'),
-        format: (_: any, account: Account) => type === 'bank' ? (account.bank_account_number || '-') : (account.card6_digits || '-')
+        format: (_: unknown, account: Account) => type === 'bank' ? (account.bank_account_number || '-') : (account.card6_digits || '-')
       },
       {
         id: 'last_synced_at',
@@ -752,7 +752,7 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
         id: 'actions',
         label: t('accounts.table.actions'),
         align: 'right',
-        format: (_: any, account: Account) => (
+        format: (_: unknown, account: Account) => (
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
             <Tooltip title={t('accounts.table.editAccount')}>
               <IconButton
@@ -817,7 +817,7 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
     return (
       <Table
         rows={accounts}
-        columns={columns as any}
+        columns={columns}
         rowKey={(row) => row.id}
         emptyMessage={type === 'bank' ? t('accounts.noBankAccountsTable') : t('accounts.noCreditCardsTable')}
         mobileCardRenderer={(account) => (

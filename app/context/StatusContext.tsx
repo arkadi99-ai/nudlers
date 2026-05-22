@@ -163,7 +163,7 @@ export const StatusProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 const data = await response.json();
                 // Filter out non-sync events from history if they exist
                 if (data.history) {
-                    data.history = data.history.filter((e: any) => e.vendor !== 'whatsapp_summary');
+                    data.history = data.history.filter((e: { vendor: string }) => e.vendor !== 'whatsapp_summary');
                 }
                 setSyncStatus(data);
             }

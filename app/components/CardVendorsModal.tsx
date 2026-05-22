@@ -159,6 +159,7 @@ export const CardVendorIcon: React.FC<{ vendor: string | null; size?: number }> 
         boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
       }}
     >
+      {/* eslint-disable-next-line @next/next/no-img-element -- onError swaps the broken image for an inline span fallback; next/image can't model that */}
       <img
         src={vendorConfig.logo}
         alt={vendorConfig.name}
@@ -233,7 +234,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
       const response = await fetch('/api/credentials');
       if (response.ok) {
         const data = await response.json();
-        const banks = data.filter((acc: any) =>
+        const banks = data.filter((acc: { vendor: string }) =>
           ['hapoalim', 'leumi', 'mizrahi', 'discount', 'yahav', 'union', 'otsarHahayal', 'beinleumi', 'massad', 'pagi'].includes(acc.vendor)
         );
         setBankAccounts(banks);
@@ -340,7 +341,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
       const card = cards.find(c => c.last4_digits === last4_digits);
 
       if (card?.card_ownership_id) {
-        const payload: any = {};
+        const payload: Record<string, unknown> = {};
 
         if (values.bankAccountId === -1) {
           if (!values.customBankNumber?.trim() && !values.customBankNickname?.trim()) {
@@ -397,7 +398,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
     {
       id: 'card',
       label: t('misc:cardVendors.columns.card'),
-      format: (_: any, card: CardData) => (
+      format: (_: unknown, card: CardData) => (
         <CardChip>
           <CardVendorIcon vendor={card.card_vendor} size={28} />
           •••• {card.last4_digits}
@@ -407,7 +408,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
     {
       id: 'transactions',
       label: t('misc:cardVendors.columns.transactions'),
-      format: (_: any, card: CardData) => (
+      format: (_: unknown, card: CardData) => (
         <Typography
           sx={{
             backgroundColor: 'rgba(99, 102, 241, 0.1)',
@@ -427,7 +428,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
       id: 'vendor',
       label: t('misc:cardVendors.columns.vendor'),
       minWidth: '200px',
-      format: (_: any, card: CardData) => editingCard === card.last4_digits ? (
+      format: (_: unknown, card: CardData) => editingCard === card.last4_digits ? (
         <TextField
           key={`vendor-edit-${card.last4_digits}`}
           className={`edit-group-${card.last4_digits}`}
@@ -506,7 +507,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
     {
       id: 'nickname',
       label: t('misc:cardVendors.columns.nickname'),
-      format: (_: any, card: CardData) => editingCard === card.last4_digits ? (
+      format: (_: unknown, card: CardData) => editingCard === card.last4_digits ? (
         <TextField
           key={`nickname-edit-${card.last4_digits}`}
           className={`edit-group-${card.last4_digits}`}
@@ -565,7 +566,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
       id: 'bankAccount',
       label: t('misc:cardVendors.columns.bankAccount'),
       minWidth: '200px',
-      format: (_: any, card: CardData) => editingCard === card.last4_digits ? (
+      format: (_: unknown, card: CardData) => editingCard === card.last4_digits ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <TextField
             key={`bank-edit-${card.last4_digits}`}

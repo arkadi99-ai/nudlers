@@ -244,7 +244,7 @@ const RecurringPaymentsView: React.FC = () => {
     };
 
     const handleRecurringSort = (field: string) => {
-        const sortField = field === 'price' ? 'amount' : field as any;
+        const sortField: typeof recurringSortBy = field === 'price' ? 'amount' : (field as typeof recurringSortBy);
         if (recurringSortBy === sortField) {
             setRecurringSortOrder(recurringSortOrder === 'desc' ? 'asc' : 'desc');
         } else {
@@ -254,7 +254,7 @@ const RecurringPaymentsView: React.FC = () => {
     };
 
     const handleInstallmentSort = (field: string) => {
-        const sortField = field === 'price' ? 'amount' : field as any;
+        const sortField: typeof installmentSortBy = field === 'price' ? 'amount' : (field as typeof installmentSortBy);
         if (installmentSortBy === sortField) {
             setInstallmentSortOrder(installmentSortOrder === 'desc' ? 'asc' : 'desc');
         } else {
@@ -290,7 +290,7 @@ const RecurringPaymentsView: React.FC = () => {
             if (editCategory && !categories.includes(editCategory)) {
                 setCategories(prev => [...prev, editCategory].sort());
             }
-            const updateItem = (item: any) => ({ ...item, category: editCategory });
+            const updateItem = <T,>(item: T): T => ({ ...item, category: editCategory });
             if (editingItem.type === 'installment') {
                 const newInstallments = [...installments];
                 newInstallments[editingItem.index] = updateItem(newInstallments[editingItem.index]);
@@ -760,7 +760,7 @@ const RecurringPaymentsView: React.FC = () => {
                                             {
                                                 id: 'account_number',
                                                 label: t('recurring.columnAccount'),
-                                                format: (_, row) => renderAccountInfo(row as any)
+                                                format: (_, row) => renderAccountInfo(row)
                                             },
                                             {
                                                 id: 'created_at',
@@ -787,7 +787,7 @@ const RecurringPaymentsView: React.FC = () => {
                                                         fontWeight: 700
                                                     }}>{row.name}</Typography>
                                                     <Box sx={{ mt: 0.5 }}>
-                                                        {renderAccountInfo(row as any)}
+                                                        {renderAccountInfo(row)}
                                                     </Box>
                                                     <Typography
                                                         variant="caption"

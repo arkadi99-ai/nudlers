@@ -37,7 +37,7 @@ interface NewRecurringState {
 interface ProjectionViewContentProps {
     loading: boolean;
     data: ProjectionData[];
-    accounts: any[];
+    accounts: Array<{ id?: number; account_number: string; nickname?: string; credential_id?: number; balance?: number }>;
     selectedAccount: string | 'total';
     setSelectedAccount: (val: string | 'total') => void;
     categories: string[];
@@ -309,7 +309,7 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
                                 {accounts.map(acc => (
                                     <Box key={acc.account_number} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main' }} />
-                                        <Typography variant="caption" sx={{ fontWeight: 700 }}>{formatCurrency(acc.balance)}</Typography>
+                                        <Typography variant="caption" sx={{ fontWeight: 700 }}>{formatCurrency(acc.balance ?? 0)}</Typography>
                                     </Box>
                                 ))}
                             </Box>
@@ -386,7 +386,7 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
                                                     <Box sx={{ flexGrow: 1 }}>
                                                         <Typography variant="body2" sx={{ fontWeight: 700 }}>
                                                             {br.name}
-                                                            {(br as any).is_manual && <Chip label={t('projection.manualBadge')} size="small" sx={{ height: 16, fontSize: '9px', ml: 1, bgcolor: 'secondary.main', color: 'white' }} />}
+                                                            {(br as { is_manual?: boolean }).is_manual && <Chip label={t('projection.manualBadge')} size="small" sx={{ height: 16, fontSize: '9px', ml: 1, bgcolor: 'secondary.main', color: 'white' }} />}
                                                         </Typography>
                                                         <Typography variant="caption" sx={{ color: 'text.secondary' }}>{t('projection.standardRecurring')}</Typography>
                                                     </Box>
@@ -525,7 +525,7 @@ const ProjectionView: React.FC = () => {
     const { t } = useTranslation('views');
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<ProjectionData[]>([]);
-    const [accounts, setAccounts] = useState<any[]>([]);
+    const [accounts, setAccounts] = useState<ProjectionViewContentProps['accounts']>([]);
     const [selectedAccount, setSelectedAccount] = useState<string | 'total'>('total');
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [categories, setCategories] = useState<string[]>([]);
@@ -603,7 +603,7 @@ const ProjectionView: React.FC = () => {
             const res = await fetch('/api/categories');
             const result = await res.json();
             if (Array.isArray(result)) {
-                setCategories(result.map((c: any) => c.name || c));
+                setCategories(result.map((c: { name?: string } | string) => (typeof c === 'string' ? c : c.name || '')));
             }
         } catch (err) {
             console.error('Failed to fetch categories', err);

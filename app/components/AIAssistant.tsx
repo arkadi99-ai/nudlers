@@ -156,7 +156,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ screenContext }) => {
       const response = await fetch(`/api/chat/messages?sessionId=${sessionId}`);
       if (response.ok) {
         const data = await response.json();
-        setMessages(data.map((m: any) => ({
+        setMessages(data.map((m: { timestamp: string;[key: string]: unknown }) => ({
           ...m,
           timestamp: new Date(m.timestamp),
           status: 'complete'

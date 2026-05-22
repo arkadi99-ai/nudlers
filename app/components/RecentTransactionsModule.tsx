@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, CircularProgress, useTheme } from '@mui/material';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import TransactionsTable from './CategoryDashboard/components/TransactionsTable';
+import TransactionsTable, { Transaction } from './CategoryDashboard/components/TransactionsTable';
 import { useDateSelection } from '../context/DateSelectionContext';
 import { logger } from '../utils/client-logger';
 import { useTranslation } from 'react-i18next';
@@ -17,7 +17,7 @@ const RecentTransactionsModule: React.FC = () => {
         billingCycle
     } = useDateSelection();
 
-    const [transactions, setTransactions] = useState<any[]>([]);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [page, setPage] = useState(0);

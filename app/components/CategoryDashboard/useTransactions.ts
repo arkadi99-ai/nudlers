@@ -66,7 +66,7 @@ export function useTransactions() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
       const transactionsData = await response.json();
-      const mappedTransactions = transactionsData.map((t: any) => ({
+      const mappedTransactions = transactionsData.map((t: { category?: string;[key: string]: unknown }) => ({
         ...t,
         category: t.category || 'Unassigned',
         identifier: t.identifier || 'unknown',

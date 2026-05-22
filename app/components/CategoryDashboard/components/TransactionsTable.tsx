@@ -1,6 +1,6 @@
 import React from 'react';
 import { logger } from '../../../utils/client-logger';
-import { useTheme } from '@mui/material/styles';
+import { useTheme, type Theme } from '@mui/material/styles';
 import { Table, TableBody, TableCell, TableHead, TableRow, Paper, Box, Typography, IconButton, TextField, Snackbar, Alert, Tooltip, TableSortLabel, useMediaQuery, Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -19,7 +19,6 @@ import DeleteConfirmationDialog from '../../DeleteConfirmationDialog';
 import CategoryAutocomplete from '../../CategoryAutocomplete';
 import AccountDisplay from '../../AccountDisplay';
 import MobileSortableTable, { SortOption } from '../../MobileSortableTable';
-import { Theme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../../../context/LocaleContext';
 
@@ -587,7 +586,7 @@ TransactionRow.displayName = 'TransactionRow';
 
 interface TransactionMobileCardProps {
   transaction: Transaction;
-  theme: any;
+  theme: Theme;
   onEdit: () => void;
   onDelete: () => void;
   getCardVendor: (accountNumber: string | undefined | null) => string | null;
@@ -721,11 +720,5 @@ const TransactionMobileCardContent = ({
     </Box>
   );
 };
-
-const _TransactionMobileCard = (props: any) => (
-  <Paper elevation={0} sx={{ p: 2, borderRadius: '16px', border: 1, borderColor: 'divider' }}>
-    <TransactionMobileCardContent {...props} />
-  </Paper>
-);
 
 export default TransactionsTable;

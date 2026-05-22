@@ -152,7 +152,7 @@ const BudgetDashboard: React.FC = () => {
       const data = await response.json();
 
       const budgetsWithData: BudgetWithSpending[] = budgetList.map(budget => {
-        const spendingData = data.categories.find((c: any) => c.category === budget.category);
+        const spendingData = data.categories.find((c: { category: string; actual_spent?: number }) => c.category === budget.category);
         const actualSpent = spendingData?.actual_spent || 0;
         const remaining = budget.budget_limit - actualSpent;
         const percentUsed = budget.budget_limit > 0 ? (actualSpent / budget.budget_limit) * 100 : 0;

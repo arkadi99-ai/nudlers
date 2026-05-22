@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useTheme } from '@mui/material/styles';
+import { useTheme, type Theme } from '@mui/material/styles';
 import {
     Box,
     Typography,
@@ -723,7 +723,7 @@ const BreakdownView: React.FC = () => {
 
 interface BreakdownMobileCardProps {
     row: MonthlySummaryData;
-    theme: any;
+    theme: Theme;
     loadingDescription: string | null;
     handleDescriptionClick: (description: string) => void;
     editingDescription: string | null;

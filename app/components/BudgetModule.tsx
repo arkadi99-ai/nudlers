@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/client-logger';
 import { Box, Typography, Button, IconButton, CircularProgress, Dialog, DialogTitle, DialogContent, TextField, Autocomplete, createFilterOptions, useTheme, Tooltip, Collapse } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 import SavingsIcon from '@mui/icons-material/Savings';
 import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -36,7 +37,7 @@ const MinimalBudgetRow: React.FC<{
     budget: BudgetWithSpending;
     onEdit: () => void;
     onViewTransactions: () => void;
-    theme: any;
+    theme: Theme;
     formatCurrency: (n: number) => string;
     t: (key: string, options?: Record<string, unknown>) => string;
 }> = ({ budget, onEdit, onViewTransactions, theme, formatCurrency, t }) => {
@@ -245,7 +246,7 @@ const BudgetModule: React.FC<BudgetModuleProps> = ({ onViewTransactions }) => {
 
             // Create maps for easy lookup
             const spendingMap = new Map<string, number>();
-            data.categories.forEach((c: any) => {
+            data.categories.forEach((c: { category: string; actual_spent: number }) => {
                 spendingMap.set(c.category, c.actual_spent);
             });
 

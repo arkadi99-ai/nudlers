@@ -24,7 +24,7 @@ interface ScrapeEvent {
         body?: string;
         to?: string;
         error?: string;
-        [key: string]: any;
+        [key: string]: unknown;
     } | null;
 }
 
@@ -69,7 +69,7 @@ export default function ScrapeAuditView() {
         setExpandedRows(newExpanded);
     };
 
-    const statusColor = (status: string) => {
+    const statusColor = (status: string): 'success' | 'error' | 'default' => {
         if (status === 'success') return 'success';
         if (status === 'failed') return 'error';
         return 'default';
@@ -144,7 +144,7 @@ export default function ScrapeAuditView() {
                         columns={[
                             { id: 'created_at', label: t('audit.timeColumn'), format: (val) => new Date(val).toLocaleString(dateLocale) },
                             { id: 'vendor', label: t('audit.vendorColumn') },
-                            ...(currentTab === 0 ? [{ id: 'start_date', label: t('audit.startDateColumn'), format: (val: any) => new Date(val).toLocaleDateString(dateLocale) }] : []),
+                            ...(currentTab === 0 ? [{ id: 'start_date', label: t('audit.startDateColumn'), format: (val: string) => new Date(val).toLocaleDateString(dateLocale) }] : []),
                             { id: 'triggered_by', label: t('audit.triggeredByColumn'), format: (val) => val || t('audit.emptyDash') },
                             {
                                 id: 'status',
@@ -152,7 +152,7 @@ export default function ScrapeAuditView() {
                                 format: (val) => (
                                     <Chip
                                         label={val === 'success' ? t('audit.success') : val === 'failed' ? t('audit.failed') : val === 'started' ? t('audit.running') : val}
-                                        color={statusColor(val) as any}
+                                        color={statusColor(val)}
                                         size="small"
                                         sx={{ fontWeight: 600, textTransform: 'capitalize' }}
                                     />
@@ -204,7 +204,7 @@ export default function ScrapeAuditView() {
                                     }}>{row.vendor}</Typography>
                                     <Chip
                                         label={row.status === 'success' ? t('audit.success') : row.status === 'failed' ? t('audit.failed') : row.status === 'started' ? t('audit.running') : row.status}
-                                        color={statusColor(row.status) as any}
+                                        color={statusColor(row.status)}
                                         size="small"
                                         sx={{ height: 20, fontSize: '10px' }}
                                     />
