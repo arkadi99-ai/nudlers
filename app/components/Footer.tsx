@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Container, Divider } from '@mui/material';
+import { Box, Typography, Container } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import packageJson from '../package.json';
 
@@ -43,7 +43,7 @@ const VersionTag = styled(Typography)(({ theme }) => ({
 }));
 
 const Footer: React.FC = () => {
-    const theme = useTheme();
+    const _theme = useTheme();
 
     return (
         <StyledFooter>

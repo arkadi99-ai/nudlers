@@ -133,7 +133,7 @@ export const StatusProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 setIsDbConnected(false);
                 setDbError(true);
             }
-        } catch (error) {
+        } catch (_error) {
             setIsDbConnected(false);
             setDbError(true);
         } finally {

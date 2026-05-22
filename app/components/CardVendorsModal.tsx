@@ -9,16 +9,12 @@ import {
   MenuItem,
   styled,
   Typography,
-  IconButton,
   Snackbar,
   Alert,
   useTheme,
   alpha
 } from '@mui/material';
 import Table from './Table';
-import SaveIcon from '@mui/icons-material/Save';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CircularProgress from '@mui/material/CircularProgress';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import ModalHeader from './ModalHeader';
@@ -205,7 +201,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
   });
   const [originalValues, setOriginalValues] = useState<typeof editValues | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [_lastSaved, setLastSaved] = useState<Date | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/client-logger';
-import { Box, Typography, Button, IconButton, CircularProgress, Dialog, DialogTitle, DialogContent, TextField, Autocomplete, createFilterOptions, useTheme, LinearProgress, Tooltip, Collapse } from '@mui/material';
+import { Box, Typography, Button, IconButton, CircularProgress, Dialog, DialogTitle, DialogContent, TextField, Autocomplete, createFilterOptions, useTheme, Tooltip, Collapse } from '@mui/material';
 import SavingsIcon from '@mui/icons-material/Savings';
 import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';

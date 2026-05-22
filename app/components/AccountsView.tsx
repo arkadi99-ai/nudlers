@@ -13,7 +13,6 @@ import {
     DialogActions,
     TextField,
     MenuItem,
-    IconButton,
     Container,
     Tooltip
 } from '@mui/material';
@@ -22,13 +21,12 @@ import AddIcon from '@mui/icons-material/Add';
 import HistoryIcon from '@mui/icons-material/History';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
-import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import AccountCard from './AccountCard';
 import SyncHistoryModal from './SyncHistoryModal';
 import { useNotification } from './NotificationContext';
 import { useView } from './Layout';
-import { CREDIT_CARD_VENDORS, BANK_VENDORS, BEINLEUMI_GROUP_VENDORS, STANDARD_BANK_VENDORS } from '../utils/constants';
+import { CREDIT_CARD_VENDORS, BANK_VENDORS, STANDARD_BANK_VENDORS } from '../utils/constants';
 import { logger } from '../utils/client-logger';
 import PageHeader from './PageHeader';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
@@ -100,7 +98,7 @@ const AccountsView: React.FC = () => {
             if (response.ok) {
                 setAccounts(await response.json());
             }
-        } catch (err) {
+        } catch (_err) {
             showNotification(t('accounts.notifications.fetchFailed'), 'error');
         } finally {
             setIsLoading(false);
@@ -138,7 +136,7 @@ const AccountsView: React.FC = () => {
                 const name = account.nickname || account.vendor;
                 showNotification(updated.is_active ? t('accounts.notifications.activated', { name }) : t('accounts.notifications.deactivated', { name }), 'success');
             }
-        } catch (err) {
+        } catch (_err) {
             showNotification(t('accounts.notifications.toggleFailed'), 'error');
         }
     };
@@ -162,7 +160,7 @@ const AccountsView: React.FC = () => {
                 setAccounts(prev => prev.filter(a => a.id !== id));
                 showNotification(t('accounts.notifications.removed'), 'success');
             }
-        } catch (err) {
+        } catch (_err) {
             showNotification(t('accounts.notifications.removeFailed'), 'error');
         }
     };
@@ -177,7 +175,7 @@ const AccountsView: React.FC = () => {
                 showNotification(t('accounts.notifications.deletedTransactions', { count: result.deletedCount }), 'success');
                 window.dispatchEvent(new CustomEvent('dataRefresh'));
             }
-        } catch (err) {
+        } catch (_err) {
             showNotification(t('accounts.notifications.deleteTransactionsFailed'), 'error');
         } finally {
             setIsTruncating(false);
@@ -196,7 +194,7 @@ const AccountsView: React.FC = () => {
                 fetchCardOwnership();
                 showNotification(t('accounts.notifications.linkUpdated'), 'success');
             }
-        } catch (err) {
+        } catch (_err) {
             showNotification(t('accounts.notifications.linkUpdateFailed'), 'error');
         }
     };
@@ -221,7 +219,7 @@ const AccountsView: React.FC = () => {
                 ));
                 showNotification(t('accounts.notifications.visibilityFailed'), 'error');
             }
-        } catch (err) {
+        } catch (_err) {
             // Revert on error
             setCardOwnership(prev => prev.map(co =>
                 co.id === cardId ? { ...co, is_hidden: !isHidden } : co
@@ -252,7 +250,7 @@ const AccountsView: React.FC = () => {
                 const data = await response.json();
                 showNotification(data.error || (isEditingMode ? t('accounts.notifications.updateFailed') : t('accounts.notifications.addFailed')), 'error');
             }
-        } catch (err) {
+        } catch (_err) {
             showNotification(t('accounts.notifications.genericError'), 'error');
         }
     };

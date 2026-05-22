@@ -7,7 +7,7 @@ import DatabaseErrorScreen from "./DatabaseErrorScreen";
 import ErrorBoundary from "./ErrorBoundary";
 import Footer from "./Footer";
 import { Box, useMediaQuery, useTheme } from "@mui/material";
-import { StatusProvider, useStatus } from "../context/StatusContext";
+import { useStatus } from "../context/StatusContext";
 import { AIProvider, useAI } from "../context/AIContext";
 import GlobalEasterEggManager from "./NumberEasterEgg";
 
@@ -90,7 +90,7 @@ const Layout: React.FC<LayoutProps> = ({ children, defaultView = 'summary' }) =>
   const [screenContext, setScreenContext] = useState<ScreenContext>({ view: 'summary' });
   const [syncDrawerOpen, setSyncDrawerOpen] = useState(false);
   const [syncDrawerWidth, setSyncDrawerWidth] = useState(600);
-  const { dbError, checkDb, isVaultLocked, isVaultInitialized } = useStatus();
+  const { dbError, checkDb } = useStatus();
   const [isRetrying, setIsRetrying] = useState(false);
   const [initialCheckDone, setInitialCheckDone] = useState(false);
 

@@ -55,7 +55,7 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
   }
 }));
 
-const ActionCard = styled(Box)(({ theme }) => ({
+const ActionCard = styled(Box)(() => ({
   padding: '24px',
   borderRadius: '12px',
   border: '1px solid var(--action-card-border)',

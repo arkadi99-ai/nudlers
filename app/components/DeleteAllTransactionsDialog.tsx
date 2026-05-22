@@ -107,7 +107,7 @@ const DeleteAllTransactionsDialog: React.FC<DeleteAllTransactionsDialogProps> = 
                 throw new Error('Failed to delete transactions');
             }
 
-            const result = await response.json();
+            const _result = await response.json();
             onSuccess();
             handleClose();
         } catch (err) {

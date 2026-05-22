@@ -1,7 +1,7 @@
 import React from 'react';
 import { logger } from '../../../utils/client-logger';
 import { useTheme } from '@mui/material/styles';
-import { Table, TableBody, TableCell, TableHead, TableRow, Paper, Box, Typography, IconButton, TextField, Autocomplete, Snackbar, Alert, FormControlLabel, Checkbox, Tooltip, TableSortLabel, useMediaQuery, Button } from '@mui/material';
+import { Table, TableBody, TableCell, TableHead, TableRow, Paper, Box, Typography, IconButton, TextField, Snackbar, Alert, Tooltip, TableSortLabel, useMediaQuery, Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
@@ -13,7 +13,6 @@ import { useCardVendors } from '../utils/useCardVendors';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import NotesIcon from '@mui/icons-material/Notes';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlined';
 import { CardVendorIcon } from '../../CardVendorsModal';
 import { getTableHeaderCellStyle, getTableBodyCellStyle, TABLE_ROW_HOVER_STYLE, getTableRowHoverBackground } from '../utils/tableStyles';
 import DeleteConfirmationDialog from '../../DeleteConfirmationDialog';
@@ -198,7 +197,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
     }
   }, [editingTransaction, handleSaveClick]);
 
-  const handleTableClick = React.useCallback((e: React.MouseEvent) => {
+  const _handleTableClick = React.useCallback((e: React.MouseEvent) => {
     if (editingTransaction && (e.target as HTMLElement).tagName === 'TABLE') {
       handleSaveClick();
     }
@@ -445,8 +444,8 @@ const TransactionRow = React.memo(({
   handleSaveClick,
   handleCancelClick,
   setConfirmDeleteTransaction,
-  getCardVendor,
-  getCardNickname,
+  getCardVendor: _getCardVendor,
+  getCardNickname: _getCardNickname,
   onToggleFavorite,
   onNotesUpdate,
   editingNotes,
@@ -454,7 +453,7 @@ const TransactionRow = React.memo(({
   isWidget,
   hideActions,
   hideInstallmentsColumn,
-  showProcessedDate,
+  showProcessedDate: _showProcessedDate,
   isBankView,
   groupByDate
 }: TransactionRowProps) => {
@@ -625,8 +624,8 @@ const TransactionMobileCardContent = ({
   availableCategories,
   applyToAll,
   setApplyToAll,
-  editPrice,
-  setEditPrice,
+  editPrice: _editPrice,
+  setEditPrice: _setEditPrice,
   onSave,
   onCancel,
   isBankView = false
@@ -723,7 +722,7 @@ const TransactionMobileCardContent = ({
   );
 };
 
-const TransactionMobileCard = (props: any) => (
+const _TransactionMobileCard = (props: any) => (
   <Paper elevation={0} sx={{ p: 2, borderRadius: '16px', border: 1, borderColor: 'divider' }}>
     <TransactionMobileCardContent {...props} />
   </Paper>

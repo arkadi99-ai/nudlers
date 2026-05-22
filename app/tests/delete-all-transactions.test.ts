@@ -289,7 +289,7 @@ describe('Database Export API', () => {
         mockClient.query.mockResolvedValue({ rows: mockTransactions });
 
         // Simulate what the export API does
-        const result = await mockClient.query('SELECT * FROM transactions');
+        const result = await (mockClient.query as (sql: string) => Promise<{ rows: { id: number; name: string; price: number }[] }>)('SELECT * FROM transactions');
 
         expect(result.rows).toHaveLength(2);
         expect(result.rows[0].name).toBe('Transaction 1');

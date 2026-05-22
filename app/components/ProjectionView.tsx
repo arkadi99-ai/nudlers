@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Box, Typography, Paper, Grid, Card, CardContent, CircularProgress, Chip, IconButton, Tooltip as MuiTooltip } from '@mui/material';
+import { Box, Typography, CircularProgress, Chip, IconButton, Tooltip as MuiTooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { LineChart } from '@mui/x-charts/LineChart';
 import PageHeader from './PageHeader';
 import TimelineIcon from '@mui/icons-material/Timeline';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import RepeatIcon from '@mui/icons-material/Repeat';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import BlockIcon from '@mui/icons-material/Block';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
@@ -69,7 +67,7 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
     snackbar,
     setSnackbar,
     onRefresh,
-    onToggleVisibility,
+    onToggleVisibility: _onToggleVisibility,
     onMarkNotRecurring,
     onAddRecurring
 }) => {

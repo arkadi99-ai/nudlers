@@ -56,7 +56,7 @@ const transactionColumns: Column<Transaction>[] = [
         id: 'amount',
         label: 'Amount',
         align: 'right',
-        format: (val, row) => (
+        format: (val, _row) => (
             <span style={{
                 fontWeight: 700,
                 color: val > 0 ? 'var(--n-success)' : val < 0 ? 'var(--n-error)' : 'var(--n-text-primary)'

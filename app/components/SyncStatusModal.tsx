@@ -66,7 +66,7 @@ interface SyncStatusModalProps {
   onSyncSuccess?: () => void;
 }
 
-interface SyncStatus {
+interface _SyncStatus {
   syncHealth: string;
   settings: {
     enabled: boolean;

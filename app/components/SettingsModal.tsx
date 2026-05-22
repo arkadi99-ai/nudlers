@@ -35,7 +35,6 @@ import ScreenshotViewer from './ScreenshotViewer';
 import ImageIcon from '@mui/icons-material/Image';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import CloseIcon from '@mui/icons-material/Close';
-import AddIcon from '@mui/icons-material/Add';
 import { msToSeconds, secondsToMs } from '../utils/settings-utils';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
@@ -219,7 +218,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
   const theme = useTheme();
   const { t } = useTranslation(['settings', 'common']);
   const { locale, setLocale } = useLocale();
-  const { isVaultLocked, startPasskeyRegistration, clearPasskeys, deletePasskey, fetchPasskeys, changePassphrase, hasPasskeys, passkeysCount, supportsWebAuthn } = useStatus();
+  const { isVaultLocked, startPasskeyRegistration, clearPasskeys, deletePasskey, fetchPasskeys, changePassphrase, passkeysCount, supportsWebAuthn } = useStatus();
   const [settings, setSettings] = useState<Settings>({
     sync_enabled: false,
     sync_hour: 3,

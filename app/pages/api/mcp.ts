@@ -1,4 +1,3 @@
-import { NextApiRequest, NextApiResponse } from "next";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { createMcpServer } from "../../utils/mcp-setup";
 import logger from "../../utils/logger";

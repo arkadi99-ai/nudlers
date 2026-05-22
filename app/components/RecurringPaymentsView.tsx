@@ -22,11 +22,10 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 
-import { useCardVendors } from './CategoryDashboard/utils/useCardVendors';
 import { fetchCategories } from './CategoryDashboard/utils/categoryUtils';
 import CategoryAutocomplete from './CategoryAutocomplete';
 import AccountDisplay from './AccountDisplay';
-import Table, { Column } from './Table';
+import Table from './Table';
 import PageHeader from './PageHeader';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../context/LocaleContext';

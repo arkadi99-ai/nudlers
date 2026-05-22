@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/client-logger';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import PageHeader from './PageHeader';
@@ -15,8 +14,6 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import WarningIcon from '@mui/icons-material/Warning';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import DateRangeIcon from '@mui/icons-material/DateRange';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -89,7 +86,7 @@ const BudgetDashboard: React.FC = () => {
     customEndDate, setCustomEndDate,
     uniqueYears,
     uniqueMonths,
-    startDate, endDate, billingCycle
+    startDate, endDate
   } = useDateSelection();
 
   const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => setSelectedYear(e.target.value);
@@ -360,7 +357,7 @@ const BudgetDashboard: React.FC = () => {
     }
   };
 
-  const getProgressColor = (percentUsed: number): string => {
+  const _getProgressColor = (percentUsed: number): string => {
     if (percentUsed >= 100) return theme.palette.error.main;
     if (percentUsed >= 80) return theme.palette.warning.main;
     if (percentUsed >= 60) return theme.palette.warning.light;
@@ -374,7 +371,7 @@ const BudgetDashboard: React.FC = () => {
   const totalPercentUsed = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
 
 
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const _isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
     <Box sx={{

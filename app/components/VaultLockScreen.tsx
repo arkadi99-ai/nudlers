@@ -113,7 +113,7 @@ const VaultLockScreen: React.FC = () => {
     useEffect(() => {
         if (isVaultModalOpen && isUnlock && hasPasskeys && supportsWebAuthn && authMode === 'passkey' && !loading && !hasAutoTriggered.current) {
             hasAutoTriggered.current = true;
-            handlePasskeyUnlock();
+            queueMicrotask(handlePasskeyUnlock);
         }
     }, [isVaultModalOpen, authMode, isUnlock, hasPasskeys, supportsWebAuthn, loading, handlePasskeyUnlock]);
 

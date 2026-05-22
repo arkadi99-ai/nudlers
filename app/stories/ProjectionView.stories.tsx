@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ProjectionViewContent, ProjectionData } from '../components/ProjectionView';
-import { format, addDays } from 'date-fns';
+import { addDays } from 'date-fns';
 
 const meta = {
     title: 'Reports/ProjectionView',
@@ -24,10 +24,10 @@ const meta = {
         categories: ['Groceries', 'Utilities', 'Entertainment', 'Transport'],
         onRefresh: () => { },
         onToggleVisibility: () => { },
-        onMarkNotRecurring: (name) => { },
+        onMarkNotRecurring: (_name) => { },
         onAddRecurring: () => { },
-        setSelectedAccount: (val) => { },
-        setIsAddDialogOpen: (open) => { },
+        setSelectedAccount: (_val) => { },
+        setIsAddDialogOpen: (_open) => { },
         setNewRecurring: () => { },
         setSnackbar: () => { },
     },

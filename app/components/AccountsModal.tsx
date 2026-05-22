@@ -128,7 +128,7 @@ const SectionHeader = styled(Box)(({ theme }) => ({
   },
 }));
 
-const AccountSection = styled(Box)(({ theme }) => ({
+const AccountSection = styled(Box)(() => ({
   marginBottom: '32px',
   '&:last-child': {
     marginBottom: 0,
@@ -255,7 +255,7 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
       await fetchCardOwnership();
       showNotification(isHidden ? t('accounts.notifications.accountHidden') : t('accounts.notifications.accountShown'), 'success');
       window.dispatchEvent(new CustomEvent('dataRefresh'));
-    } catch (err) {
+    } catch (_err) {
       showNotification(t('accounts.notifications.accountVisibilityFailed'), 'error');
     }
   };

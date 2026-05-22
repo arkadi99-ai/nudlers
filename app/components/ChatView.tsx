@@ -16,7 +16,6 @@ import {
     Divider,
     Button,
     useMediaQuery,
-    Tooltip,
     Skeleton,
 } from '@mui/material';
 import ForumIcon from '@mui/icons-material/Forum';
@@ -25,7 +24,6 @@ import SendIcon from '@mui/icons-material/Send';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ChatIcon from '@mui/icons-material/Chat';
 import { useScreenContext } from './Layout';
 import { useTranslation } from 'react-i18next';
@@ -94,7 +92,7 @@ const InputContainer = styled(Box)(({ theme }) => ({
 
 const ChatView: React.FC = () => {
     const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const _isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const { screenContext } = useScreenContext();
     const { t } = useTranslation('views');
     const [sessions, setSessions] = useState<ChatSession[]>([]);
