@@ -5,13 +5,13 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import ModalHeader from '../../ModalHeader';
 
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { ExpensesModalProps, Expense } from '../types';
 import Box from '@mui/material/Box';
 import TransactionsTable from './TransactionsTable';
+import { useSnackbar } from '../../hooks/useSnackbar';
+import SnackbarFeedback from '../../SnackbarFeedback';
 
 type SortField = 'date' | 'processed_date' | 'price' | 'installments_number' | 'name' | 'category' | 'card';
 type SortDirection = 'asc' | 'desc';
@@ -22,11 +22,7 @@ const ExpensesModal: React.FC<ExpensesModalProps> = ({ open, onClose, data, setM
   const theme = useTheme();
   const { t } = useTranslation('tx');
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [snackbar, setSnackbar] = React.useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
+  const { snackbar, showSnackbar, hideSnackbar } = useSnackbar<'success' | 'error' | 'info'>();
   const [sortField, setSortField] = React.useState<SortField>('date');
   const [sortDirection, setSortDirection] = React.useState<SortDirection>('desc');
 
@@ -108,19 +104,11 @@ const ExpensesModal: React.FC<ExpensesModalProps> = ({ open, onClose, data, setM
         // Trigger a refresh of the dashboard data
         window.dispatchEvent(new CustomEvent('dataRefresh'));
       } else {
-        setSnackbar({
-          open: true,
-          message: t('snackbar.updateTransactionFailed'),
-          severity: 'error'
-        });
+        showSnackbar(t('snackbar.updateTransactionFailed'), 'error');
       }
     } catch (error) {
       logger.error('Error updating transaction', error as Error);
-      setSnackbar({
-        open: true,
-        message: t('snackbar.updateTransactionError'),
-        severity: 'error'
-      });
+      showSnackbar(t('snackbar.updateTransactionError'), 'error');
     }
   };
 
@@ -148,36 +136,19 @@ const ExpensesModal: React.FC<ExpensesModalProps> = ({ open, onClose, data, setM
             data: updatedData
           });
 
-          setSnackbar({
-            open: true,
-            message: t('snackbar.deleteSuccess'),
-            severity: 'success'
-          });
+          showSnackbar(t('snackbar.deleteSuccess'), 'success');
 
-          // Trigger a refresh of the dashboard data
           window.dispatchEvent(new CustomEvent('dataRefresh'));
         } else {
-          setSnackbar({
-            open: true,
-            message: t('snackbar.deleteTransactionFailed'),
-            severity: 'error'
-          });
+          showSnackbar(t('snackbar.deleteTransactionFailed'), 'error');
         }
       } else {
         logger.error('Cannot delete transaction: missing identifier or vendor', expense);
-        setSnackbar({
-          open: true,
-          message: t('snackbar.missingIdentifier'),
-          severity: 'error'
-        });
+        showSnackbar(t('snackbar.missingIdentifier'), 'error');
       }
     } catch (error) {
       logger.error('Error deleting transaction', error as Error);
-      setSnackbar({
-        open: true,
-        message: t('snackbar.deleteError'),
-        severity: 'error'
-      });
+      showSnackbar(t('snackbar.deleteError'), 'error');
     }
   };
 
@@ -235,25 +206,17 @@ const ExpensesModal: React.FC<ExpensesModalProps> = ({ open, onClose, data, setM
           />
         </Box>
       </DialogContent >
-      {/* Snackbar for feedback messages */}
-      < Snackbar
-        open={snackbar.open}
+      <SnackbarFeedback
+        snackbar={snackbar}
+        onClose={hideSnackbar}
         autoHideDuration={5000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{
-            width: '100%',
-            borderRadius: '12px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
-          }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar >
+        alertSx={{
+          width: '100%',
+          borderRadius: '12px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
+        }}
+      />
     </Dialog >
   );
 };

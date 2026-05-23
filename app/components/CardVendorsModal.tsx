@@ -9,8 +9,6 @@ import {
   MenuItem,
   styled,
   Typography,
-  Snackbar,
-  Alert,
   useTheme,
   alpha
 } from '@mui/material';
@@ -19,6 +17,8 @@ import CreditCardIcon from '@mui/icons-material/CreditCard';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import ModalHeader from './ModalHeader';
 import { BANK_VENDORS } from '../utils/constants';
+import { useSnackbar } from './hooks/useSnackbar';
+import SnackbarFeedback from './SnackbarFeedback';
 
 // Card vendor definitions with their logos and colors
 export const CARD_VENDORS = {
@@ -203,11 +203,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
   const [originalValues, setOriginalValues] = useState<typeof editValues | null>(null);
   const [, setIsSaving] = useState(false);
   const [_lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-    open: false,
-    message: '',
-    severity: 'success',
-  });
+  const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
   const fetchCards = useCallback(async () => {
     try {
@@ -219,15 +215,14 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
       const data = await response.json();
       setCards(data);
     } catch (err) {
-      setSnackbar({
-        open: true,
-        message: err instanceof Error ? err.message : t('misc:cardVendors.errors.generic'),
-        severity: 'error',
-      });
+      showSnackbar(
+        err instanceof Error ? err.message : t('misc:cardVendors.errors.generic'),
+        'error'
+      );
     } finally {
       setIsLoading(false);
     }
-  }, [t]);
+  }, [showSnackbar, t]);
 
   const fetchBankAccounts = useCallback(async () => {
     try {
@@ -371,16 +366,15 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
 
       return true;
     } catch (err) {
-      setSnackbar({
-        open: true,
-        message: err instanceof Error ? err.message : t('misc:cardVendors.errors.saveFailed'),
-        severity: 'error',
-      });
+      showSnackbar(
+        err instanceof Error ? err.message : t('misc:cardVendors.errors.saveFailed'),
+        'error'
+      );
       return false;
     } finally {
       setIsSaving(false);
     }
-  }, [bankAccounts, cards, t]);
+  }, [bankAccounts, cards, showSnackbar, t]);
 
   useEffect(() => {
     if (!editingCard || !originalValues) return;
@@ -447,7 +441,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
                 handleSave(editingCard, newValues).then((success) => {
                   if (success) {
                     setEditingCard(null);
-                    setSnackbar({ open: true, message: t('misc:cardVendors.snackbar.vendorUpdated'), severity: 'success' });
+                    showSnackbar(t('misc:cardVendors.snackbar.vendorUpdated'), 'success');
                   }
                 });
               }, 200);
@@ -524,7 +518,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
               handleSave(editingCard, editValues).then((success) => {
                 if (success) {
                   setEditingCard(null);
-                  setSnackbar({ open: true, message: t('misc:cardVendors.snackbar.nicknameSaved'), severity: 'success' });
+                  showSnackbar(t('misc:cardVendors.snackbar.nicknameSaved'), 'success');
                 }
               });
             } else {
@@ -587,7 +581,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
                     handleSave(editingCard, newValues).then((success) => {
                       if (success) {
                         setEditingCard(null);
-                        setSnackbar({ open: true, message: t('misc:cardVendors.snackbar.bankAccountUpdated'), severity: 'success' });
+                        showSnackbar(t('misc:cardVendors.snackbar.bankAccountUpdated'), 'success');
                       }
                     });
                   }, 200);
@@ -632,7 +626,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
                     handleSave(editingCard, editValues).then((success) => {
                       if (success) {
                         setEditingCard(null);
-                        setSnackbar({ open: true, message: t('misc:cardVendors.snackbar.customBankSaved'), severity: 'success' });
+                        showSnackbar(t('misc:cardVendors.snackbar.customBankSaved'), 'success');
                       }
                     });
                   }
@@ -688,7 +682,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
         </Typography>
       )
     }
-  ], [editingCard, editValues, originalValues, bankAccounts, theme, focusedField, t, handleEdit, handleSave]);
+  ], [editingCard, editValues, originalValues, bankAccounts, theme, focusedField, t, handleEdit, handleSave, showSnackbar]);
 
   return (
     <>
@@ -833,24 +827,17 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
           }
         </DialogContent >
       </Dialog >
-      <Snackbar
-        open={snackbar.open}
+      <SnackbarFeedback
+        snackbar={snackbar}
+        onClose={hideSnackbar}
         autoHideDuration={4000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{
-            width: '100%',
-            borderRadius: '12px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-          }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+        alertSx={{
+          width: '100%',
+          borderRadius: '12px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+        }}
+      />
     </>
   );
 }

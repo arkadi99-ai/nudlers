@@ -1,7 +1,7 @@
 import React from 'react';
 import { logger } from '../../../utils/client-logger';
 import { useTheme, type Theme } from '@mui/material/styles';
-import { Table, TableBody, TableCell, TableHead, TableRow, Paper, Box, Typography, IconButton, TextField, Snackbar, Alert, Tooltip, TableSortLabel, useMediaQuery, Button } from '@mui/material';
+import { Table, TableBody, TableCell, TableHead, TableRow, Paper, Box, Typography, IconButton, TextField, Tooltip, TableSortLabel, useMediaQuery, Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
@@ -21,6 +21,8 @@ import AccountDisplay from '../../AccountDisplay';
 import MobileSortableTable, { SortOption } from '../../MobileSortableTable';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../../../context/LocaleContext';
+import { useSnackbar } from '../../hooks/useSnackbar';
+import SnackbarFeedback from '../../SnackbarFeedback';
 
 const getCurrencySymbol = (currency?: string) => {
   if (!currency) return '₪';
@@ -92,11 +94,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
   const [applyToAll, setApplyToAll] = React.useState<boolean>(false);
   const { categories: availableCategories } = useCategories();
   const { getCardVendor, getCardNickname } = useCardVendors();
-  const [snackbar, setSnackbar] = React.useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
+  const { snackbar, showSnackbar, hideSnackbar } = useSnackbar<'success' | 'error' | 'info'>();
   const [confirmDeleteTransaction, setConfirmDeleteTransaction] = React.useState<Transaction | null>(null);
   const [editingNotes, setEditingNotes] = React.useState<{ identifier: string; vendor: string; content: string } | null>(null);
 
@@ -122,13 +120,13 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
     if (!confirmDeleteTransaction) return;
     try {
       onDelete?.(confirmDeleteTransaction);
-      setSnackbar({ open: true, message: t('tx:snackbar.deleteSuccess'), severity: 'success' });
+      showSnackbar(t('tx:snackbar.deleteSuccess'), 'success');
     } catch (error) {
       logger.error('Error deleting transaction', error as Error);
-      setSnackbar({ open: true, message: t('tx:snackbar.deleteError'), severity: 'error' });
+      showSnackbar(t('tx:snackbar.deleteError'), 'error');
     }
     setConfirmDeleteTransaction(null);
-  }, [confirmDeleteTransaction, onDelete, t]);
+  }, [confirmDeleteTransaction, onDelete, showSnackbar, t]);
 
   const handleEditClick = React.useCallback((transaction: Transaction) => {
     setEditingTransaction(transaction);
@@ -161,13 +159,12 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 
               if (response.ok) {
                 const result = await response.json();
-                setSnackbar({
-                  open: true,
-                  message: result.transactionsUpdated > 1
+                showSnackbar(
+                  result.transactionsUpdated > 1
                     ? t('tx:snackbar.updatedManyAndRule', { count: result.transactionsUpdated })
                     : t('tx:snackbar.categoryUpdatedAndRule'),
-                  severity: 'success'
-                });
+                  'success'
+                );
                 onUpdate?.(editingTransaction, { category: editCategory, price: priceWithSign });
                 window.dispatchEvent(new CustomEvent('dataRefresh'));
               }
@@ -179,12 +176,12 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
           }
         } catch (error) {
           logger.error('Error updating transaction', error as Error);
-          setSnackbar({ open: true, message: t('tx:snackbar.updateError'), severity: 'error' });
+          showSnackbar(t('tx:snackbar.updateError'), 'error');
         }
         setEditingTransaction(null);
       }
     }
-  }, [editingTransaction, editPrice, editCategory, applyToAll, onUpdate, isBankView, t]);
+  }, [editingTransaction, editPrice, editCategory, applyToAll, onUpdate, isBankView, showSnackbar, t]);
 
   const handleCancelClick = React.useCallback(() => {
     setEditingTransaction(null);
@@ -382,9 +379,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
           </TableBody>
         </Table>
       )}
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
-        <Alert severity={snackbar.severity} onClose={() => setSnackbar({ ...snackbar, open: false })}>{snackbar.message}</Alert>
-      </Snackbar>
+      <SnackbarFeedback snackbar={snackbar} onClose={hideSnackbar} />
       <DeleteConfirmationDialog
         open={!!confirmDeleteTransaction}
         onClose={() => setConfirmDeleteTransaction(null)}
