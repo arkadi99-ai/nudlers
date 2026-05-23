@@ -1139,21 +1139,21 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
         return {
           icon: <ErrorIcon sx={{ fontSize: 48 }} />,
           label: t('health.error.label'),
-          color: '#ef4444',
+          color: 'var(--n-error)',
           description: t('health.error.description')
         };
       case 'stale':
         return {
           icon: <WarningIcon sx={{ fontSize: 48 }} />,
           label: t('health.stale.label'),
-          color: '#f59e0b',
+          color: 'var(--n-warning)',
           description: t('health.stale.description')
         };
       case 'outdated':
         return {
           icon: <WarningIcon sx={{ fontSize: 48 }} />,
           label: t('health.outdated.label'),
-          color: '#f59e0b',
+          color: 'var(--n-warning)',
           description: t('health.outdated.description')
         };
       case 'never_synced':
@@ -1299,7 +1299,7 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
                   {t('options.showBrowser')}
                 </Typography>
                 {pendingSyncRequest.vendor === 'hapoalim' && (
-                  <Typography variant="caption" sx={{ color: '#3b82f6', fontSize: '10px' }}>
+                  <Typography variant="caption" sx={{ color: 'var(--n-info)', fontSize: '10px' }}>
                     {t('options.showBrowserHapoalimHint')}
                   </Typography>
                 )}
@@ -1401,7 +1401,7 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
                             <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#fff' }} />
                           </Box>
                         ) : isFailed ? (
-                          <ErrorIcon sx={{ fontSize: 18, color: '#ef4444' }} />
+                          <ErrorIcon sx={{ fontSize: 18, color: 'var(--n-error)' }} />
                         ) : isActive ? (
                           <SyncIcon sx={{ fontSize: 18, color: '#60a5fa', animation: `${spin} 2s linear infinite` }} />
                         ) : (
@@ -1410,7 +1410,7 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
 
                         <Box sx={{ flex: 1 }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Typography variant="body2" sx={{ fontWeight: isActive ? 600 : 500, color: isActive ? '#60a5fa' : isCompleted ? '#22c55e' : isFailed ? '#ef4444' : 'text.secondary' }}>
+                            <Typography variant="body2" sx={{ fontWeight: isActive ? 600 : 500, color: isActive ? '#60a5fa' : isCompleted ? '#22c55e' : isFailed ? 'var(--n-error)' : 'text.secondary' }}>
                               {item.accountName}
                             </Typography>
                             {isCompleted && (
@@ -1463,8 +1463,8 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
                                   border: '1px solid rgba(59, 130, 246, 0.3)'
                                 }}>
                                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                    <LockIcon sx={{ fontSize: 16, color: '#3b82f6' }} />
-                                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#3b82f6' }}>
+                                    <LockIcon sx={{ fontSize: 16, color: 'var(--n-info)' }} />
+                                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--n-info)' }}>
                                       {t('progress.twoFactorRequired')}
                                     </Typography>
                                   </Box>
@@ -1501,7 +1501,7 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
                                       sx={{
                                         minWidth: 32,
                                         p: 0,
-                                        background: '#3b82f6',
+                                        background: 'var(--n-info)',
                                         '&:hover': { background: '#2563eb' }
                                       }}
                                     >
@@ -1509,7 +1509,7 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
                                     </Button>
                                   </Box>
                                   {otpError && (
-                                    <Typography variant="caption" sx={{ color: '#ef4444', mt: 0.5, display: 'block' }}>
+                                    <Typography variant="caption" sx={{ color: 'var(--n-error)', mt: 0.5, display: 'block' }}>
                                       {otpError}
                                     </Typography>
                                   )}
@@ -1542,7 +1542,7 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
                           )}
 
                           {isFailed && item.error && (
-                            <Typography variant="caption" sx={{ color: '#ef4444', display: 'block', mt: 0.5, fontSize: '10px' }}>
+                            <Typography variant="caption" sx={{ color: 'var(--n-error)', display: 'block', mt: 0.5, fontSize: '10px' }}>
                               {item.error}
                             </Typography>
                           )}
@@ -1886,8 +1886,8 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
         <Box sx={{ p: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <ErrorIcon sx={{ color: '#ef4444', fontSize: 28 }} />
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#ef4444' }}>
+              <ErrorIcon sx={{ color: 'var(--n-error)', fontSize: 28 }} />
+              <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--n-error)' }}>
                 {t('errorDetails.title')}
               </Typography>
             </Box>

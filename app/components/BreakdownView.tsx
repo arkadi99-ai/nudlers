@@ -607,7 +607,7 @@ const BreakdownView: React.FC = () => {
                                                                     renderInput={(params) => <TextField {...params} autoFocus placeholder={t('breakdown.categoryPlaceholder')} />}
                                                                 />
                                                                 <IconButton size="small" onClick={() => handleCategorySave(row.description!)} sx={{ color: '#4ADE80' }}><CheckIcon /></IconButton>
-                                                                <IconButton size="small" onClick={handleCategoryCancel} sx={{ color: '#ef4444' }}><CloseIcon /></IconButton>
+                                                                <IconButton size="small" onClick={handleCategoryCancel} sx={{ color: 'var(--n-error)' }}><CloseIcon /></IconButton>
                                                             </Box>
                                                         ) : (
                                                             <span
@@ -617,7 +617,7 @@ const BreakdownView: React.FC = () => {
                                                                     borderRadius: '6px',
                                                                     fontSize: '13px',
                                                                     cursor: 'pointer',
-                                                                    color: '#3b82f6',
+                                                                    color: 'var(--n-info)',
                                                                     fontWeight: 500
                                                                 }}
                                                                 onClick={() => handleCategoryEditClick(row.description!, row.category || '')}
@@ -786,7 +786,7 @@ const BreakdownMobileCardContent = ({
                                 renderInput={(params) => <TextField {...params} autoFocus placeholder={t('breakdown.categoryPlaceholder')} />}
                             />
                             <IconButton size="small" onClick={() => handleCategorySave(row.description!)} sx={{ color: '#4ADE80' }}><CheckIcon fontSize="small" /></IconButton>
-                            <IconButton size="small" onClick={handleCategoryCancel} sx={{ color: '#ef4444' }}><CloseIcon fontSize="small" /></IconButton>
+                            <IconButton size="small" onClick={handleCategoryCancel} sx={{ color: 'var(--n-error)' }}><CloseIcon fontSize="small" /></IconButton>
                         </Box>
                     ) : (
                         <span
@@ -796,7 +796,7 @@ const BreakdownMobileCardContent = ({
                                 borderRadius: '6px',
                                 fontSize: '11px',
                                 cursor: 'pointer',
-                                color: '#3b82f6',
+                                color: 'var(--n-info)',
                                 fontWeight: 600
                             }}
                             onClick={() => handleCategoryEditClick(row.description!, row.category || '')}

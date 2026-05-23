@@ -941,7 +941,7 @@ export default function AccountsModal({ open, onClose }: AccountsModalProps) {
                 startIcon={<AddIcon />}
                 onClick={() => setIsAdding(true)}
                 sx={{
-                  backgroundColor: '#3b82f6',
+                  backgroundColor: 'var(--n-info)',
                   '&:hover': {
                     backgroundColor: '#2563eb',
                   },
@@ -977,7 +977,7 @@ export default function AccountsModal({ open, onClose }: AccountsModalProps) {
             </Box>
           ) : isAdding || isEditing ? (
             <Box sx={{ p: 2 }}>
-              <Typography variant="h6" sx={{ mb: 2, color: isEditing ? '#8b5cf6' : '#3b82f6' }}>
+              <Typography variant="h6" sx={{ mb: 2, color: isEditing ? '#8b5cf6' : 'var(--n-info)' }}>
                 {isEditing ? t('accounts.editAccount') : t('accounts.addAccountTitle')}
               </Typography>
               <TextField
@@ -1092,7 +1092,7 @@ export default function AccountsModal({ open, onClose }: AccountsModalProps) {
                   variant="contained"
                   onClick={isEditing ? handleUpdate : handleAdd}
                   sx={{
-                    backgroundColor: isEditing ? '#8b5cf6' : '#3b82f6',
+                    backgroundColor: isEditing ? '#8b5cf6' : 'var(--n-info)',
                     '&:hover': {
                       backgroundColor: isEditing ? '#7c3aed' : '#2563eb',
                     },
@@ -1107,7 +1107,7 @@ export default function AccountsModal({ open, onClose }: AccountsModalProps) {
               {/* Bank Accounts Section */}
               <AccountSection>
                 <SectionHeader>
-                  <AccountBalanceIcon sx={{ color: '#3b82f6', fontSize: '24px' }} />
+                  <AccountBalanceIcon sx={{ color: 'var(--n-info)', fontSize: '24px' }} />
                   <Typography variant="h6" color="primary">
                     {t('accounts.bankAccountsCount', { count: bankAccounts.length })}
                   </Typography>
@@ -1173,7 +1173,7 @@ export default function AccountsModal({ open, onClose }: AccountsModalProps) {
         }}
       >
         <DialogTitle sx={{
-          color: '#f59e0b',
+          color: 'var(--n-warning)',
           fontWeight: 600,
           display: 'flex',
           alignItems: 'center',
@@ -1191,7 +1191,7 @@ export default function AccountsModal({ open, onClose }: AccountsModalProps) {
               components={{ strong: <strong /> }}
             />
           </Typography>
-          <Typography variant="body2" sx={{ color: '#ef4444' }}>
+          <Typography variant="body2" sx={{ color: 'var(--n-error)' }}>
             {t('accounts.truncateWarning')}
           </Typography>
         </DialogContent>
@@ -1207,7 +1207,7 @@ export default function AccountsModal({ open, onClose }: AccountsModalProps) {
             variant="contained"
             disabled={isTruncating}
             sx={{
-              backgroundColor: '#f59e0b',
+              backgroundColor: 'var(--n-warning)',
               '&:hover': {
                 backgroundColor: '#d97706',
               },

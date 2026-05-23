@@ -859,7 +859,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <FlashOnIcon sx={{ fontSize: 18, color: uncategorizedDescriptions.length > 0 ? '#f59e0b' : 'inherit' }} />
+                  <FlashOnIcon sx={{ fontSize: 18, color: uncategorizedDescriptions.length > 0 ? 'var(--n-warning)' : 'inherit' }} />
                   {t('categoryMgmt:tabs.uncategorized')}
                 </Box>
               </Badge>
@@ -884,7 +884,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                       : 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
                     borderRadius: '12px',
                     padding: '16px',
-                    border: `2px dashed ${selectedCategories.length >= 2 ? '#3b82f6' : theme.palette.divider}`,
+                    border: `2px dashed ${selectedCategories.length >= 2 ? 'var(--n-info)' : theme.palette.divider}`,
                     minHeight: '120px',
                     display: 'flex',
                     flexDirection: 'column',
@@ -892,7 +892,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <MergeIcon sx={{ color: '#3b82f6', fontSize: 20 }} />
+                    <MergeIcon sx={{ color: 'var(--n-info)', fontSize: 20 }} />
                     <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
                       {t('categoryMgmt:categories.selectedToMerge', { count: selectedCategories.length })}
                     </Typography>
@@ -918,7 +918,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                           size="small"
                           onDelete={() => handleCategoryToggle(catName)}
                           sx={{
-                            background: categoryColors[catName] || '#3b82f6',
+                            background: categoryColors[catName] || 'var(--n-info)',
                             color: '#fff',
                             fontWeight: 500,
                             '& .MuiChip-deleteIcon': { color: 'rgba(255,255,255,0.7)' }
@@ -1074,15 +1074,15 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                           borderRadius: '8px',
                           cursor: 'pointer',
                           border: selectedCategories.includes(category.name)
-                            ? `2px solid ${categoryColors[category.name] || '#3b82f6'}`
+                            ? `2px solid ${categoryColors[category.name] || 'var(--n-info)'}`
                             : `1px solid ${theme.palette.divider}`,
                           background: selectedCategories.includes(category.name)
-                            ? `linear-gradient(135deg, ${categoryColors[category.name] || '#3b82f6'}15 0%, ${categoryColors[category.name] || '#3b82f6'}05 100%)`
+                            ? `linear-gradient(135deg, ${categoryColors[category.name] || 'var(--n-info)'}15 0%, ${categoryColors[category.name] || 'var(--n-info)'}05 100%)`
                             : theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.03)' : '#fff',
                           transition: 'all 0.15s ease',
                           '&:hover': {
                             boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
-                            borderColor: categoryColors[category.name] || '#3b82f6'
+                            borderColor: categoryColors[category.name] || 'var(--n-info)'
                           }
                         }}
                       >
@@ -1097,7 +1097,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                                   ? 'none'
                                   : `1.5px solid ${theme.palette.divider}`,
                                 background: selectedCategories.includes(category.name)
-                                  ? categoryColors[category.name] || '#3b82f6'
+                                  ? categoryColors[category.name] || 'var(--n-info)'
                                   : 'transparent',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -1167,7 +1167,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                     onClick={handleCreateRule}
                     disabled={!newRule.name_pattern.trim() || !newRule.target_category.trim() || isLoading}
                     style={{
-                      backgroundColor: '#10b981',
+                      backgroundColor: 'var(--n-success)',
                       color: 'white',
                       borderRadius: '12px',
                       padding: '10px 16px',
@@ -1188,8 +1188,8 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                 onClick={handleApplyRules}
                 disabled={isApplyingRules || rules.length === 0}
                 style={{
-                  borderColor: '#3b82f6',
-                  color: '#3b82f6',
+                  borderColor: 'var(--n-info)',
+                  color: 'var(--n-info)',
                   borderRadius: '12px',
                   padding: '10px 24px',
                   textTransform: 'none',
@@ -1267,7 +1267,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                                 size="medium"
                                 sx={{
                                   padding: { xs: '8px', sm: '4px' },
-                                  color: '#3b82f6',
+                                  color: 'var(--n-info)',
                                   '& .MuiSvgIcon-root': {
                                     fontSize: { xs: '20px', sm: '16px' }
                                   }
@@ -1280,7 +1280,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                                 size="medium"
                                 sx={{
                                   padding: { xs: '8px', sm: '4px' },
-                                  color: '#ef4444',
+                                  color: 'var(--n-error)',
                                   '& .MuiSvgIcon-root': {
                                     fontSize: { xs: '20px', sm: '16px' }
                                   }
@@ -1356,7 +1356,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                   onClick={() => editingRule && handleUpdateRule(editingRule)}
                   disabled={isLoading}
                   sx={{
-                    bgcolor: '#3b82f6',
+                    bgcolor: 'var(--n-info)',
                     '&:hover': { bgcolor: '#2563eb' },
                     borderRadius: '8px',
                     textTransform: 'none',
@@ -1383,7 +1383,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                   marginBottom: 2,
                   backgroundColor: 'rgba(59, 130, 246, 0.1)',
                   '& .MuiLinearProgress-bar': {
-                    backgroundColor: '#3b82f6'
+                    backgroundColor: 'var(--n-info)'
                   }
                 }}
               />
@@ -1453,7 +1453,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                     size="small"
                     sx={{
                       backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                      color: '#3b82f6',
+                      color: 'var(--n-info)',
                       fontWeight: 600
                     }}
                   />
@@ -1507,7 +1507,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                         size="small"
                         sx={{
                           backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                          color: '#3b82f6',
+                          color: 'var(--n-info)',
                           fontWeight: 600
                         }}
                       />
@@ -1516,7 +1516,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                         size="small"
                         sx={{
                           backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                          color: '#ef4444',
+                          color: 'var(--n-error)',
                           fontWeight: 600
                         }}
                       />
@@ -1553,7 +1553,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                               <TableCell sx={{ color: theme.palette.text.secondary, fontSize: '0.8125rem' }}>
                                 {formatQuickDate(tx.date)}
                               </TableCell>
-                              <TableCell sx={{ color: tx.price < 0 ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: '0.8125rem' }}>
+                              <TableCell sx={{ color: tx.price < 0 ? 'var(--n-error)' : '#22c55e', fontWeight: 600, fontSize: '0.8125rem' }}>
                                 {formatQuickCurrency(Math.abs(tx.price))}
                               </TableCell>
                               <TableCell sx={{ color: theme.palette.text.secondary, fontSize: '0.8125rem' }}>
@@ -1607,7 +1607,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                       onClick={() => handleQuickCategorySelect(cat.name)}
                       disabled={isSavingQuick}
                       sx={{
-                        backgroundColor: categoryColors[cat.name] || '#3b82f6',
+                        backgroundColor: categoryColors[cat.name] || 'var(--n-info)',
                         color: '#fff',
                         textTransform: 'none',
                         fontWeight: 600,
@@ -1616,7 +1616,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                         fontSize: '13px',
                         minWidth: 'auto',
                         '&:hover': {
-                          backgroundColor: categoryColors[cat.name] || '#3b82f6',
+                          backgroundColor: categoryColors[cat.name] || 'var(--n-info)',
                           filter: 'brightness(1.1)',
                           transform: 'translateY(-1px)',
                         },
@@ -1713,7 +1713,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                 {t('categoryMgmt:mappings.description')}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, backgroundColor: theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)', padding: '12px', borderRadius: '12px', marginBottom: '20px' }}>
-                <HelpOutlineIcon sx={{ color: '#3b82f6', fontSize: 20 }} />
+                <HelpOutlineIcon sx={{ color: 'var(--n-info)', fontSize: 20 }} />
                 <Typography variant="body2" sx={{ color: theme.palette.mode === 'dark' ? '#93c5fd' : '#1e40af' }}>
                   {t('categoryMgmt:mappings.infoNotice')}
                 </Typography>
@@ -1880,7 +1880,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                                     label={mapping.target_category}
                                     size="small"
                                     sx={{
-                                      backgroundColor: categoryColors[mapping.target_category] || '#3b82f6',
+                                      backgroundColor: categoryColors[mapping.target_category] || 'var(--n-info)',
                                       color: '#fff',
                                       fontWeight: 600
                                     }}
@@ -1914,7 +1914,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                                       setEditMappingTarget(mapping.target_category);
                                     }}
                                     size="small"
-                                    sx={{ color: '#3b82f6', mr: 1 }}
+                                    sx={{ color: 'var(--n-info)', mr: 1 }}
                                     title={t('categoryMgmt:mappings.tooltipEditTarget')}
                                   >
                                     <EditIcon />
@@ -1922,7 +1922,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                                   <IconButton
                                     onClick={() => handleDeleteMapping(mapping.id)}
                                     size="small"
-                                    style={{ color: '#ef4444' }}
+                                    style={{ color: 'var(--n-error)' }}
                                     title={t('categoryMgmt:mappings.tooltipRemove')}
                                   >
                                     <DeleteIcon />
@@ -1957,7 +1957,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
             }
           }}
         >
-          <DialogTitle sx={{ fontWeight: 700, color: '#ef4444' }}>{t('categoryMgmt:deleteDialog.title')}</DialogTitle>
+          <DialogTitle sx={{ fontWeight: 700, color: 'var(--n-error)' }}>{t('categoryMgmt:deleteDialog.title')}</DialogTitle>
           <DialogContent>
             <Typography
               variant="body2"
@@ -2006,7 +2006,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
               onClick={handleDeleteCategory}
               disabled={isLoading}
               sx={{
-                bgcolor: '#ef4444',
+                bgcolor: 'var(--n-error)',
                 '&:hover': { bgcolor: '#dc2626' },
                 borderRadius: '8px',
                 textTransform: 'none',
@@ -2078,7 +2078,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
               onClick={handleRenameCategory}
               disabled={isLoading || !renameNewName.trim() || renameNewName.trim() === renamingCategory}
               sx={{
-                bgcolor: '#3b82f6',
+                bgcolor: 'var(--n-info)',
                 '&:hover': { bgcolor: '#2563eb' },
                 borderRadius: '8px',
                 textTransform: 'none',

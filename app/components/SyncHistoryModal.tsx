@@ -104,7 +104,7 @@ export default function SyncHistoryModal({ open, onClose }: SyncHistoryModalProp
 
     const getStatusIcon = (status: string) => {
         if (status === 'success') return <CheckCircleIcon sx={{ color: '#22c55e', fontSize: 20 }} />;
-        if (status === 'error') return <ErrorIcon sx={{ color: '#ef4444', fontSize: 20 }} />;
+        if (status === 'error') return <ErrorIcon sx={{ color: 'var(--n-error)', fontSize: 20 }} />;
         return <CircularProgress size={20} />;
     };
 

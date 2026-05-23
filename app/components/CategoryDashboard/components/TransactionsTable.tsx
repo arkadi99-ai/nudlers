@@ -505,11 +505,11 @@ const TransactionRow = React.memo(({
       <TableCell style={cellStyle}>
         {editingTransaction?.identifier === transaction.identifier && !hideActions ? (
           <CategoryAutocomplete value={editCategory} onChange={setEditCategory} options={availableCategories} applyToAll={applyToAll} onApplyToAllChange={setApplyToAll} showApplyToAll={editCategory !== editingTransaction.category} />
-        ) : <span style={{ cursor: 'pointer', color: '#3b82f6' }} onClick={(e) => { e.stopPropagation(); handleEditClick(transaction); }}>{transaction.category}</span>}
+        ) : <span style={{ cursor: 'pointer', color: 'var(--n-info)' }} onClick={(e) => { e.stopPropagation(); handleEditClick(transaction); }}>{transaction.category}</span>}
       </TableCell>
       <TableCell align="right" style={{
         ...cellStyle,
-        color: transaction.price < 0 ? '#ef4444' : '#10b981',
+        color: transaction.price < 0 ? 'var(--n-error)' : 'var(--n-success)',
         fontWeight: 600
       }}>
         {editingTransaction?.identifier === transaction.identifier && !hideActions ? (
@@ -546,19 +546,19 @@ const TransactionRow = React.memo(({
                 <IconButton onClick={handleSaveClick} sx={{ color: '#4ADE80' }}><CheckIcon /></IconButton>
               </Tooltip>
               <Tooltip title={t('common:actions.cancel')}>
-                <IconButton onClick={handleCancelClick} sx={{ color: '#ef4444' }}><CloseIcon /></IconButton>
+                <IconButton onClick={handleCancelClick} sx={{ color: 'var(--n-error)' }}><CloseIcon /></IconButton>
               </Tooltip>
             </>
           ) : (
             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
               <Tooltip title={t('tx:tooltips.editTransaction')}>
-                <IconButton onClick={(e) => { e.stopPropagation(); handleEditClick(transaction); }} size="small" sx={{ color: '#3b82f6' }}><EditIcon fontSize="small" /></IconButton>
+                <IconButton onClick={(e) => { e.stopPropagation(); handleEditClick(transaction); }} size="small" sx={{ color: 'var(--n-info)' }}><EditIcon fontSize="small" /></IconButton>
               </Tooltip>
               <Tooltip title={transaction.notes ? t('tx:tooltips.viewNotes') : t('tx:tooltips.openNotes')}>
                 <IconButton onClick={(e) => { e.stopPropagation(); setEditingNotes({ identifier: transaction.identifier, vendor: transaction.vendor, content: transaction.notes || '' }); }} size="small" sx={{ color: transaction.notes ? theme.palette.primary.main : theme.palette.text.disabled }}><NotesIcon fontSize="small" /></IconButton>
               </Tooltip>
               <Tooltip title={t('tx:tooltips.deleteTransaction')}>
-                <IconButton onClick={(e) => { e.stopPropagation(); setConfirmDeleteTransaction(transaction); }} size="small" sx={{ color: '#ef4444' }}><DeleteIcon fontSize="small" /></IconButton>
+                <IconButton onClick={(e) => { e.stopPropagation(); setConfirmDeleteTransaction(transaction); }} size="small" sx={{ color: 'var(--n-error)' }}><DeleteIcon fontSize="small" /></IconButton>
               </Tooltip>
             </Box>
           )}
@@ -664,14 +664,14 @@ const TransactionMobileCardContent = ({
               }}>{transaction.notes}</Typography>}
           </Box>
         </Box>
-        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: transaction.price < 0 ? '#ef4444' : '#10b981' }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: transaction.price < 0 ? 'var(--n-error)' : 'var(--n-success)' }}>
           {isBankView && transaction.price >= 0 ? '+' : ''}₪{formatNumber(Math.abs(transaction.price))}
         </Typography>
       </Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         {isEditing ? (
           <CategoryAutocomplete value={editCategory || ''} onChange={setEditCategory || (() => { })} options={availableCategories || []} applyToAll={applyToAll || false} onApplyToAllChange={setApplyToAll || (() => { })} showApplyToAll={editCategory !== transaction.category} />
-        ) : <Typography variant="caption" sx={{ color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)', p: '2px 8px', borderRadius: 1 }}>{transaction.category}</Typography>}
+        ) : <Typography variant="caption" sx={{ color: 'var(--n-info)', background: 'rgba(59, 130, 246, 0.1)', p: '2px 8px', borderRadius: 1 }}>{transaction.category}</Typography>}
       </Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -682,22 +682,22 @@ const TransactionMobileCardContent = ({
           {isEditing ? (
             <>
               <Tooltip title={t('common:actions.save')}>
-                <IconButton size="small" onClick={onSave} sx={{ color: '#10b981' }}><CheckIcon fontSize="small" /></IconButton>
+                <IconButton size="small" onClick={onSave} sx={{ color: 'var(--n-success)' }}><CheckIcon fontSize="small" /></IconButton>
               </Tooltip>
               <Tooltip title={t('common:actions.cancel')}>
-                <IconButton size="small" onClick={onCancel} sx={{ color: '#ef4444' }}><CloseIcon fontSize="small" /></IconButton>
+                <IconButton size="small" onClick={onCancel} sx={{ color: 'var(--n-error)' }}><CloseIcon fontSize="small" /></IconButton>
               </Tooltip>
             </>
           ) : (
             <>
               <Tooltip title={t('tx:tooltips.editTransaction')}>
-                <IconButton size="small" onClick={onEdit} sx={{ color: '#3b82f6' }}><EditIcon fontSize="small" /></IconButton>
+                <IconButton size="small" onClick={onEdit} sx={{ color: 'var(--n-info)' }}><EditIcon fontSize="small" /></IconButton>
               </Tooltip>
               <Tooltip title={transaction.notes ? t('tx:tooltips.viewNotes') : t('tx:tooltips.openNotes')}>
                 <IconButton size="small" onClick={() => setShowNoteInput(!showNoteInput)} sx={{ color: transaction.notes ? theme.palette.primary.main : theme.palette.text.disabled }}><NotesIcon fontSize="small" /></IconButton>
               </Tooltip>
               <Tooltip title={t('tx:tooltips.deleteTransaction')}>
-                <IconButton size="small" onClick={onDelete} sx={{ color: '#ef4444' }}><DeleteIcon fontSize="small" /></IconButton>
+                <IconButton size="small" onClick={onDelete} sx={{ color: 'var(--n-error)' }}><DeleteIcon fontSize="small" /></IconButton>
               </Tooltip>
             </>
           )}
