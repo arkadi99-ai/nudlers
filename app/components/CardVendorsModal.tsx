@@ -406,7 +406,7 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
         <Typography
           sx={{
             backgroundColor: 'rgba(99, 102, 241, 0.1)',
-            color: '#6366f1',
+            color: 'var(--n-primary-500)',
             padding: '4px 12px',
             borderRadius: '20px',
             fontSize: '14px',
@@ -754,7 +754,7 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
                       <Typography
                         sx={{
                           backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                          color: '#6366f1',
+                          color: 'var(--n-primary-500)',
                           padding: '2px 8px',
                           borderRadius: '12px',
                           fontSize: '12px',

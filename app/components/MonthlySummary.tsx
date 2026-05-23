@@ -1079,7 +1079,7 @@ const MonthlySummary: React.FC = () => {
       <div style={{
         textAlign: 'center',
         padding: '64px',
-        color: '#ef4444'
+        color: 'var(--n-error)'
       }}>
         {t('summary.errorPrefix', { message: error })}
       </div>
@@ -1142,7 +1142,7 @@ const MonthlySummary: React.FC = () => {
             alignItems: 'center',
             minHeight: '300px'
           }}>
-            <CircularProgress size={60} style={{ color: '#3b82f6' }} />
+            <CircularProgress size={60} style={{ color: 'var(--n-info)' }} />
           </div>
         ) : (
           <>
@@ -1218,7 +1218,7 @@ const MonthlySummary: React.FC = () => {
                                 '& .MuiInputBase-root': { bgcolor: theme.palette.background.paper, fontSize: '0.8125rem' }
                               }}
                             />
-                            <IconButton size="small" onClick={handleSaveBudget} sx={{ color: '#10b981', p: 0.5 }}>
+                            <IconButton size="small" onClick={handleSaveBudget} sx={{ color: 'var(--n-success)', p: 0.5 }}>
                               <CheckIcon fontSize="small" />
                             </IconButton>
                           </Box>
@@ -1234,11 +1234,11 @@ const MonthlySummary: React.FC = () => {
                                   flex: 1,
                                   bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
                                   '& .MuiLinearProgress-bar': {
-                                    bgcolor: totals.card_expenses > budgetLimit ? '#ef4444' : '#10b981'
+                                    bgcolor: totals.card_expenses > budgetLimit ? 'var(--n-error)' : 'var(--n-success)'
                                   }
                                 }}
                               />
-                              <Typography variant="caption" sx={{ fontWeight: 700, color: totals.card_expenses > budgetLimit ? '#ef4444' : '#10b981', fontSize: '0.65rem' }}>
+                              <Typography variant="caption" sx={{ fontWeight: 700, color: totals.card_expenses > budgetLimit ? 'var(--n-error)' : 'var(--n-success)', fontSize: '0.65rem' }}>
                                 {Math.round((totals.card_expenses / budgetLimit) * 100)}%
                               </Typography>
                             </Box>
@@ -1668,7 +1668,7 @@ const MonthlySummary: React.FC = () => {
                               handleNicknameSave(selectedCardForVendor, editingNickname);
                             }
                           }}
-                          sx={{ color: '#10b981' }}
+                          sx={{ color: 'var(--n-success)' }}
                         >
                           <CheckIcon sx={{ fontSize: '18px' }} />
                         </IconButton>
@@ -1700,7 +1700,7 @@ const MonthlySummary: React.FC = () => {
                   <CardVendorIcon vendor={key} size={32} />
                   <span style={{ fontWeight: 500, color: theme.palette.text.primary }}>{config.name}</span>
                   {cardVendorMap[selectedCardForVendor || ''] === key && (
-                    <CheckIcon sx={{ fontSize: '18px', color: '#10b981', ml: 'auto' }} />
+                    <CheckIcon sx={{ fontSize: '18px', color: 'var(--n-success)', ml: 'auto' }} />
                   )}
                 </MenuItem>
               ))}
