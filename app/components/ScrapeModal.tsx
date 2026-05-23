@@ -33,6 +33,7 @@ import ModalHeader from './ModalHeader';
 import { useTheme } from '@mui/material/styles';
 import { useStatus } from '../context/StatusContext';
 import { BEINLEUMI_GROUP_VENDORS, STANDARD_BANK_VENDORS } from '../utils/constants';
+import { formatISODate, getTodayISODate } from '../utils/dateUtils';
 import dynamic from 'next/dynamic';
 import { ScrapeReportTransaction } from './ScrapeReport';
 const ScrapeReport = dynamic(() => import('./ScrapeReport'), { ssr: false });
@@ -148,12 +149,8 @@ export default function ScrapeModal({ open, onClose, onSuccess, initialConfig }:
       if (interval) clearInterval(interval);
     };
   }, [isLoading]);
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayISODate();
   const clampDateString = (value: string) => (value > todayStr ? todayStr : value);
-  const formatDateForInput = (date: Date) => {
-    if (!date || isNaN(date.getTime())) return '';
-    return date.toISOString().split('T')[0];
-  };
   const defaultConfig: ScraperConfig = React.useMemo(() => ({
     options: {
       companyId: 'isracard',
@@ -653,7 +650,7 @@ export default function ScrapeModal({ open, onClose, onSuccess, initialConfig }:
       <TextField
         label={t('form.startDateLabel')}
         type="date"
-        value={formatDateForInput(config.options.startDate)}
+        value={formatISODate(config.options.startDate)}
         onChange={(e) => {
           const v = clampDateString(e.target.value);
           if (v) {
@@ -740,7 +737,7 @@ export default function ScrapeModal({ open, onClose, onSuccess, initialConfig }:
       <TextField
         label={t('form.startDateLabel')}
         type="date"
-        value={formatDateForInput(config.options.startDate)}
+        value={formatISODate(config.options.startDate)}
         onChange={(e) => {
           const v = clampDateString(e.target.value);
           if (v) {

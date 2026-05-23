@@ -32,6 +32,7 @@ import CloudOffIcon from '@mui/icons-material/CloudOff';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import TimerIcon from '@mui/icons-material/Timer';
 import { BEINLEUMI_GROUP_VENDORS, BANK_VENDORS } from '../utils/constants';
+import { formatISODate } from '../utils/dateUtils';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import dynamic from 'next/dynamic';
@@ -508,13 +509,13 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
       const startDate = lastDate ? new Date(lastDate) : new Date();
       const daysBack = status?.settings?.daysBack || 30;
       startDate.setDate(startDate.getDate() - daysBack);
-      const computed = startDate.toISOString().split('T')[0];
+      const computed = formatISODate(startDate);
       setSyncOptionsStartDate(computed);
       setSyncOptionsDateError(validateSyncDate(computed));
     } catch {
       const fallback = new Date();
       fallback.setDate(fallback.getDate() - 30);
-      const computed = fallback.toISOString().split('T')[0];
+      const computed = formatISODate(fallback);
       setSyncOptionsStartDate(computed);
       setSyncOptionsDateError(validateSyncDate(computed));
     } finally {
@@ -891,7 +892,7 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
           const startDate = lastDate ? new Date(lastDate) : new Date();
           const daysBack = status?.settings?.daysBack || 30;
           startDate.setDate(startDate.getDate() - daysBack);
-          computedStartDate = startDate.toISOString().split('T')[0];
+          computedStartDate = formatISODate(startDate);
         }
 
         const credentials = prepareCredentials(account, account.vendor);
