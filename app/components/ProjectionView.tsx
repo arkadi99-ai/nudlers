@@ -10,11 +10,11 @@ import BlockIcon from '@mui/icons-material/Block';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import { format } from 'date-fns';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../context/LocaleContext';
+import { useSnackbar, SnackbarState } from './hooks/useSnackbar';
+import SnackbarFeedback from './SnackbarFeedback';
 
 export interface ProjectionData {
     date: string;
@@ -45,8 +45,8 @@ interface ProjectionViewContentProps {
     setIsAddDialogOpen: (open: boolean) => void;
     newRecurring: NewRecurringState;
     setNewRecurring: React.Dispatch<React.SetStateAction<NewRecurringState>>;
-    snackbar: { open: boolean; message: string; severity: 'success' | 'error' };
-    setSnackbar: React.Dispatch<React.SetStateAction<{ open: boolean; message: string; severity: 'success' | 'error' }>>;
+    snackbar: SnackbarState;
+    hideSnackbar: () => void;
     onRefresh: () => void;
     onToggleVisibility: (accountId: number, e: React.MouseEvent) => void;
     onMarkNotRecurring: (name: string, account_number: string) => void;
@@ -65,7 +65,7 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
     newRecurring,
     setNewRecurring,
     snackbar,
-    setSnackbar,
+    hideSnackbar,
     onRefresh,
     onToggleVisibility: _onToggleVisibility,
     onMarkNotRecurring,
@@ -428,16 +428,14 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
                     </Box>
                 </Box>
             </Box>
-            <Snackbar
-                open={snackbar.open}
+            <SnackbarFeedback
+                snackbar={snackbar}
+                onClose={hideSnackbar}
                 autoHideDuration={4000}
-                onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            >
-                <Alert severity={snackbar.severity} sx={{ borderRadius: '12px', fontWeight: 600 }}>
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
+                alertSx={{ borderRadius: '12px', fontWeight: 600 }}
+                showAlertClose={false}
+            />
             {/* Add Recurring Dialog */}
             <Dialog
                 open={isAddDialogOpen}
@@ -538,11 +536,7 @@ const ProjectionView: React.FC = () => {
         frequency: 'monthly'
     });
 
-    const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-        open: false,
-        message: '',
-        severity: 'success'
-    });
+    const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
     const fetchProjection = async () => {
         setLoading(true);
@@ -589,12 +583,12 @@ const ProjectionView: React.FC = () => {
                 }),
             });
             if (!response.ok) throw new Error('Failed to mark as non-recurring');
-            setSnackbar({ open: true, message: t('projection.snackbarExcludedFromProjections', { name }), severity: 'success' });
+            showSnackbar(t('projection.snackbarExcludedFromProjections', { name }), 'success');
             fetchProjection();
             window.dispatchEvent(new CustomEvent('dataRefresh'));
         } catch (err) {
             console.error('Error marking as non-recurring', err);
-            setSnackbar({ open: true, message: t('projection.snackbarFailedExclude'), severity: 'error' });
+            showSnackbar(t('projection.snackbarFailedExclude'), 'error');
         }
     };
 
@@ -621,7 +615,7 @@ const ProjectionView: React.FC = () => {
                 }),
             });
             if (res.ok) {
-                setSnackbar({ open: true, message: t('projection.snackbarRecurringAdded'), severity: 'success' });
+                showSnackbar(t('projection.snackbarRecurringAdded'), 'success');
                 setIsAddDialogOpen(false);
                 setNewRecurring({
                     name: '',
@@ -635,7 +629,7 @@ const ProjectionView: React.FC = () => {
             }
         } catch (err) {
             console.error('Failed to add recurring', err);
-            setSnackbar({ open: true, message: t('projection.snackbarFailedAddRecurring'), severity: 'error' });
+            showSnackbar(t('projection.snackbarFailedAddRecurring'), 'error');
         }
     };
 
@@ -659,7 +653,7 @@ const ProjectionView: React.FC = () => {
             newRecurring={newRecurring}
             setNewRecurring={setNewRecurring}
             snackbar={snackbar}
-            setSnackbar={setSnackbar}
+            hideSnackbar={hideSnackbar}
             onRefresh={fetchProjection}
             onToggleVisibility={handleToggleVisibility}
             onMarkNotRecurring={handleMarkNotRecurring}
