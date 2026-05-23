@@ -93,7 +93,7 @@ interface BankAccount {
 }
 
 interface CardVendorsModalProps {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
 }
 
@@ -179,7 +179,7 @@ export const CardVendorIcon: React.FC<{ vendor: string | null; size?: number }> 
   );
 };
 
-export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalProps) {
+export default function CardVendorsModal({ open, onClose }: CardVendorsModalProps) {
   const theme = useTheme();
   const { t } = useTranslation(['misc', 'common']);
   const [cards, setCards] = useState<CardData[]>([]);
@@ -240,12 +240,12 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
   }, []);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!open) return;
     queueMicrotask(() => {
       fetchCards();
       fetchBankAccounts();
     });
-  }, [isOpen, fetchCards, fetchBankAccounts]);
+  }, [open, fetchCards, fetchBankAccounts]);
 
   const handleEdit = useCallback((card: CardData, field: string = 'vendor', event?: React.MouseEvent) => {
     if (event) {
@@ -687,7 +687,7 @@ export default function CardVendorsModal({ isOpen, onClose }: CardVendorsModalPr
   return (
     <>
       <Dialog
-        open={isOpen}
+        open={open}
         onClose={onClose}
         maxWidth="xl"
         fullWidth

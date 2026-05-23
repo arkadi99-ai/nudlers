@@ -58,7 +58,7 @@ interface ScraperConfig {
 }
 
 interface ScrapeModalProps {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
   initialConfig?: ScraperConfig;
@@ -109,7 +109,7 @@ interface RateLimitState {
   startTime: number;
 }
 
-export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig }: ScrapeModalProps) {
+export default function ScrapeModal({ open, onClose, onSuccess, initialConfig }: ScrapeModalProps) {
   const { t } = useTranslation('scrape');
   const theme = useTheme();
   const { setIsVaultModalOpen } = useStatus();
@@ -181,7 +181,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
   }, [initialConfig]);
 
   useEffect(() => {
-    if (isOpen) return;
+    if (open) return;
     queueMicrotask(() => {
       setConfig(initialConfig || defaultConfig);
       setError(null);
@@ -208,7 +208,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-  }, [isOpen, initialConfig, defaultConfig]);
+  }, [open, initialConfig, defaultConfig]);
 
   const handleConfigChange = (field: string, value: unknown) => {
     if (field.includes('.')) {
@@ -1120,7 +1120,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
 
   return (
     <Dialog
-      open={isOpen}
+      open={open}
       onClose={handleClose}
       maxWidth="sm"
       fullWidth

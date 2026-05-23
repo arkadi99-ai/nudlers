@@ -103,7 +103,7 @@ interface CardOwnership {
 }
 
 interface AccountsModalProps {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
 }
 
@@ -135,7 +135,7 @@ const AccountSection = styled(Box)(() => ({
   },
 }));
 
-export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
+export default function AccountsModal({ open, onClose }: AccountsModalProps) {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [cardOwnership, setCardOwnership] = useState<CardOwnership[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -198,12 +198,12 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
   }, []);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!open) return;
     queueMicrotask(() => {
       fetchAccounts();
       fetchCardOwnership();
     });
-  }, [isOpen, fetchAccounts, fetchCardOwnership]);
+  }, [open, fetchAccounts, fetchCardOwnership]);
 
   // Helper to get owned cards for a specific credential
   const getOwnedCards = (credentialId: number): CardOwnership[] => {
@@ -872,7 +872,7 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
   return (
     <>
       <Dialog
-        open={isOpen}
+        open={open}
         onClose={() => {
           if (isAdding || isEditing) {
             handleCancelForm();
@@ -1130,7 +1130,7 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
         </DialogContent>
       </Dialog>
       <ScrapeModal
-        isOpen={isScrapeModalOpen}
+        open={isScrapeModalOpen}
         onClose={() => {
           setIsScrapeModalOpen(false);
           setSelectedAccount(null);
@@ -1156,7 +1156,7 @@ export default function AccountsModal({ isOpen, onClose }: AccountsModalProps) {
         } : undefined}
       />
       <SyncHistoryModal
-        isOpen={isHistoryOpen}
+        open={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
       />
       {/* Truncate Confirmation Dialog */}

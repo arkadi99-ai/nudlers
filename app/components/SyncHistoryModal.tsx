@@ -29,7 +29,7 @@ interface SyncReport {
 }
 
 interface SyncHistoryModalProps {
-    isOpen: boolean;
+    open: boolean;
     onClose: () => void;
 }
 
@@ -44,7 +44,7 @@ interface SyncEvent {
     duration_seconds?: number;
 }
 
-export default function SyncHistoryModal({ isOpen, onClose }: SyncHistoryModalProps) {
+export default function SyncHistoryModal({ open, onClose }: SyncHistoryModalProps) {
     const theme = useTheme();
     const { t } = useTranslation(['sync', 'common']);
     const { locale } = useLocale();
@@ -71,12 +71,12 @@ export default function SyncHistoryModal({ isOpen, onClose }: SyncHistoryModalPr
     };
 
     useEffect(() => {
-        if (!isOpen) return;
+        if (!open) return;
         queueMicrotask(() => {
             fetchEvents();
             setSelectedEvent(null);
         });
-    }, [isOpen]);
+    }, [open]);
 
     const handleSelectEvent = async (event: SyncEvent) => {
         setSelectedEvent(event);
@@ -110,7 +110,7 @@ export default function SyncHistoryModal({ isOpen, onClose }: SyncHistoryModalPr
 
     return (
         <Dialog
-            open={isOpen}
+            open={open}
             onClose={onClose}
             maxWidth="md"
             fullWidth

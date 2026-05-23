@@ -435,7 +435,7 @@ const AccountsView: React.FC = () => {
             </Container>
             {/* Sync History Modal */}
             <SyncHistoryModal
-                isOpen={isHistoryOpen}
+                open={isHistoryOpen}
                 onClose={() => setIsHistoryOpen(false)}
             />
             {/* Add/Edit Modal */}
