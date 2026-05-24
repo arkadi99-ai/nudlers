@@ -1,7 +1,7 @@
 import React from 'react';
 import { logger } from '../../../utils/client-logger';
 import { useTheme, type Theme } from '@mui/material/styles';
-import { Table, TableBody, TableCell, TableHead, TableRow, Paper, Box, Typography, IconButton, TextField, Snackbar, Alert, Tooltip, TableSortLabel, useMediaQuery, Button } from '@mui/material';
+import { Table, TableBody, TableCell, TableHead, TableRow, Paper, Box, Typography, IconButton, TextField, Tooltip, TableSortLabel, useMediaQuery, Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
@@ -21,6 +21,8 @@ import AccountDisplay from '../../AccountDisplay';
 import MobileSortableTable, { SortOption } from '../../MobileSortableTable';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../../../context/LocaleContext';
+import { useSnackbar } from '../../hooks/useSnackbar';
+import SnackbarFeedback from '../../SnackbarFeedback';
 
 const getCurrencySymbol = (currency?: string) => {
   if (!currency) return '₪';
@@ -92,11 +94,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
   const [applyToAll, setApplyToAll] = React.useState<boolean>(false);
   const { categories: availableCategories } = useCategories();
   const { getCardVendor, getCardNickname } = useCardVendors();
-  const [snackbar, setSnackbar] = React.useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
+  const { snackbar, showSnackbar, hideSnackbar } = useSnackbar<'success' | 'error' | 'info'>();
   const [confirmDeleteTransaction, setConfirmDeleteTransaction] = React.useState<Transaction | null>(null);
   const [editingNotes, setEditingNotes] = React.useState<{ identifier: string; vendor: string; content: string } | null>(null);
 
@@ -122,13 +120,13 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
     if (!confirmDeleteTransaction) return;
     try {
       onDelete?.(confirmDeleteTransaction);
-      setSnackbar({ open: true, message: t('tx:snackbar.deleteSuccess'), severity: 'success' });
+      showSnackbar(t('tx:snackbar.deleteSuccess'), 'success');
     } catch (error) {
       logger.error('Error deleting transaction', error as Error);
-      setSnackbar({ open: true, message: t('tx:snackbar.deleteError'), severity: 'error' });
+      showSnackbar(t('tx:snackbar.deleteError'), 'error');
     }
     setConfirmDeleteTransaction(null);
-  }, [confirmDeleteTransaction, onDelete, t]);
+  }, [confirmDeleteTransaction, onDelete, showSnackbar, t]);
 
   const handleEditClick = React.useCallback((transaction: Transaction) => {
     setEditingTransaction(transaction);
@@ -161,13 +159,12 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 
               if (response.ok) {
                 const result = await response.json();
-                setSnackbar({
-                  open: true,
-                  message: result.transactionsUpdated > 1
+                showSnackbar(
+                  result.transactionsUpdated > 1
                     ? t('tx:snackbar.updatedManyAndRule', { count: result.transactionsUpdated })
                     : t('tx:snackbar.categoryUpdatedAndRule'),
-                  severity: 'success'
-                });
+                  'success'
+                );
                 onUpdate?.(editingTransaction, { category: editCategory, price: priceWithSign });
                 window.dispatchEvent(new CustomEvent('dataRefresh'));
               }
@@ -179,12 +176,12 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
           }
         } catch (error) {
           logger.error('Error updating transaction', error as Error);
-          setSnackbar({ open: true, message: t('tx:snackbar.updateError'), severity: 'error' });
+          showSnackbar(t('tx:snackbar.updateError'), 'error');
         }
         setEditingTransaction(null);
       }
     }
-  }, [editingTransaction, editPrice, editCategory, applyToAll, onUpdate, isBankView, t]);
+  }, [editingTransaction, editPrice, editCategory, applyToAll, onUpdate, isBankView, showSnackbar, t]);
 
   const handleCancelClick = React.useCallback(() => {
     setEditingTransaction(null);
@@ -382,9 +379,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
           </TableBody>
         </Table>
       )}
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
-        <Alert severity={snackbar.severity} onClose={() => setSnackbar({ ...snackbar, open: false })}>{snackbar.message}</Alert>
-      </Snackbar>
+      <SnackbarFeedback snackbar={snackbar} onClose={hideSnackbar} />
       <DeleteConfirmationDialog
         open={!!confirmDeleteTransaction}
         onClose={() => setConfirmDeleteTransaction(null)}
@@ -510,11 +505,11 @@ const TransactionRow = React.memo(({
       <TableCell style={cellStyle}>
         {editingTransaction?.identifier === transaction.identifier && !hideActions ? (
           <CategoryAutocomplete value={editCategory} onChange={setEditCategory} options={availableCategories} applyToAll={applyToAll} onApplyToAllChange={setApplyToAll} showApplyToAll={editCategory !== editingTransaction.category} />
-        ) : <span style={{ cursor: 'pointer', color: '#3b82f6' }} onClick={(e) => { e.stopPropagation(); handleEditClick(transaction); }}>{transaction.category}</span>}
+        ) : <span style={{ cursor: 'pointer', color: 'var(--n-info)' }} onClick={(e) => { e.stopPropagation(); handleEditClick(transaction); }}>{transaction.category}</span>}
       </TableCell>
       <TableCell align="right" style={{
         ...cellStyle,
-        color: transaction.price < 0 ? '#ef4444' : '#10b981',
+        color: transaction.price < 0 ? 'var(--n-error)' : 'var(--n-success)',
         fontWeight: 600
       }}>
         {editingTransaction?.identifier === transaction.identifier && !hideActions ? (
@@ -551,19 +546,19 @@ const TransactionRow = React.memo(({
                 <IconButton onClick={handleSaveClick} sx={{ color: '#4ADE80' }}><CheckIcon /></IconButton>
               </Tooltip>
               <Tooltip title={t('common:actions.cancel')}>
-                <IconButton onClick={handleCancelClick} sx={{ color: '#ef4444' }}><CloseIcon /></IconButton>
+                <IconButton onClick={handleCancelClick} sx={{ color: 'var(--n-error)' }}><CloseIcon /></IconButton>
               </Tooltip>
             </>
           ) : (
             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
               <Tooltip title={t('tx:tooltips.editTransaction')}>
-                <IconButton onClick={(e) => { e.stopPropagation(); handleEditClick(transaction); }} size="small" sx={{ color: '#3b82f6' }}><EditIcon fontSize="small" /></IconButton>
+                <IconButton onClick={(e) => { e.stopPropagation(); handleEditClick(transaction); }} size="small" sx={{ color: 'var(--n-info)' }}><EditIcon fontSize="small" /></IconButton>
               </Tooltip>
               <Tooltip title={transaction.notes ? t('tx:tooltips.viewNotes') : t('tx:tooltips.openNotes')}>
                 <IconButton onClick={(e) => { e.stopPropagation(); setEditingNotes({ identifier: transaction.identifier, vendor: transaction.vendor, content: transaction.notes || '' }); }} size="small" sx={{ color: transaction.notes ? theme.palette.primary.main : theme.palette.text.disabled }}><NotesIcon fontSize="small" /></IconButton>
               </Tooltip>
               <Tooltip title={t('tx:tooltips.deleteTransaction')}>
-                <IconButton onClick={(e) => { e.stopPropagation(); setConfirmDeleteTransaction(transaction); }} size="small" sx={{ color: '#ef4444' }}><DeleteIcon fontSize="small" /></IconButton>
+                <IconButton onClick={(e) => { e.stopPropagation(); setConfirmDeleteTransaction(transaction); }} size="small" sx={{ color: 'var(--n-error)' }}><DeleteIcon fontSize="small" /></IconButton>
               </Tooltip>
             </Box>
           )}
@@ -669,14 +664,14 @@ const TransactionMobileCardContent = ({
               }}>{transaction.notes}</Typography>}
           </Box>
         </Box>
-        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: transaction.price < 0 ? '#ef4444' : '#10b981' }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: transaction.price < 0 ? 'var(--n-error)' : 'var(--n-success)' }}>
           {isBankView && transaction.price >= 0 ? '+' : ''}₪{formatNumber(Math.abs(transaction.price))}
         </Typography>
       </Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         {isEditing ? (
           <CategoryAutocomplete value={editCategory || ''} onChange={setEditCategory || (() => { })} options={availableCategories || []} applyToAll={applyToAll || false} onApplyToAllChange={setApplyToAll || (() => { })} showApplyToAll={editCategory !== transaction.category} />
-        ) : <Typography variant="caption" sx={{ color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)', p: '2px 8px', borderRadius: 1 }}>{transaction.category}</Typography>}
+        ) : <Typography variant="caption" sx={{ color: 'var(--n-info)', background: 'rgba(59, 130, 246, 0.1)', p: '2px 8px', borderRadius: 1 }}>{transaction.category}</Typography>}
       </Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -687,22 +682,22 @@ const TransactionMobileCardContent = ({
           {isEditing ? (
             <>
               <Tooltip title={t('common:actions.save')}>
-                <IconButton size="small" onClick={onSave} sx={{ color: '#10b981' }}><CheckIcon fontSize="small" /></IconButton>
+                <IconButton size="small" onClick={onSave} sx={{ color: 'var(--n-success)' }}><CheckIcon fontSize="small" /></IconButton>
               </Tooltip>
               <Tooltip title={t('common:actions.cancel')}>
-                <IconButton size="small" onClick={onCancel} sx={{ color: '#ef4444' }}><CloseIcon fontSize="small" /></IconButton>
+                <IconButton size="small" onClick={onCancel} sx={{ color: 'var(--n-error)' }}><CloseIcon fontSize="small" /></IconButton>
               </Tooltip>
             </>
           ) : (
             <>
               <Tooltip title={t('tx:tooltips.editTransaction')}>
-                <IconButton size="small" onClick={onEdit} sx={{ color: '#3b82f6' }}><EditIcon fontSize="small" /></IconButton>
+                <IconButton size="small" onClick={onEdit} sx={{ color: 'var(--n-info)' }}><EditIcon fontSize="small" /></IconButton>
               </Tooltip>
               <Tooltip title={transaction.notes ? t('tx:tooltips.viewNotes') : t('tx:tooltips.openNotes')}>
                 <IconButton size="small" onClick={() => setShowNoteInput(!showNoteInput)} sx={{ color: transaction.notes ? theme.palette.primary.main : theme.palette.text.disabled }}><NotesIcon fontSize="small" /></IconButton>
               </Tooltip>
               <Tooltip title={t('tx:tooltips.deleteTransaction')}>
-                <IconButton size="small" onClick={onDelete} sx={{ color: '#ef4444' }}><DeleteIcon fontSize="small" /></IconButton>
+                <IconButton size="small" onClick={onDelete} sx={{ color: 'var(--n-error)' }}><DeleteIcon fontSize="small" /></IconButton>
               </Tooltip>
             </>
           )}

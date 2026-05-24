@@ -13,8 +13,6 @@ import {
     IconButton,
     TextField,
     Autocomplete,
-    Snackbar,
-    Alert,
     FormControlLabel,
     Switch,
     useMediaQuery
@@ -35,6 +33,8 @@ import { logger } from '../utils/client-logger';
 import { getTableHeaderCellStyle, getTableBodyCellStyle, TABLE_ROW_HOVER_STYLE, getTableRowHoverBackground } from './CategoryDashboard/utils/tableStyles';
 import MobileSortableTable from './MobileSortableTable';
 import { useTranslation } from 'react-i18next';
+import { useSnackbar } from './hooks/useSnackbar';
+import SnackbarFeedback from './SnackbarFeedback';
 
 // Maximum date range in years
 const MAX_YEARS_RANGE = 5;
@@ -98,11 +98,7 @@ const BreakdownView: React.FC = () => {
     const [loadingMore, setLoadingMore] = useState(false);
     const [_total, setTotal] = useState(0);
     const PAGE_SIZE = 50;
-    const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-        open: false,
-        message: '',
-        severity: 'success'
-    });
+    const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
     const validateDateRange = (start: string, end: string): boolean => {
         if (!start || !end) return false;
@@ -238,7 +234,7 @@ const BreakdownView: React.FC = () => {
 
     const handleCategorySave = async (description: string) => {
         if (!editCategory.trim()) {
-            setSnackbar({ open: true, message: t('breakdown.snackbarCategoryEmpty'), severity: 'error' });
+            showSnackbar(t('breakdown.snackbarCategoryEmpty'), 'error');
             return;
         }
 
@@ -265,13 +261,13 @@ const BreakdownView: React.FC = () => {
                 const message = result.transactionsUpdated > 1
                     ? t('breakdown.snackbarTransactionsUpdated', { count: result.transactionsUpdated })
                     : t('breakdown.snackbarCategoryUpdated');
-                setSnackbar({ open: true, message, severity: 'success' });
+                showSnackbar(message, 'success');
             } else {
-                setSnackbar({ open: true, message: t('breakdown.snackbarFailedUpdateCategory'), severity: 'error' });
+                showSnackbar(t('breakdown.snackbarFailedUpdateCategory'), 'error');
             }
         } catch (error) {
             logger.error('Error updating category', error);
-            setSnackbar({ open: true, message: t('breakdown.snackbarErrorUpdateCategory'), severity: 'error' });
+            showSnackbar(t('breakdown.snackbarErrorUpdateCategory'), 'error');
         }
         setEditingDescription(null);
     };
@@ -611,7 +607,7 @@ const BreakdownView: React.FC = () => {
                                                                     renderInput={(params) => <TextField {...params} autoFocus placeholder={t('breakdown.categoryPlaceholder')} />}
                                                                 />
                                                                 <IconButton size="small" onClick={() => handleCategorySave(row.description!)} sx={{ color: '#4ADE80' }}><CheckIcon /></IconButton>
-                                                                <IconButton size="small" onClick={handleCategoryCancel} sx={{ color: '#ef4444' }}><CloseIcon /></IconButton>
+                                                                <IconButton size="small" onClick={handleCategoryCancel} sx={{ color: 'var(--n-error)' }}><CloseIcon /></IconButton>
                                                             </Box>
                                                         ) : (
                                                             <span
@@ -621,7 +617,7 @@ const BreakdownView: React.FC = () => {
                                                                     borderRadius: '6px',
                                                                     fontSize: '13px',
                                                                     cursor: 'pointer',
-                                                                    color: '#3b82f6',
+                                                                    color: 'var(--n-info)',
                                                                     fontWeight: 500
                                                                 }}
                                                                 onClick={() => handleCategoryEditClick(row.description!, row.category || '')}
@@ -707,16 +703,13 @@ const BreakdownView: React.FC = () => {
                     currentMonth={dateRangeMode === "custom" ? `${customStartDate}` : `${selectedYear}-${selectedMonth}`}
                 />
             )}
-            <Snackbar
-                open={snackbar.open}
+            <SnackbarFeedback
+                snackbar={snackbar}
+                onClose={hideSnackbar}
                 autoHideDuration={5000}
-                onClose={() => setSnackbar({ ...snackbar, open: false })}
                 anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-            >
-                <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: "100%", borderRadius: "12px" }}>
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
+                alertSx={{ width: "100%", borderRadius: "12px" }}
+            />
         </Box>
     );
 };
@@ -793,7 +786,7 @@ const BreakdownMobileCardContent = ({
                                 renderInput={(params) => <TextField {...params} autoFocus placeholder={t('breakdown.categoryPlaceholder')} />}
                             />
                             <IconButton size="small" onClick={() => handleCategorySave(row.description!)} sx={{ color: '#4ADE80' }}><CheckIcon fontSize="small" /></IconButton>
-                            <IconButton size="small" onClick={handleCategoryCancel} sx={{ color: '#ef4444' }}><CloseIcon fontSize="small" /></IconButton>
+                            <IconButton size="small" onClick={handleCategoryCancel} sx={{ color: 'var(--n-error)' }}><CloseIcon fontSize="small" /></IconButton>
                         </Box>
                     ) : (
                         <span
@@ -803,7 +796,7 @@ const BreakdownMobileCardContent = ({
                                 borderRadius: '6px',
                                 fontSize: '11px',
                                 cursor: 'pointer',
-                                color: '#3b82f6',
+                                color: 'var(--n-info)',
                                 fontWeight: 600
                             }}
                             onClick={() => handleCategoryEditClick(row.description!, row.category || '')}

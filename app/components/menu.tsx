@@ -467,7 +467,7 @@ function ResponsiveAppBar({ currentView = 'summary', onViewChange }: ResponsiveA
         {drawerContent(false)}
       </Drawer>
       <ScrapeModal
-        isOpen={isScrapeModalOpen}
+        open={isScrapeModalOpen}
         onClose={() => setIsScrapeModalOpen(false)}
         onSuccess={handleScrapeSuccess}
       />
@@ -480,7 +480,7 @@ function ResponsiveAppBar({ currentView = 'summary', onViewChange }: ResponsiveA
         }}
       />
       <CardVendorsModal
-        isOpen={isCardVendorsOpen}
+        open={isCardVendorsOpen}
         onClose={() => setIsCardVendorsOpen(false)}
       />
       <DatabaseBackupModal

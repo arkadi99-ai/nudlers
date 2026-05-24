@@ -278,7 +278,7 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
                 size="small"
                 sx={{
                   backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                  color: '#3b82f6',
+                  color: 'var(--n-info)',
                   fontWeight: 600
                 }}
               />
@@ -295,7 +295,7 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
             height: 4,
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
             '& .MuiLinearProgress-bar': {
-              backgroundColor: '#3b82f6'
+              backgroundColor: 'var(--n-info)'
             }
           }}
         />
@@ -415,7 +415,7 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
                     size="small"
                     sx={{
                       backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                      color: '#3b82f6',
+                      color: 'var(--n-info)',
                       fontWeight: 600
                     }}
                   />
@@ -424,7 +424,7 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
                     size="small"
                     sx={{
                       backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                      color: '#ef4444',
+                      color: 'var(--n-error)',
                       fontWeight: 600
                     }}
                   />
@@ -462,7 +462,7 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
                           <TableCell sx={{ color: theme.palette.text.secondary, fontSize: '13px' }}>
                             {formatDate(tx.date)}
                           </TableCell>
-                          <TableCell sx={{ color: tx.price < 0 ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: '13px' }}>
+                          <TableCell sx={{ color: tx.price < 0 ? 'var(--n-error)' : '#22c55e', fontWeight: 600, fontSize: '13px' }}>
                             {formatCurrency(Math.abs(tx.price))}
                           </TableCell>
                           <TableCell sx={{ color: theme.palette.text.secondary, fontSize: '13px' }}>
@@ -491,7 +491,7 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
                                   fontSize: '11px',
                                   marginLeft: tx.installments_total && tx.installments_total > 1 ? '4px' : 0,
                                   backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                                  color: '#f59e0b'
+                                  color: 'var(--n-warning)'
                                 }}
                               />
                             )}
@@ -551,7 +551,7 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
                   onClick={() => handleCategorySelect(category)}
                   disabled={isSaving}
                   sx={{
-                    backgroundColor: categoryColors[category] || '#3b82f6',
+                    backgroundColor: categoryColors[category] || 'var(--n-info)',
                     color: '#fff',
                     textTransform: 'none',
                     fontWeight: 600,
@@ -561,10 +561,10 @@ const QuickCategoryModal: React.FC<QuickCategoryModalProps> = ({
                     minWidth: 'auto',
                     transition: 'all 0.2s ease-in-out',
                     '&:hover': {
-                      backgroundColor: categoryColors[category] || '#3b82f6',
+                      backgroundColor: categoryColors[category] || 'var(--n-info)',
                       filter: 'brightness(1.1)',
                       transform: 'translateY(-2px)',
-                      boxShadow: `0 4px 12px ${categoryColors[category] || '#3b82f6'}40`
+                      boxShadow: `0 4px 12px ${categoryColors[category] || 'var(--n-info)'}40`
                     },
                     '&:active': {
                       transform: 'translateY(0)'

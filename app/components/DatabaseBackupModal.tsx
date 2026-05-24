@@ -30,6 +30,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import WarningIcon from '@mui/icons-material/Warning';
 import StorageIcon from '@mui/icons-material/Storage';
 import TableChartIcon from '@mui/icons-material/TableChart';
+import { getTodayISODate } from '../utils/dateUtils';
 
 interface DatabaseBackupModalProps {
   open: boolean;
@@ -100,7 +101,7 @@ const DatabaseBackupModal: React.FC<DatabaseBackupModalProps> = ({ open, onClose
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `backup-${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `backup-${getTodayISODate()}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

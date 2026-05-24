@@ -7,9 +7,9 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
+import { useSnackbar } from './hooks/useSnackbar';
+import SnackbarFeedback from './SnackbarFeedback';
 
 import RepeatIcon from '@mui/icons-material/Repeat';
 import CreditScoreIcon from '@mui/icons-material/CreditScore';
@@ -126,11 +126,7 @@ const RecurringPaymentsView: React.FC = () => {
     const [categories, setCategories] = useState<string[]>([]);
     const [editingItem, setEditingItem] = useState<{ type: 'installment' | 'recurring', index: number, item: Installment | RecurringTransaction } | null>(null);
     const [editCategory, setEditCategory] = useState('');
-    const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-        open: false,
-        message: '',
-        severity: 'success'
-    });
+    const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
     const theme = useTheme();
 
@@ -303,11 +299,11 @@ const RecurringPaymentsView: React.FC = () => {
             const message = result.transactionsUpdated > 1
                 ? t('recurring.snackbarTransactionsUpdated', { count: result.transactionsUpdated, name: editingItem.item.name, category: editCategory })
                 : t('recurring.snackbarCategoryUpdated', { category: editCategory });
-            setSnackbar({ open: true, message, severity: 'success' });
+            showSnackbar(message, 'success');
             window.dispatchEvent(new CustomEvent('dataRefresh'));
         } catch (err) {
             logger.error('Error updating category', err as Error);
-            setSnackbar({ open: true, message: t('recurring.snackbarFailedUpdateCategory'), severity: 'error' });
+            showSnackbar(t('recurring.snackbarFailedUpdateCategory'), 'error');
         } finally {
             setEditingItem(null);
             setEditCategory('');
@@ -330,12 +326,12 @@ const RecurringPaymentsView: React.FC = () => {
                 }),
             });
             if (!response.ok) throw new Error('Failed to mark as non-recurring');
-            setSnackbar({ open: true, message: t('recurring.snackbarMarkedNonRecurring', { name: item.name }), severity: 'success' });
+            showSnackbar(t('recurring.snackbarMarkedNonRecurring', { name: item.name }), 'success');
             fetchData(false);
             window.dispatchEvent(new CustomEvent('dataRefresh'));
         } catch (err) {
             logger.error('Error marking as non-recurring', err as Error);
-            setSnackbar({ open: true, message: t('recurring.snackbarFailedMarkNonRecurring'), severity: 'error' });
+            showSnackbar(t('recurring.snackbarFailedMarkNonRecurring'), 'error');
         }
     };
 
@@ -350,12 +346,12 @@ const RecurringPaymentsView: React.FC = () => {
                 }),
             });
             if (!response.ok) throw new Error('Failed to restore payment');
-            setSnackbar({ open: true, message: t('recurring.snackbarRestored', { name: item.name }), severity: 'success' });
+            showSnackbar(t('recurring.snackbarRestored', { name: item.name }), 'success');
             fetchData(false);
             window.dispatchEvent(new CustomEvent('dataRefresh'));
         } catch (err) {
             logger.error('Error restoring exclusion', err as Error);
-            setSnackbar({ open: true, message: t('recurring.snackbarFailedRestore'), severity: 'error' });
+            showSnackbar(t('recurring.snackbarFailedRestore'), 'error');
         }
     };
 
@@ -823,9 +819,12 @@ const RecurringPaymentsView: React.FC = () => {
                     )}
                 </Box>
             </Box>
-            <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
-                <Alert severity={snackbar.severity} sx={{ borderRadius: '12px', fontWeight: 600 }}>{snackbar.message}</Alert>
-            </Snackbar>
+            <SnackbarFeedback
+                snackbar={snackbar}
+                onClose={hideSnackbar}
+                alertSx={{ borderRadius: '12px', fontWeight: 600 }}
+                showAlertClose={false}
+            />
         </Box>
     );
 };

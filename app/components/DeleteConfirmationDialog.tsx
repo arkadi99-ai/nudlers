@@ -72,7 +72,7 @@ const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
                 alignItems: 'center',
                 gap: '12px',
                 fontWeight: 700,
-                color: '#ef4444',
+                color: 'var(--n-error)',
                 paddingBottom: '8px'
             }}>
                 <Box sx={{
@@ -130,7 +130,7 @@ const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
                             </Typography>
                             <Typography sx={{
                                 fontSize: '16px',
-                                color: transaction.price < 0 ? '#ef4444' : '#10b981',
+                                color: transaction.price < 0 ? 'var(--n-error)' : 'var(--n-success)',
                                 fontWeight: 700
                             }}>
                                 ₪{formatNumber(Math.abs(transaction.price))}
@@ -153,7 +153,7 @@ const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
                                 </Typography>
                                 <Typography sx={{
                                     fontSize: '13px',
-                                    color: '#3b82f6',
+                                    color: 'var(--n-info)',
                                     fontWeight: 600,
                                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
                                     padding: '4px 10px',

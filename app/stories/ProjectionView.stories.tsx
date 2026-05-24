@@ -29,7 +29,7 @@ const meta = {
         setSelectedAccount: (_val) => { },
         setIsAddDialogOpen: (_open) => { },
         setNewRecurring: () => { },
-        setSnackbar: () => { },
+        hideSnackbar: () => { },
     },
 } satisfies Meta<typeof ProjectionViewContent>;
 

@@ -17,6 +17,7 @@ import { useTheme } from '@mui/material/styles';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import DownloadIcon from '@mui/icons-material/Download';
+import { getTodayISODate } from '../utils/dateUtils';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import { useTranslation } from 'react-i18next';
@@ -68,7 +69,7 @@ const DeleteAllTransactionsDialog: React.FC<DeleteAllTransactionsDialogProps> = 
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `database-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `database-backup-${getTodayISODate()}.json`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);

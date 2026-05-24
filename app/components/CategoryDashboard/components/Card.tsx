@@ -35,7 +35,7 @@ interface CardProps {
 // Mini burndown chart component
 const BurndownChart: React.FC<{ percentUsed: number; isOverBudget: boolean }> = ({ percentUsed, isOverBudget }) => {
   const clampedPercent = Math.min(percentUsed, 100);
-  const chartColor = isOverBudget ? '#ef4444' : percentUsed >= 80 ? '#f59e0b' : '#22c55e';
+  const chartColor = isOverBudget ? 'var(--n-error)' : percentUsed >= 80 ? 'var(--n-warning)' : '#22c55e';
 
   return (
     <div style={{
@@ -233,7 +233,7 @@ const Card: React.FC<CardProps> = ({
             <span style={{
               fontSize: valueSize,
               fontWeight: size === 'large' ? '800' : '700',
-              color: budget ? (budget.is_over_budget ? '#ef4444' : color) : color,
+              color: budget ? (budget.is_over_budget ? 'var(--n-error)' : color) : color,
               letterSpacing: '-0.02em',
               fontFamily: 'Assistant, sans-serif',
               textShadow: `0 2px 12px ${color}60`

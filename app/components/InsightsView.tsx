@@ -45,14 +45,14 @@ interface ListResponse {
 }
 
 const TYPE_META: Record<AnomalyType, { icon: React.ReactNode; tone: string }> = {
-    price_hike: { icon: <TrendingUpIcon fontSize="small" />, tone: '#f59e0b' },
-    new_recurring: { icon: <AutorenewIcon fontSize="small" />, tone: '#6366f1' },
+    price_hike: { icon: <TrendingUpIcon fontSize="small" />, tone: 'var(--n-warning)' },
+    new_recurring: { icon: <AutorenewIcon fontSize="small" />, tone: 'var(--n-primary-500)' },
     category_spike: { icon: <LocalFireDepartmentIcon fontSize="small" />, tone: '#ec4899' },
 };
 
 const SEVERITY_TONE: Record<Severity, string> = {
-    high: '#ef4444',
-    medium: '#f59e0b',
+    high: 'var(--n-error)',
+    medium: 'var(--n-warning)',
     low: '#94a3b8',
 };
 
@@ -201,7 +201,7 @@ const InsightsView: React.FC = () => {
                         borderRadius: 'var(--n-radius-lg)',
                     }}
                 >
-                    <CheckIcon sx={{ fontSize: 48, color: '#10b981', mb: 1 }} />
+                    <CheckIcon sx={{ fontSize: 48, color: 'var(--n-success)', mb: 1 }} />
                     <Typography variant="h6" sx={{ mb: 0.5 }}>{t('views:insights.empty')}</Typography>
                     <Typography variant="body2" sx={{
                         color: "text.secondary"

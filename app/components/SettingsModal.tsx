@@ -174,13 +174,13 @@ const StyledAutocomplete = styled(Autocomplete<string, true, false, true>)(({ th
   },
   '& .MuiChip-root': {
     backgroundColor: theme.palette.mode === 'dark' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)',
-    color: '#10b981',
+    color: 'var(--n-success)',
     borderRadius: '8px',
     height: '28px',
     fontWeight: 500,
     border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)'}`,
     '& .MuiChip-deleteIcon': {
-      color: '#10b981',
+      color: 'var(--n-success)',
       fontSize: '16px',
       '&:hover': {
         color: '#059669',
@@ -825,7 +825,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
               </SettingRow>
 
               <Box sx={{ mt: 3, mb: 2, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'var(--n-warning)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   {t('settings:scraper.vendorSpecific')}
                 </Typography>
               </Box>
@@ -842,10 +842,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                   onChange={(e) => setSettings({ ...settings, isracard_scrape_categories: e.target.checked })}
                   sx={{
                     '& .MuiSwitch-switchBase.Mui-checked': {
-                      color: '#f59e0b',
+                      color: 'var(--n-warning)',
                     },
                     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                      backgroundColor: '#f59e0b',
+                      backgroundColor: 'var(--n-warning)',
                     },
                   }}
                 />
@@ -990,7 +990,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
             {/* WhatsApp Daily Summary */}
             <SettingSection>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <AutoAwesomeIcon sx={{ color: '#10b981' }} />
+                <AutoAwesomeIcon sx={{ color: 'var(--n-success)' }} />
                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                   {t('settings:whatsapp.section')}
                 </Typography>
@@ -1002,10 +1002,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                       width: 8,
                       height: 8,
                       borderRadius: '50%',
-                      bgcolor: whatsappStatus.status === 'READY' || whatsappStatus.status === 'AUTHENTICATED' ? '#10b981' :
-                        whatsappStatus.status === 'DISCONNECTED' ? '#ef4444' : '#f59e0b',
-                      boxShadow: `0 0 8px ${whatsappStatus.status === 'READY' || whatsappStatus.status === 'AUTHENTICATED' ? '#10b981' :
-                        whatsappStatus.status === 'DISCONNECTED' ? '#ef4444' : '#f59e0b'}`
+                      bgcolor: whatsappStatus.status === 'READY' || whatsappStatus.status === 'AUTHENTICATED' ? 'var(--n-success)' :
+                        whatsappStatus.status === 'DISCONNECTED' ? 'var(--n-error)' : 'var(--n-warning)',
+                      boxShadow: `0 0 8px ${whatsappStatus.status === 'READY' || whatsappStatus.status === 'AUTHENTICATED' ? 'var(--n-success)' :
+                        whatsappStatus.status === 'DISCONNECTED' ? 'var(--n-error)' : 'var(--n-warning)'}`
                     }} />
                     <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.text.secondary }}>
                       {whatsappStatus.status}
@@ -1053,8 +1053,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
               {whatsappStatus.status === 'INITIALIZING' && (
                 <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CircularProgress size={20} sx={{ color: '#f59e0b' }} />
-                    <Typography variant="body2" sx={{ color: '#f59e0b' }}>
+                    <CircularProgress size={20} sx={{ color: 'var(--n-warning)' }} />
+                    <Typography variant="body2" sx={{ color: 'var(--n-warning)' }}>
                       {t('settings:whatsapp.generatingQr')}
                     </Typography>
                   </Box>
@@ -1074,8 +1074,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                       onClick={() => handleWhatsAppAction('renewQr')}
                       startIcon={<SyncIcon />}
                       sx={{
-                        borderColor: '#f59e0b',
-                        color: '#f59e0b',
+                        borderColor: 'var(--n-warning)',
+                        color: 'var(--n-warning)',
                         '&:hover': {
                           borderColor: '#d97706',
                           backgroundColor: 'rgba(245, 158, 11, 0.1)',
@@ -1110,10 +1110,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                   onChange={(e) => setSettings({ ...settings, whatsapp_enabled: e.target.checked })}
                   sx={{
                     '& .MuiSwitch-switchBase.Mui-checked': {
-                      color: '#10b981',
+                      color: 'var(--n-success)',
                     },
                     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                      backgroundColor: '#10b981',
+                      backgroundColor: 'var(--n-success)',
                     },
                   }}
                 />
@@ -1131,10 +1131,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                   onChange={(e) => setSettings({ ...settings, whatsapp_notify_on_restart: e.target.checked })}
                   sx={{
                     '& .MuiSwitch-switchBase.Mui-checked': {
-                      color: '#10b981',
+                      color: 'var(--n-success)',
                     },
                     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                      backgroundColor: '#10b981',
+                      backgroundColor: 'var(--n-success)',
                     },
                   }}
                 />
@@ -1276,7 +1276,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                       maxHeight: '300px',
                       overflow: 'auto'
                     }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#10b981' }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: 'var(--n-success)' }}>
                         {t('settings:whatsapp.generatedMessage')}
                       </Typography>
                       <Typography
@@ -1717,7 +1717,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                           borderColor: '#818cf8',
                           color: '#818cf8',
                           '&:hover': {
-                            borderColor: '#6366f1',
+                            borderColor: 'var(--n-primary-500)',
                             backgroundColor: 'rgba(99, 102, 241, 0.1)',
                           },
                         }}

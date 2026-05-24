@@ -14,8 +14,6 @@ import { useAI } from '../context/AIContext';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import PageHeader from './PageHeader';
@@ -32,6 +30,8 @@ import Typography from '@mui/material/Typography';
 import { ModalData } from './CategoryDashboard/types';
 import { CardVendorIcon, CARD_VENDORS } from './CardVendorsModal';
 import { useScreenContext } from './Layout';
+import { useSnackbar } from './hooks/useSnackbar';
+import SnackbarFeedback from './SnackbarFeedback';
 import { useDateSelection, DateRangeMode } from '../context/DateSelectionContext';
 import { logger } from '../utils/client-logger';
 import { isBankTransaction, BankCheckTransaction } from '../utils/transactionUtils';
@@ -199,11 +199,10 @@ const MonthlySummary: React.FC = () => {
 
     const cardOwnershipId = cardOwnershipMap[cardLast4];
     if (!cardOwnershipId) {
-      setSnackbar({ open: true, message: t('summary.snackbarMoveCardNoSystemId'), severity: 'error' });
+      showSnackbar(t('summary.snackbarMoveCardNoSystemId'), 'error');
       return;
     }
 
-    // Optimistic update could go here, but for now let's rely on refresh
     try {
       const response = await fetch(`/api/cards/ownerships/${cardOwnershipId}`, {
         method: 'PATCH',
@@ -212,15 +211,14 @@ const MonthlySummary: React.FC = () => {
       });
 
       if (response.ok) {
-        setSnackbar({ open: true, message: t('summary.snackbarCardMoved'), severity: 'success' });
+        showSnackbar(t('summary.snackbarCardMoved'), 'success');
         fetchMonthlySummary(true);
-        // Also refresh vendors to update ownership map if needed, though ID shouldn't change
       } else {
-        setSnackbar({ open: true, message: t('summary.snackbarFailedToMove'), severity: 'error' });
+        showSnackbar(t('summary.snackbarFailedToMove'), 'error');
       }
     } catch (e) {
       logger.error('Move failed', e);
-      setSnackbar({ open: true, message: t('summary.snackbarMoveFailed'), severity: 'error' });
+      showSnackbar(t('summary.snackbarMoveFailed'), 'error');
     }
   };
 
@@ -264,11 +262,7 @@ const MonthlySummary: React.FC = () => {
   // Category editing
 
 
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
+  const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
   // Card vendor selection
   const [vendorMenuAnchor, setVendorMenuAnchor] = useState<null | HTMLElement>(null);
@@ -315,7 +309,7 @@ const MonthlySummary: React.FC = () => {
   const handleSaveBudget = async () => {
     const limit = parseFloat(newBudgetLimit);
     if (isNaN(limit) || limit <= 0) {
-      setSnackbar({ open: true, message: t('summary.snackbarInvalidBudget'), severity: 'error' });
+      showSnackbar(t('summary.snackbarInvalidBudget'), 'error');
       return;
     }
 
@@ -329,12 +323,12 @@ const MonthlySummary: React.FC = () => {
       if (res.ok) {
         setBudgetLimit(limit);
         setIsEditingBudget(false);
-        setSnackbar({ open: true, message: t('summary.snackbarBudgetUpdated'), severity: 'success' });
+        showSnackbar(t('summary.snackbarBudgetUpdated'), 'success');
       } else {
         throw new Error('Failed to save');
       }
     } catch (_e) {
-      setSnackbar({ open: true, message: t('summary.snackbarFailedUpdateBudget'), severity: 'error' });
+      showSnackbar(t('summary.snackbarFailedUpdateBudget'), 'error');
     }
   };
 
@@ -431,15 +425,13 @@ const MonthlySummary: React.FC = () => {
           ...prev,
           [selectedCardForVendor]: vendorKey
         }));
-        setSnackbar({
-          open: true,
-          message: t('summary.snackbarCardVendorSet', {
+        showSnackbar(
+          t('summary.snackbarCardVendorSet', {
             last4: selectedCardForVendor,
             vendor: CARD_VENDORS[vendorKey as keyof typeof CARD_VENDORS]?.name || vendorKey
           }),
-          severity: 'success'
-        });
-        // Trigger refresh for other components
+          'success'
+        );
         window.dispatchEvent(new CustomEvent('cardVendorsUpdated'));
       }
     } catch (error) {
@@ -447,11 +439,7 @@ const MonthlySummary: React.FC = () => {
         card: selectedCardForVendor,
         vendor: vendorKey
       });
-      setSnackbar({
-        open: true,
-        message: t('summary.snackbarFailedSaveVendor'),
-        severity: 'error'
-      });
+      showSnackbar(t('summary.snackbarFailedSaveVendor'), 'error');
     }
 
     handleVendorMenuClose();
@@ -476,13 +464,12 @@ const MonthlySummary: React.FC = () => {
           ...prev,
           [last4digits]: nickname
         }));
-        setSnackbar({
-          open: true,
-          message: nickname
+        showSnackbar(
+          nickname
             ? t('summary.snackbarNicknameSet', { nickname })
             : t('summary.snackbarNicknameRemoved'),
-          severity: 'success'
-        });
+          'success'
+        );
         window.dispatchEvent(new CustomEvent('cardVendorsUpdated'));
       }
     } catch (error) {
@@ -490,11 +477,7 @@ const MonthlySummary: React.FC = () => {
         card: last4digits,
         nickname
       });
-      setSnackbar({
-        open: true,
-        message: t('summary.snackbarFailedSaveNickname'),
-        severity: 'error'
-      });
+      showSnackbar(t('summary.snackbarFailedSaveNickname'), 'error');
     }
   };
 
@@ -1096,7 +1079,7 @@ const MonthlySummary: React.FC = () => {
       <div style={{
         textAlign: 'center',
         padding: '64px',
-        color: '#ef4444'
+        color: 'var(--n-error)'
       }}>
         {t('summary.errorPrefix', { message: error })}
       </div>
@@ -1159,7 +1142,7 @@ const MonthlySummary: React.FC = () => {
             alignItems: 'center',
             minHeight: '300px'
           }}>
-            <CircularProgress size={60} style={{ color: '#3b82f6' }} />
+            <CircularProgress size={60} style={{ color: 'var(--n-info)' }} />
           </div>
         ) : (
           <>
@@ -1235,7 +1218,7 @@ const MonthlySummary: React.FC = () => {
                                 '& .MuiInputBase-root': { bgcolor: theme.palette.background.paper, fontSize: '0.8125rem' }
                               }}
                             />
-                            <IconButton size="small" onClick={handleSaveBudget} sx={{ color: '#10b981', p: 0.5 }}>
+                            <IconButton size="small" onClick={handleSaveBudget} sx={{ color: 'var(--n-success)', p: 0.5 }}>
                               <CheckIcon fontSize="small" />
                             </IconButton>
                           </Box>
@@ -1251,11 +1234,11 @@ const MonthlySummary: React.FC = () => {
                                   flex: 1,
                                   bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
                                   '& .MuiLinearProgress-bar': {
-                                    bgcolor: totals.card_expenses > budgetLimit ? '#ef4444' : '#10b981'
+                                    bgcolor: totals.card_expenses > budgetLimit ? 'var(--n-error)' : 'var(--n-success)'
                                   }
                                 }}
                               />
-                              <Typography variant="caption" sx={{ fontWeight: 700, color: totals.card_expenses > budgetLimit ? '#ef4444' : '#10b981', fontSize: '0.65rem' }}>
+                              <Typography variant="caption" sx={{ fontWeight: 700, color: totals.card_expenses > budgetLimit ? 'var(--n-error)' : 'var(--n-success)', fontSize: '0.65rem' }}>
                                 {Math.round((totals.card_expenses / budgetLimit) * 100)}%
                               </Typography>
                             </Box>
@@ -1685,7 +1668,7 @@ const MonthlySummary: React.FC = () => {
                               handleNicknameSave(selectedCardForVendor, editingNickname);
                             }
                           }}
-                          sx={{ color: '#10b981' }}
+                          sx={{ color: 'var(--n-success)' }}
                         >
                           <CheckIcon sx={{ fontSize: '18px' }} />
                         </IconButton>
@@ -1717,7 +1700,7 @@ const MonthlySummary: React.FC = () => {
                   <CardVendorIcon vendor={key} size={32} />
                   <span style={{ fontWeight: 500, color: theme.palette.text.primary }}>{config.name}</span>
                   {cardVendorMap[selectedCardForVendor || ''] === key && (
-                    <CheckIcon sx={{ fontSize: '18px', color: '#10b981', ml: 'auto' }} />
+                    <CheckIcon sx={{ fontSize: '18px', color: 'var(--n-success)', ml: 'auto' }} />
                   )}
                 </MenuItem>
               ))}
@@ -1789,24 +1772,17 @@ const MonthlySummary: React.FC = () => {
           />
         )}
 
-        <Snackbar
-          open={snackbar.open}
+        <SnackbarFeedback
+          snackbar={snackbar}
+          onClose={hideSnackbar}
           autoHideDuration={5000}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
           anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        >
-          <Alert
-            onClose={() => setSnackbar({ ...snackbar, open: false })}
-            severity={snackbar.severity}
-            sx={{
-              width: "100%",
-              borderRadius: "12px",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)"
-            }}
-          >
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
+          alertSx={{
+            width: "100%",
+            borderRadius: "12px",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)"
+          }}
+        />
       </Box>
     </div >
   );

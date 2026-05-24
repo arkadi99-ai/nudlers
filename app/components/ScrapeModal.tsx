@@ -33,6 +33,7 @@ import ModalHeader from './ModalHeader';
 import { useTheme } from '@mui/material/styles';
 import { useStatus } from '../context/StatusContext';
 import { BEINLEUMI_GROUP_VENDORS, STANDARD_BANK_VENDORS } from '../utils/constants';
+import { formatISODate, getTodayISODate } from '../utils/dateUtils';
 import dynamic from 'next/dynamic';
 import { ScrapeReportTransaction } from './ScrapeReport';
 const ScrapeReport = dynamic(() => import('./ScrapeReport'), { ssr: false });
@@ -58,7 +59,7 @@ interface ScraperConfig {
 }
 
 interface ScrapeModalProps {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
   initialConfig?: ScraperConfig;
@@ -109,7 +110,7 @@ interface RateLimitState {
   startTime: number;
 }
 
-export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig }: ScrapeModalProps) {
+export default function ScrapeModal({ open, onClose, onSuccess, initialConfig }: ScrapeModalProps) {
   const { t } = useTranslation('scrape');
   const theme = useTheme();
   const { setIsVaultModalOpen } = useStatus();
@@ -148,12 +149,8 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
       if (interval) clearInterval(interval);
     };
   }, [isLoading]);
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayISODate();
   const clampDateString = (value: string) => (value > todayStr ? todayStr : value);
-  const formatDateForInput = (date: Date) => {
-    if (!date || isNaN(date.getTime())) return '';
-    return date.toISOString().split('T')[0];
-  };
   const defaultConfig: ScraperConfig = React.useMemo(() => ({
     options: {
       companyId: 'isracard',
@@ -181,7 +178,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
   }, [initialConfig]);
 
   useEffect(() => {
-    if (isOpen) return;
+    if (open) return;
     queueMicrotask(() => {
       setConfig(initialConfig || defaultConfig);
       setError(null);
@@ -208,7 +205,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-  }, [isOpen, initialConfig, defaultConfig]);
+  }, [open, initialConfig, defaultConfig]);
 
   const handleConfigChange = (field: string, value: unknown) => {
     if (field.includes('.')) {
@@ -653,7 +650,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
       <TextField
         label={t('form.startDateLabel')}
         type="date"
-        value={formatDateForInput(config.options.startDate)}
+        value={formatISODate(config.options.startDate)}
         onChange={(e) => {
           const v = clampDateString(e.target.value);
           if (v) {
@@ -679,7 +676,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
           }
           label={
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <BugReportIcon sx={{ fontSize: 18, color: config.options.showBrowser ? '#3b82f6' : '#9ca3af' }} />
+              <BugReportIcon sx={{ fontSize: 18, color: config.options.showBrowser ? 'var(--n-info)' : '#9ca3af' }} />
               <span>{t('form.debugModeLabel')}</span>
             </Box>
           }
@@ -740,7 +737,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
       <TextField
         label={t('form.startDateLabel')}
         type="date"
-        value={formatDateForInput(config.options.startDate)}
+        value={formatISODate(config.options.startDate)}
         onChange={(e) => {
           const v = clampDateString(e.target.value);
           if (v) {
@@ -766,7 +763,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
           }
           label={
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <BugReportIcon sx={{ fontSize: 18, color: config.options.showBrowser ? '#3b82f6' : '#9ca3af' }} />
+              <BugReportIcon sx={{ fontSize: 18, color: config.options.showBrowser ? 'var(--n-info)' : '#9ca3af' }} />
               <span>{t('form.debugModeLabel')}</span>
             </Box>
           }
@@ -796,11 +793,11 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
           {progress?.step === 'complete' ? (
             <CheckCircleIcon sx={{ color: '#22c55e', mr: 1 }} />
           ) : progress?.success === false ? (
-            <ErrorIcon sx={{ color: '#ef4444', mr: 1 }} />
+            <ErrorIcon sx={{ color: 'var(--n-error)', mr: 1 }} />
           ) : progress?.success === true ? (
             <CheckCircleIcon sx={{ color: '#22c55e', mr: 1, fontSize: 20 }} />
           ) : error ? (
-            <ErrorIcon sx={{ color: '#ef4444', mr: 1 }} />
+            <ErrorIcon sx={{ color: 'var(--n-error)', mr: 1 }} />
           ) : (
             <Box
               sx={{
@@ -839,7 +836,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
             mb: 1,
             '& .MuiLinearProgress-bar': {
               borderRadius: 4,
-              backgroundColor: progress?.step === 'complete' ? '#22c55e' : progress?.success === false ? '#ef4444' : '#3b82f6',
+              backgroundColor: progress?.step === 'complete' ? '#22c55e' : progress?.success === false ? 'var(--n-error)' : 'var(--n-info)',
               transition: 'transform 0.3s ease'
             }
           }}
@@ -873,7 +870,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
               alignItems: 'center',
               gap: 1.5
             }}>
-              <TimerIcon sx={{ color: '#f59e0b', fontSize: 20 }} />
+              <TimerIcon sx={{ color: 'var(--n-warning)', fontSize: 20 }} />
               <Box sx={{ flex: 1 }}>
                 <Typography variant="body2" sx={{ color: '#d97706', fontWeight: 600 }}>
                   {rateLimitState.message}
@@ -882,7 +879,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
                   <Box sx={{
                     width: '100%',
                     height: '100%',
-                    bgcolor: '#f59e0b',
+                    bgcolor: 'var(--n-warning)',
                     animation: `progress-shrink ${rateLimitState.totalSeconds}s linear forwards`,
                     transformOrigin: 'left',
                     '@keyframes progress-shrink': {
@@ -914,7 +911,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
                 {step.success === true ? (
                   <CheckCircleIcon sx={{ color: '#22c55e', fontSize: 16, mr: 1 }} />
                 ) : step.success === false ? (
-                  <ErrorIcon sx={{ color: '#ef4444', fontSize: 16, mr: 1 }} />
+                  <ErrorIcon sx={{ color: 'var(--n-error)', fontSize: 16, mr: 1 }} />
                 ) : (
                   <Box sx={{ width: 16, height: 16, mr: 1 }} />
                 )}
@@ -938,7 +935,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
               border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)'}`,
             }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                <LockIcon sx={{ color: '#3b82f6', fontSize: 22 }} />
+                <LockIcon sx={{ color: 'var(--n-info)', fontSize: 22 }} />
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
                   {t('otp.title')}
                 </Typography>
@@ -1008,7 +1005,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
               </Box>
 
               {otpSubmitting && (
-                <Typography variant="caption" sx={{ color: '#3b82f6', mt: 1, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: 'var(--n-info)', mt: 1, display: 'block' }}>
                   {t('otp.submitting')}
                 </Typography>
               )}
@@ -1037,7 +1034,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
               <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, opacity: idx === 0 ? 1 : 0.7 }}>
                 <Typography variant="caption" sx={{
                   color: log.type === 'httpRequest' ? '#60a5fa' :
-                    log.type === 'httpResponse' ? (log.status && log.status >= 400 ? '#ef4444' : '#22c55e') : '#f59e0b',
+                    log.type === 'httpResponse' ? (log.status && log.status >= 400 ? 'var(--n-error)' : '#22c55e') : 'var(--n-warning)',
                   fontWeight: 'bold',
                   fontSize: '0.7rem',
                   minWidth: 35
@@ -1120,7 +1117,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
 
   return (
     <Dialog
-      open={isOpen}
+      open={open}
       onClose={handleClose}
       maxWidth="sm"
       fullWidth
@@ -1249,7 +1246,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
                     {t('debug.modeActiveDesc')}
                   </Typography>
                   <Box sx={{ mt: 1.5 }}>
-                    <Typography variant="caption" sx={{ color: theme.palette.mode === 'dark' ? '#60a5fa' : '#3b82f6' }}>
+                    <Typography variant="caption" sx={{ color: theme.palette.mode === 'dark' ? '#60a5fa' : 'var(--n-info)' }}>
                       <strong>🖥️ {t('debug.tipLabel')}</strong> {t('debug.tipText')}
                     </Typography>
                   </Box>
@@ -1301,7 +1298,7 @@ export default function ScrapeModal({ isOpen, onClose, onSuccess, initialConfig 
                 variant="contained"
                 disabled={isLoading}
                 style={{
-                  backgroundColor: '#3b82f6',
+                  backgroundColor: 'var(--n-info)',
                   color: '#fff',
                   padding: '8px 24px',
                   borderRadius: '8px',

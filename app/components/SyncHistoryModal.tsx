@@ -29,7 +29,7 @@ interface SyncReport {
 }
 
 interface SyncHistoryModalProps {
-    isOpen: boolean;
+    open: boolean;
     onClose: () => void;
 }
 
@@ -44,7 +44,7 @@ interface SyncEvent {
     duration_seconds?: number;
 }
 
-export default function SyncHistoryModal({ isOpen, onClose }: SyncHistoryModalProps) {
+export default function SyncHistoryModal({ open, onClose }: SyncHistoryModalProps) {
     const theme = useTheme();
     const { t } = useTranslation(['sync', 'common']);
     const { locale } = useLocale();
@@ -71,12 +71,12 @@ export default function SyncHistoryModal({ isOpen, onClose }: SyncHistoryModalPr
     };
 
     useEffect(() => {
-        if (!isOpen) return;
+        if (!open) return;
         queueMicrotask(() => {
             fetchEvents();
             setSelectedEvent(null);
         });
-    }, [isOpen]);
+    }, [open]);
 
     const handleSelectEvent = async (event: SyncEvent) => {
         setSelectedEvent(event);
@@ -104,13 +104,13 @@ export default function SyncHistoryModal({ isOpen, onClose }: SyncHistoryModalPr
 
     const getStatusIcon = (status: string) => {
         if (status === 'success') return <CheckCircleIcon sx={{ color: '#22c55e', fontSize: 20 }} />;
-        if (status === 'error') return <ErrorIcon sx={{ color: '#ef4444', fontSize: 20 }} />;
+        if (status === 'error') return <ErrorIcon sx={{ color: 'var(--n-error)', fontSize: 20 }} />;
         return <CircularProgress size={20} />;
     };
 
     return (
         <Dialog
-            open={isOpen}
+            open={open}
             onClose={onClose}
             maxWidth="md"
             fullWidth
