@@ -9,6 +9,14 @@ out
 build
 dist
 
+# Runtime data (persisted via named volumes at runtime; must not be baked into the image).
+# whatsapp-web.js writes its auth session and a Chromium cache here, which can grow to
+# tens/hundreds of MB. Without this, every build copies it into the context and the image
+# layer, bloating builds and intermittently failing the COPY on small disks
+# (e.g. "no space left on device" while copying .wwebjs_auth/.../Cache_Data).
+.wwebjs_auth
+.wwebjs_cache
+
 # Testing
 coverage
 
