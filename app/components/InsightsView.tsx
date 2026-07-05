@@ -104,9 +104,9 @@ const InsightsView: React.FC = () => {
         } catch (err) {
             logger.error(`Failed to set anomaly ${id} → ${status}`, err as Error);
             setItems(prev); // rollback
-            setToast({ severity: 'error', message: 'Action failed — try again' });
+            setToast({ severity: 'error', message: t('views:insights.actionFailed') });
         }
-    }, [items]);
+    }, [items, t]);
 
     const reEvaluate = useCallback(async () => {
         setEvaluating(true);

@@ -22,8 +22,11 @@ const RecentTransactionsModule: React.FC = () => {
     const [loadingMore, setLoadingMore] = useState(false);
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
+    // Incrementing request id — responses from superseded fetches are ignored
+    const requestIdRef = React.useRef(0);
 
     const fetchRecentTransactions = useCallback(async (isLoadMore: boolean = false) => {
+        const requestId = ++requestIdRef.current;
         if (!isLoadMore) {
             setLoading(true);
             setPage(0);
@@ -46,6 +49,7 @@ const RecentTransactionsModule: React.FC = () => {
             const response = await fetch(`/api/transactions?${params.toString()}`);
             if (!response.ok) throw new Error('Failed to fetch transactions');
             const data = await response.json();
+            if (requestId !== requestIdRef.current) return; // stale response — a newer fetch is in flight
 
             if (isLoadMore) {
                 setTransactions(prev => [...prev, ...data]);
@@ -58,8 +62,10 @@ const RecentTransactionsModule: React.FC = () => {
         } catch (error) {
             logger.error('Error fetching recent transactions', error as Error);
         } finally {
-            setLoading(false);
-            setLoadingMore(false);
+            if (requestId === requestIdRef.current) {
+                setLoading(false);
+                setLoadingMore(false);
+            }
         }
     }, [billingCycle, startDate, endDate, page]);
 

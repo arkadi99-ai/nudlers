@@ -3,7 +3,7 @@ import logger from '../../../utils/logger.js';
 import { getAIClient, mapAIError } from '../../../utils/aiClient.js';
 
 // Verify auth for AI chat endpoint.
-// If NUDLERS_API_KEY is set, require it as Authorization header or ?apiKey query param.
+// If NUDLERS_API_KEY is set, require it as Authorization Bearer header.
 // Otherwise, allow all requests (local-only mode).
 function verifyAuth(req) {
   const requiredKey = process.env.NUDLERS_API_KEY;
@@ -13,10 +13,6 @@ function verifyAuth(req) {
 
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ') && authHeader.slice(7) === requiredKey) {
-    return true;
-  }
-
-  if (req.query?.apiKey === requiredKey) {
     return true;
   }
 

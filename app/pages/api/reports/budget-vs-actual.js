@@ -23,7 +23,6 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: `Method ${req.method} not allowed` });
   }
 
-  const client = await getDB();
   const { cycle, startDate, endDate, billingCycle } = req.query;
 
   // Need either cycle (legacy) or billingCycle or startDate+endDate
@@ -32,6 +31,8 @@ export default async function handler(req, res) {
       error: "Either 'cycle'/'billingCycle' (format: YYYY-MM) or 'startDate' and 'endDate' are required"
     });
   }
+
+  const client = await getDB();
 
   try {
     // Ensure total_budget table exists

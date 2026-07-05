@@ -44,7 +44,7 @@ export default async function handler(req, res) {
       res.status(200).json(result.rows);
     } else if (req.method === "POST") {
       // Create or update a card vendor mapping
-      const { last4_digits, card_vendor, card_nickname } = req.body;
+      const { last4_digits, card_vendor, card_nickname } = req.body || {};
 
       if (!last4_digits || !card_vendor) {
         return res.status(400).json({ error: "last4_digits and card_vendor are required" });
@@ -66,7 +66,7 @@ export default async function handler(req, res) {
       res.status(200).json(result.rows[0]);
     } else if (req.method === "DELETE") {
       // Delete a card vendor mapping
-      const { last4_digits } = req.body;
+      const { last4_digits } = req.body || {};
 
       if (!last4_digits) {
         return res.status(400).json({ error: "last4_digits is required" });

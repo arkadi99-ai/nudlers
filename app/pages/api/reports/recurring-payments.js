@@ -19,12 +19,12 @@ import { detectRecurringPayments } from "../../../utils/recurringDetection";
  * 2. Recurring transactions (detected via smart name/amount/date patterns)
  */
 export default async function handler(req, res) {
-  const client = await getDB();
-
   if (req.method !== 'GET') {
     res.setHeader("Allow", ["GET"]);
     return res.status(405).json({ error: `Method ${req.method} not allowed` });
   }
+
+  const client = await getDB();
 
   try {
     // Parse query parameters

@@ -2,12 +2,13 @@ import { getDB } from "../db";
 import logger from '../../../utils/logger.js';
 
 export default async function handler(req, res) {
-  const client = await getDB();
   const { id } = req.query;
 
   if (!id) {
     return res.status(400).json({ error: "Budget ID is required" });
   }
+
+  const client = await getDB();
 
   try {
     if (req.method === "PUT") {

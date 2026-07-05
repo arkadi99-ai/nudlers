@@ -53,6 +53,7 @@ async function handler(req, res) {
   const client = await getDB();
   const startTime = new Date();
   let auditId = null;
+  let attempt = 0;
 
   try {
     // Check for other running scrapers
@@ -106,7 +107,6 @@ async function handler(req, res) {
 
     let result;
     let lastError = null;
-    let attempt = 0;
 
     // Retry loop
     for (attempt = 0; attempt <= maxRetries; attempt++) {

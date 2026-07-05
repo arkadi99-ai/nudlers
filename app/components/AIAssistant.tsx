@@ -133,9 +133,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ screenContext }) => {
         sendMessage(initialPrompt);
         setInitialPrompt('');
       }
+      // If a request is in flight, keep the prompt queued; isLoading flipping
+      // back to false re-runs this effect and sends it then.
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- sendMessage/setInitialPrompt/isLoading intentionally excluded to avoid send loop
-  }, [initialPrompt, isOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sendMessage/setInitialPrompt intentionally excluded to avoid send loop
+  }, [initialPrompt, isOpen, isLoading]);
 
   const fetchSessions = async () => {
     try {
@@ -327,8 +329,6 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ screenContext }) => {
           }
         }
       }
-
-      clearTimeout(timeoutId);
     } catch (err) {
       if ((err as Error).name === 'AbortError') {
         return;
@@ -339,6 +339,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ screenContext }) => {
           : m
       ));
     } finally {
+      clearTimeout(timeoutId);
       setIsLoading(false);
       setCurrentStatus('');
       // If session was created, ensure title is updated

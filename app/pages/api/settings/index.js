@@ -66,25 +66,12 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: `Invalid setting key: ${key}` });
         }
 
-        const result = await client.query(
-          `UPDATE app_settings 
-           SET value = $1, updated_at = CURRENT_TIMESTAMP 
-           WHERE key = $2 
-           RETURNING key, value`,
-          [JSON.stringify(value), key]
+        await client.query(
+          `INSERT INTO app_settings (key, value) VALUES ($1, $2)
+           ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = CURRENT_TIMESTAMP`,
+          [key, JSON.stringify(value)]
         );
-
-        if (result.rows.length > 0) {
-          updates.push({ key, value });
-        } else {
-          // Insert if doesn't exist
-          await client.query(
-            `INSERT INTO app_settings (key, value) VALUES ($1, $2)
-             ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = CURRENT_TIMESTAMP`,
-            [key, JSON.stringify(value)]
-          );
-          updates.push({ key, value });
-        }
+        updates.push({ key, value });
       }
 
       return res.status(200).json({

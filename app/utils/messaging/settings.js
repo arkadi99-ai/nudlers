@@ -1,4 +1,5 @@
 import logger from '../logger.js';
+import { unwrapSettingValue } from '../settingsValue.js';
 
 /**
  * Keys we read into the messaging settings snapshot. Adding a new provider
@@ -13,25 +14,6 @@ const MESSAGING_KEYS = [
     'telegram_to',
     'telegram_notify_on_restart',
 ];
-
-/**
- * `value` lives in jsonb, so `pg` returns it already parsed for objects/numbers
- * but as a JSON-encoded string for primitives written via `JSON.stringify`.
- * Strip wrapping quotes for strings, parse booleans/numbers leniently.
- */
-function unwrap(raw) {
-    if (raw === null || raw === undefined) return null;
-    if (typeof raw === 'boolean' || typeof raw === 'number') return raw;
-    if (typeof raw === 'string') {
-        try {
-            const parsed = JSON.parse(raw);
-            return parsed;
-        } catch {
-            return raw;
-        }
-    }
-    return raw;
-}
 
 function asBool(v) {
     if (v === true) return true;
@@ -59,7 +41,7 @@ export async function loadMessagingSettings({ getDB }) {
 
         const raw = {};
         for (const row of result.rows) {
-            raw[row.key] = unwrap(row.value);
+            raw[row.key] = unwrapSettingValue(row.value);
         }
 
         return {

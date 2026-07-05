@@ -250,24 +250,27 @@ export default function ScrapeModal({ open, onClose, onSuccess, initialConfig }:
     if (!retryState) return;
 
     // If user wants to continue from where it stopped, use the last transaction date
+    let startDate: Date;
     if (continueFromLastDate && retryState.lastTransactionDate) {
       // Start from the day after the last transaction to avoid re-fetching it
       const nextDay = new Date(retryState.lastTransactionDate);
       nextDay.setDate(nextDay.getDate() + 1);
-      handleConfigChange('options.startDate', nextDay);
+      startDate = nextDay;
     } else {
       // Retry from the original start date
-      handleConfigChange('options.startDate', retryState.originalStartDate);
+      startDate = retryState.originalStartDate;
     }
 
-    // Clear retry state and error, then start scraping
+    const updatedConfig: ScraperConfig = {
+      ...config,
+      options: { ...config.options, startDate }
+    };
+    setConfig(updatedConfig);
+
+    // Clear retry state and error, then start scraping with the updated config
     setRetryState(null);
     setError(null);
-
-    // Small delay to allow state to update before starting scrape
-    setTimeout(() => {
-      handleScrape();
-    }, 100);
+    handleScrape(updatedConfig);
   };
 
   const handleKillScrapers = async () => {
@@ -290,7 +293,8 @@ export default function ScrapeModal({ open, onClose, onSuccess, initialConfig }:
     }
   };
 
-  const handleScrape = async () => {
+  const handleScrape = async (configOverride?: ScraperConfig) => {
+    const activeConfig = configOverride || config;
     setIsLoading(true);
     setError(null);
     setElapsedSeconds(0);
@@ -313,7 +317,7 @@ export default function ScrapeModal({ open, onClose, onSuccess, initialConfig }:
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(config),
+        body: JSON.stringify(activeConfig),
         signal: abortControllerRef.current.signal
       });
 
@@ -361,7 +365,13 @@ export default function ScrapeModal({ open, onClose, onSuccess, initialConfig }:
           if (line.startsWith('event: ')) {
             currentEvent = line.slice(7);
           } else if (line.startsWith('data: ')) {
-            const data = JSON.parse(line.slice(6));
+            let data;
+            try {
+              data = JSON.parse(line.slice(6));
+            } catch (e) {
+              logger.error('Failed to parse SSE data', e as Error);
+              continue;
+            }
 
             if (currentEvent === 'network') {
               const logEntry: NetworkLogEntry = data;
@@ -483,11 +493,11 @@ export default function ScrapeModal({ open, onClose, onSuccess, initialConfig }:
       setProgress(null);
 
       // Set up retry state - fetch last transaction date for this vendor
-      const lastDate = await fetchLastTransactionDate(config.options.companyId);
+      const lastDate = await fetchLastTransactionDate(activeConfig.options.companyId);
       setRetryState({
         canRetry: true,
         lastTransactionDate: lastDate,
-        originalStartDate: config.options.startDate
+        originalStartDate: activeConfig.options.startDate
       });
     } finally {
       setIsLoading(false);
@@ -1294,7 +1304,7 @@ export default function ScrapeModal({ open, onClose, onSuccess, initialConfig }:
             </Button>
             {!isLoading && (
               <Button
-                onClick={handleScrape}
+                onClick={() => handleScrape()}
                 variant="contained"
                 disabled={isLoading}
                 style={{

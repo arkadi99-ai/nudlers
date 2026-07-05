@@ -239,13 +239,11 @@ const getTransactions = createApiHandler({
         }
 
         // 5. Bank Account specific filters (supporting transactions_by_bank_account logic)
-        let bankAccountParamIndex = null;
         if (bankAccountId && bankAccountId !== 'null') {
             const bankId = parseInt(bankAccountId, 10);
             if (isNaN(bankId)) {
                 throw new Error('bankAccountId must be a valid number');
             }
-            bankAccountParamIndex = paramIndex;
             conditions.push(`(
                 (co.credential_id = $${paramIndex}) OR
                 (co.linked_bank_account_id = $${paramIndex})
@@ -296,7 +294,6 @@ const getTransactions = createApiHandler({
         FROM transactions t
         LEFT JOIN card_ownership co ON t.vendor = co.vendor AND t.account_number = co.account_number
         LEFT JOIN vendor_credentials vc ON co.credential_id = vc.id
-        LEFT JOIN vendor_credentials ba ON ba.id = ${bankAccountParamIndex ? `$${bankAccountParamIndex}` : 'NULL'}
         ${whereClause}
         ORDER BY t.${sortCol} ${sortDir}, t.identifier, t.vendor
         LIMIT ${limitParam}
@@ -356,7 +353,7 @@ const DESTRUCTIVE_OP_LIMIT = 3; // max calls
 const DESTRUCTIVE_OP_WINDOW_MS = 60 * 60 * 1000; // per hour
 
 const deleteAllTransactions = async (req, res) => {
-    const { confirm } = req.body;
+    const { confirm } = req.body || {};
     if (!confirm) {
         return res.status(400).json({ error: "Confirmation is required to delete all transactions" });
     }

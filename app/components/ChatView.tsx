@@ -15,7 +15,6 @@ import {
     ListItemText,
     Divider,
     Button,
-    useMediaQuery,
     Skeleton,
 } from '@mui/material';
 import ForumIcon from '@mui/icons-material/Forum';
@@ -27,6 +26,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import ChatIcon from '@mui/icons-material/Chat';
 import { useScreenContext } from './Layout';
 import { useTranslation } from 'react-i18next';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Message {
     id: string;
@@ -92,7 +93,6 @@ const InputContainer = styled(Box)(({ theme }) => ({
 
 const ChatView: React.FC = () => {
     const theme = useTheme();
-    const _isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const { screenContext } = useScreenContext();
     const { t } = useTranslation('views');
     const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -266,7 +266,7 @@ const ChatView: React.FC = () => {
                                 setCurrentStatus('');
                                 setMessages(prev => prev.map(m =>
                                     m.id === assistantMsgId
-                                        ? { ...m, content: data.text, status: data.done ? 'complete' : 'streaming' }
+                                        ? { ...m, content: data.text || '', status: data.done ? 'complete' : 'streaming' }
                                         : m
                                 ));
                                 if (data.done) {
@@ -291,21 +291,6 @@ const ChatView: React.FC = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         sendMessage(inputValue);
-    };
-
-    const formatContent = (content: string) => {
-        if (!content) return '';
-        return content
-            .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/^### (.*?)$/gm, '<h4 style="margin: 16px 0 8px 0; font-weight: 700;">$1</h4>')
-            .replace(/^## (.*?)$/gm, '<h3 style="margin: 16px 0 8px 0; font-weight: 700;">$1</h3>')
-            .replace(/^# (.*?)$/gm, '<h2 style="margin: 16px 0 8px 0; font-weight: 700;">$1</h2>')
-            .replace(/^- (.*?)$/gm, '<li style="margin-left: 20px; margin-bottom: 4px;">$1</li>')
-            .replace(/^\d+\. (.*?)$/gm, '<li style="margin-left: 20px; margin-bottom: 4px; list-style-type: decimal;">$1</li>')
-            .replace(/\n\n/g, '<div style="height: 12px;"></div>')
-            .replace(/\n/g, '<br/>');
     };
 
     return (
@@ -472,16 +457,21 @@ const ChatView: React.FC = () => {
                                         boxShadow: 'none'
                                     }}>
                                         {msg.content ? (
-                                            <Typography
-                                                variant="body1"
-                                                dangerouslySetInnerHTML={{ __html: formatContent(msg.content) }}
+                                            <Box
                                                 sx={{
                                                     fontSize: '0.95rem',
                                                     lineHeight: 1.6,
                                                     color: msg.status === 'error' ? 'var(--n-error)' : 'inherit',
-                                                    fontWeight: msg.status === 'error' ? 600 : 400
+                                                    fontWeight: msg.status === 'error' ? 600 : 400,
+                                                    '& p': { m: 0, mb: 1, '&:last-child': { mb: 0 } },
+                                                    '& ul, & ol': { m: 0, pl: 2.5, mb: 1 },
+                                                    '& li': { mb: 0.5 },
                                                 }}
-                                            />
+                                            >
+                                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                                    {msg.content}
+                                                </ReactMarkdown>
+                                            </Box>
                                         ) : (
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 0.5 }}>
                                                 <CircularProgress size={16} sx={{ color: msg.role === 'user' ? 'white' : 'var(--n-primary-500)' }} />

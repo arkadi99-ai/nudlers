@@ -97,10 +97,7 @@ describe('Settings API (/api/settings)', () => {
         });
 
         it('should insert settings that do not exist', async () => {
-            // First query: UPDATE returns empty (setting doesn't exist)
-            mockClient.query
-                .mockResolvedValueOnce({ rows: [] })  // UPDATE returns nothing
-                .mockResolvedValueOnce({ rows: [] }); // INSERT ON CONFLICT
+            mockClient.query.mockResolvedValueOnce({ rows: [] }); // INSERT ON CONFLICT
 
             await handler({
                 method: 'PUT',
@@ -109,8 +106,8 @@ describe('Settings API (/api/settings)', () => {
             } as any, mockRes as any);
 
             expect(mockRes.status).toHaveBeenCalledWith(200);
-            // Second query should be INSERT ON CONFLICT
-            const [sql] = mockClient.query.mock.calls[1];
+            // Query should be a single INSERT ON CONFLICT upsert
+            const [sql] = mockClient.query.mock.calls[0];
             expect(sql).toContain('INSERT INTO app_settings');
             expect(sql).toContain('ON CONFLICT');
         });

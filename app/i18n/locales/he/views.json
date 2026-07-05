@@ -41,7 +41,8 @@
       "newRecurring": "התחיל ב-{{date}}",
       "categorySpike": "שבוע של {{date}}",
       "categorySpikeRaw": "שבוע {{week}}"
-    }
+    },
+    "actionFailed": "הפעולה נכשלה — נסה שוב"
   },
   "summary": {
     "title": "סיכום",

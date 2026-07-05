@@ -39,7 +39,6 @@ export default async function handler(req, res) {
             }
         }
         if (isInitialized) {
-            client.release();
             return res.status(400).json({ error: 'Vault is already initialized. Migration is not needed.' });
         }
 

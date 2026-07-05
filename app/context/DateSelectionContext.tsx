@@ -215,15 +215,16 @@ export const DateSelectionProvider: React.FC<{ children: React.ReactNode }> = ({
             const formatDate = (d: Date) => d.toISOString().split('T')[0];
 
             // Check local storage for custom dates if you want persistence, otherwise default
-            if (!customStartDate) setCustomStartDate(formatDate(threeMonthsAgo));
-            if (!customEndDate) setCustomEndDate(formatDate(now));
+            // Functional setters keep this callback dependency-free so init only runs once
+            setCustomStartDate(prev => prev || formatDate(threeMonthsAgo));
+            setCustomEndDate(prev => prev || formatDate(now));
 
         } catch (error) {
             logger.error('Error initializing DateSelectionContext', error);
         } finally {
             setIsLoading(false);
         }
-    }, [customEndDate, customStartDate]);
+    }, []);
 
     useEffect(() => {
         queueMicrotask(init);

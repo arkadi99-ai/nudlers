@@ -129,7 +129,7 @@ export async function evaluateAnomalies() {
         // hikes, the cheap-history cluster has 3 charges and looks like a
         // "new recurring", but it isn't — priceHike is the accurate framing.
         const hikedMerchants = new Set(
-            priceHikes.map((a) => `${(a.payload.merchant || '').toString().toLowerCase().trim()}|${a.payload.accountNumber ?? 'na'}`),
+            priceHikes.map((a) => `${normalizeMerchant(a.payload.merchant)}|${a.payload.accountNumber ?? 'na'}`),
         );
         // Strip Israeli installment-plan charges (תשלומים) before clustering.
         // A fridge bought in 6 monthly installments has the same amount each
@@ -142,7 +142,7 @@ export async function evaluateAnomalies() {
         );
         const recurring = detectRecurringPayments(nonInstallmentTx);
         for (const a of detectNewRecurring(recurring)) {
-            const key = `${(a.payload.merchant || '').toString().toLowerCase().trim()}|${a.payload.accountNumber ?? 'na'}`;
+            const key = `${normalizeMerchant(a.payload.merchant)}|${a.payload.accountNumber ?? 'na'}`;
             if (hikedMerchants.has(key)) continue;
             detected.push(a);
         }

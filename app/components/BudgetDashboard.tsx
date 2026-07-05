@@ -23,7 +23,6 @@ import TextField from '@mui/material/TextField';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import LinearProgress from '@mui/material/LinearProgress';
 import CircularProgress from '@mui/material/CircularProgress';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { useNotification } from './NotificationContext';
 import { useDateSelection, DateRangeMode } from '../context/DateSelectionContext';
@@ -204,7 +203,6 @@ const BudgetDashboard: React.FC = () => {
       // If we have selected dates from context, fetch data
       if (startDate && endDate && budgetList) {
         fetchSpendingData(selectedYear, selectedMonth, dateRangeMode, budgetList);
-        setLoading(false);
       }
     };
     init();
@@ -357,21 +355,11 @@ const BudgetDashboard: React.FC = () => {
     }
   };
 
-  const _getProgressColor = (percentUsed: number): string => {
-    if (percentUsed >= 100) return theme.palette.error.main;
-    if (percentUsed >= 80) return theme.palette.warning.main;
-    if (percentUsed >= 60) return theme.palette.warning.light;
-    return theme.palette.success.main;
-  };
-
   const overBudgetCount = budgetsWithSpending.filter(b => b.is_over_budget).length;
   const totalBudget = budgets.reduce((sum, b) => sum + b.budget_limit, 0);
   const totalSpent = budgetsWithSpending.reduce((sum, b) => sum + b.actual_spent, 0);
   const totalRemaining = totalBudget - totalSpent;
   const totalPercentUsed = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
-
-
-  const _isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
     <Box sx={{

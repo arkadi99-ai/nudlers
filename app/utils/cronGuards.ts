@@ -1,3 +1,6 @@
+import { formatISODate } from './dateUtils.js';
+import { unwrapSettingValue } from './settingsValue.js';
+
 export type CronGuardSkip =
   | { shouldRun: false; reason: 'disabled' }
   | { shouldRun: false; reason: 'hour_mismatch'; currentHour: number; targetHour: number }
@@ -33,10 +36,9 @@ export function evaluateDailyCronGuard(input: CronGuardInput): CronGuardResult {
     return { shouldRun: false, reason: 'hour_mismatch', currentHour, targetHour };
   }
 
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const lastRunStr = typeof input.lastRunValue === 'string'
-    ? input.lastRunValue.replace(/"/g, '')
-    : '';
+  const today = formatISODate(now);
+  const unwrapped = unwrapSettingValue(input.lastRunValue);
+  const lastRunStr = typeof unwrapped === 'string' ? unwrapped : '';
   const lastRunDate = lastRunStr.split('T')[0];
 
   if (lastRunDate && lastRunDate === today) {

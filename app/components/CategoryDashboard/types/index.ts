@@ -36,6 +36,8 @@ export interface ExpensesModalProps {
 export interface ModalData {
   type: string;
   data: Expense[];
+  /** Whether the listed transactions are bank-account transactions (affects amount sign handling on edit) */
+  isBank: boolean;
 }
 
 export interface BoxPanelData {

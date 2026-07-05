@@ -678,7 +678,13 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
             if (line.startsWith('event: ')) {
               currentEvent = line.slice(7);
             } else if (line.startsWith('data: ')) {
-              const eventData = JSON.parse(line.slice(6));
+              let eventData;
+              try {
+                eventData = JSON.parse(line.slice(6));
+              } catch (e) {
+                logger.error('Failed to parse SSE data', e as Error);
+                continue;
+              }
 
               switch (currentEvent) {
                 case 'queue':
@@ -847,7 +853,8 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
     setOtpCode('');
     setOtpSubmitting(false);
     setOtpError(null);
-    setSyncStartTime(Date.now());
+    const start = Date.now(); // local capture: syncStartTime state is stale in this closure
+    setSyncStartTime(start);
     setElapsedSeconds(0);
     setSyncQueue([{
       id: accountId,
@@ -947,7 +954,13 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
               if (line.startsWith('event: ')) {
                 currentEvent = line.slice(7);
               } else if (line.startsWith('data: ')) {
-                const eventData = JSON.parse(line.slice(6));
+                let eventData;
+                try {
+                  eventData = JSON.parse(line.slice(6));
+                } catch (e) {
+                  logger.error('Failed to parse SSE data', e as Error);
+                  continue;
+                }
 
                 if (currentEvent === 'progress') {
                   // Handle OTP events
@@ -999,7 +1012,7 @@ const SyncStatusModal: React.FC<SyncStatusModalProps> = ({ open, onClose, width,
                   );
                 } else if (currentEvent === 'complete') {
                   const finalSummary = eventData.summary || {};
-                  const finalDuration = finalSummary.durationSeconds ?? (syncStartTime ? Math.floor((Date.now() - syncStartTime) / 1000) : elapsedSeconds);
+                  const finalDuration = finalSummary.durationSeconds ?? Math.floor((Date.now() - start) / 1000);
 
                   setSessionSummary({
                     ...finalSummary,
