@@ -1,16 +1,16 @@
 :root {
-  /* Core Colors - Zinc/Neutral */
-  --n-zinc-50: #fafafa;
-  --n-zinc-100: #f4f4f5;
-  --n-zinc-200: #e4e4e7;
-  --n-zinc-300: #d4d4d8;
-  --n-zinc-400: #a1a1aa;
-  --n-zinc-500: #71717a;
-  --n-zinc-600: #52525b;
-  --n-zinc-700: #3f3f46;
-  --n-zinc-800: #27272a;
-  --n-zinc-900: #18181b;
-  --n-zinc-950: #09090b;
+  /* Core Colors - Ink (indigo-tinted neutrals) */
+  --n-zinc-50: #f8f8fc;
+  --n-zinc-100: #f0f0f6;
+  --n-zinc-200: #e2e2ec;
+  --n-zinc-300: #cdcdde;
+  --n-zinc-400: #9c9cb4;
+  --n-zinc-500: #70708c;
+  --n-zinc-600: #52526d;
+  --n-zinc-700: #3a3a50;
+  --n-zinc-800: #232333;
+  --n-zinc-900: #171722;
+  --n-zinc-950: #0e0e16;
 
   /* Primary - Indigo */
   --n-primary-50: #eef2ff;
@@ -23,6 +23,10 @@
   --n-primary-700: #4338ca;
   --n-primary-800: #3730a3;
   --n-primary-900: #312e81;
+
+  /* Gradient accents */
+  --n-gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --n-gradient-text: linear-gradient(135deg, #818cf8 0%, #a78bfa 55%, #e879f9 100%);
 
   /* Semantic Colors */
   --n-success: #10b981;
@@ -49,12 +53,13 @@
   --n-radius-2xl: 1.5rem;
   --n-radius-full: 9999px;
 
-  /* Shadows */
-  --n-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --n-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --n-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
-  --n-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  --n-shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+  /* Shadows - soft, layered, with a crisp ambient ring */
+  --n-shadow-sm: 0 0 0 1px rgb(16 16 40 / 0.04), 0 1px 2px 0 rgb(16 16 40 / 0.06);
+  --n-shadow-md: 0 0 0 1px rgb(16 16 40 / 0.04), 0 2px 8px -2px rgb(16 16 40 / 0.08), 0 6px 20px -4px rgb(16 16 40 / 0.06);
+  --n-shadow-lg: 0 0 0 1px rgb(16 16 40 / 0.04), 0 8px 24px -6px rgb(16 16 40 / 0.12), 0 20px 48px -12px rgb(16 16 40 / 0.1);
+  --n-shadow-xl: 0 0 0 1px rgb(16 16 40 / 0.04), 0 16px 48px -8px rgb(16 16 40 / 0.16), 0 32px 80px -16px rgb(16 16 40 / 0.12);
+  --n-shadow-inner: inset 0 2px 4px 0 rgb(16 16 40 / 0.05);
+  --n-shadow-glow: 0 0 0 1px rgb(99 102 241 / 0.25), 0 4px 20px -2px rgb(99 102 241 / 0.35);
 
   /* Animations */
   --n-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -67,17 +72,17 @@
   --n-bg-main: var(--n-zinc-50);
   --n-bg-surface: #ffffff;
   --n-bg-surface-alt: var(--n-zinc-100);
-  
+
   --n-text-primary: var(--n-zinc-900);
   --n-text-secondary: var(--n-zinc-500);
   --n-text-muted: var(--n-zinc-400);
-  
+
   --n-border: var(--n-zinc-200);
   --n-border-hover: var(--n-zinc-300);
-  
-  --n-glass-bg: rgba(255, 255, 255, 0.7);
-  --n-glass-border: rgba(255, 255, 255, 0.5);
-  
+
+  --n-glass-bg: rgba(255, 255, 255, 0.72);
+  --n-glass-border: rgba(255, 255, 255, 0.55);
+
   --n-primary: var(--n-primary-600);
   --n-primary-hover: var(--n-primary-700);
   --n-primary-foreground: #ffffff;
@@ -88,18 +93,25 @@
   --n-bg-main: var(--n-zinc-950);
   --n-bg-surface: var(--n-zinc-900);
   --n-bg-surface-alt: var(--n-zinc-800);
-  
+
   --n-text-primary: var(--n-zinc-50);
   --n-text-secondary: var(--n-zinc-400);
   --n-text-muted: var(--n-zinc-500);
-  
+
   --n-border: var(--n-zinc-800);
   --n-border-hover: var(--n-zinc-700);
-  
-  --n-glass-bg: rgba(9, 9, 11, 0.7);
-  --n-glass-border: rgba(255, 255, 255, 0.1);
-  
+
+  --n-glass-bg: rgba(14, 14, 22, 0.72);
+  --n-glass-border: rgba(255, 255, 255, 0.08);
+
   --n-primary: var(--n-primary-500);
   --n-primary-hover: var(--n-primary-400);
   --n-primary-foreground: #ffffff;
+
+  /* Shadows read differently on dark surfaces: deeper, plus a faint light ring */
+  --n-shadow-sm: 0 0 0 1px rgb(255 255 255 / 0.04), 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --n-shadow-md: 0 0 0 1px rgb(255 255 255 / 0.05), 0 2px 8px -2px rgb(0 0 0 / 0.5), 0 6px 20px -4px rgb(0 0 0 / 0.4);
+  --n-shadow-lg: 0 0 0 1px rgb(255 255 255 / 0.06), 0 8px 24px -6px rgb(0 0 0 / 0.55), 0 20px 48px -12px rgb(0 0 0 / 0.45);
+  --n-shadow-xl: 0 0 0 1px rgb(255 255 255 / 0.06), 0 16px 48px -8px rgb(0 0 0 / 0.6), 0 32px 80px -16px rgb(0 0 0 / 0.5);
+  --n-shadow-glow: 0 0 0 1px rgb(129 140 248 / 0.3), 0 4px 24px -2px rgb(99 102 241 / 0.45);
 }

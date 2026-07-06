@@ -39,8 +39,9 @@ describe('Encryption Utility Security', () => {
     it('should fail to decrypt if the authentication tag is tampered with', () => {
         const encrypted = encrypt(testData);
         const parts = encrypted.split(':');
-        // Modify the auth tag (last part)
-        parts[2] = parts[2].substring(0, parts[2].length - 2) + '00';
+        // Modify the auth tag (last part) — pick a byte guaranteed to differ
+        const lastByte = parts[2].slice(-2);
+        parts[2] = parts[2].substring(0, parts[2].length - 2) + (lastByte === '00' ? '11' : '00');
         const tampered = parts.join(':');
 
         expect(() => decrypt(tampered)).toThrow();
