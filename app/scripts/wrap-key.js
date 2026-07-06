@@ -3,10 +3,10 @@ import process from 'process';
 
 /**
  * Utility to wrap a master key with a passphrase.
- * Usage: node wrap-key.js <hex-master-key|new> <passphrase>
+ * Usage: node scripts/wrap-key.js <hex-master-key|new> <passphrase>
  */
 
-const USAGE = 'Usage: node wrap-key.js <hex-master-key|new> <passphrase>\n  Use "new" to generate a fresh 32-byte master key.';
+const USAGE = 'Usage: node scripts/wrap-key.js <hex-master-key|new> <passphrase>\n  Use "new" to generate a fresh 32-byte master key.';
 
 let masterKey;
 let masterKeyHex = process.argv[2];
