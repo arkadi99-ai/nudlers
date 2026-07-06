@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { getDB } from '../pages/api/db.js';
 import logger from './logger.js';
+import { unwrapSettingValue } from './settingsValue.js';
 
 const SETTING_KEYS = [
     'ai_base_url',
@@ -13,11 +14,6 @@ const SETTING_KEYS = [
 
 const DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1';
 const DEFAULT_MODEL = 'google/gemini-2.5-flash';
-
-function unquote(value) {
-    if (typeof value !== 'string') return value;
-    return value.replace(/^"|"$/g, '');
-}
 
 function mapLegacyGeminiModel(model) {
     if (!model) return null;
@@ -35,7 +31,7 @@ export async function getAIConfig() {
 
         const map = {};
         for (const row of result.rows) {
-            map[row.key] = typeof row.value === 'string' ? unquote(row.value) : row.value;
+            map[row.key] = unwrapSettingValue(row.value);
         }
 
         const baseURL = map.ai_base_url || process.env.AI_BASE_URL || DEFAULT_BASE_URL;

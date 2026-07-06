@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     try {
         if (req.method === 'PATCH') {
             // RENAME logic
-            const { newName } = req.body;
+            const { newName } = req.body || {};
             if (!newName || typeof newName !== 'string' || newName.trim() === '') {
                 return res.status(400).json({ error: "New category name is required" });
             }
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
 
         } else if (req.method === 'DELETE') {
             // DELETE logic
-            const { deleteRules = true, deleteBudget = true } = req.body;
+            const { deleteRules = true, deleteBudget = true } = req.body || {};
             const trimmedCategoryName = categoryName.trim();
 
             await client.query('BEGIN');

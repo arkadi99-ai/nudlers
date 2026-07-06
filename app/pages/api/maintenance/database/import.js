@@ -82,8 +82,7 @@ async function handler(req, res) {
 
     const results = {
       success: true,
-      imported: {},
-      errors: []
+      imported: {}
     };
 
     // In replace mode, clear all tables first (in reverse order for FK constraints)
@@ -108,18 +107,23 @@ async function handler(req, res) {
         continue;
       }
 
-      try {
-        let importedCount = 0;
+      let importedCount = 0;
 
-        for (const row of tableData.data) {
-          const columns = Object.keys(row);
-          const values = Object.values(row);
+      for (const row of tableData.data) {
+        const columns = Object.keys(row);
+        const values = Object.values(row);
 
-          if (columns.length === 0) continue;
+        if (columns.length === 0) continue;
 
-          const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
-          const columnNames = columns.map(c => `"${c}"`).join(', ');
+        const invalidColumn = columns.find(c => !/^[a-z0-9_]+$/.test(c));
+        if (invalidColumn) {
+          throw Object.assign(new Error(`Invalid column name "${invalidColumn}"`), { tableName, rowIndex: importedCount });
+        }
 
+        const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
+        const columnNames = columns.map(c => `"${c}"`).join(', ');
+
+        try {
           if (mode === 'replace') {
             // Direct insert (table was cleared)
             const query = `INSERT INTO ${tableName} (${columnNames}) VALUES (${placeholders})`;
@@ -134,47 +138,38 @@ async function handler(req, res) {
             const query = `INSERT INTO ${tableName} (${columnNames}) VALUES (${placeholders}) ON CONFLICT ${conflictTarget} DO NOTHING`;
             await client.query(query, values);
           }
-
-          importedCount++;
+        } catch (error) {
+          // Transaction is aborted after any failed statement — surface it and roll back
+          throw Object.assign(error, { tableName, rowIndex: importedCount });
         }
 
-        // Reset sequence for tables with SERIAL primary keys
-        if (TABLE_CONFIGS[tableName].pk === 'id') {
-          try {
-            await client.query(`
-              SELECT setval(pg_get_serial_sequence('${tableName}', 'id'), 
-                     COALESCE((SELECT MAX(id) FROM ${tableName}), 0) + 1, false)
-            `);
-          } catch (seqError) {
-            logger.warn({ tableName, error: seqError.message }, 'Could not reset sequence');
-          }
-        }
-
-        results.imported[tableName] = { count: importedCount };
-      } catch (error) {
-        logger.error({ tableName, error: error.message, stack: error.stack }, 'Error importing table');
-        results.errors.push({
-          table: tableName,
-          error: error.message
-        });
+        importedCount++;
       }
+
+      // Reset sequence for tables with SERIAL primary keys
+      if (TABLE_CONFIGS[tableName].pk === 'id') {
+        await client.query(`
+          SELECT setval(pg_get_serial_sequence('${tableName}', 'id'),
+                 COALESCE((SELECT MAX(id) FROM ${tableName}), 0) + 1, false)
+        `);
+      }
+
+      results.imported[tableName] = { count: importedCount };
     }
 
     // Commit transaction
     await client.query('COMMIT');
 
-    if (results.errors.length > 0) {
-      results.success = false;
-    }
-
     res.status(200).json(results);
   } catch (error) {
     // Rollback on error
     await client.query('ROLLBACK');
-    logger.error({ error: error.message, stack: error.stack }, 'Error importing database');
+    logger.error({ error: error.message, stack: error.stack, table: error.tableName, rowIndex: error.rowIndex }, 'Error importing database');
     res.status(500).json({
       error: 'Failed to import database',
-      message: error.message
+      message: error.message,
+      table: error.tableName,
+      rowIndex: error.rowIndex
     });
   } finally {
     client.release();

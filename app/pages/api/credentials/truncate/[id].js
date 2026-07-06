@@ -44,14 +44,6 @@ async function handler(req, res) {
         'DELETE FROM transactions WHERE vendor = $1 AND account_number = $2',
         [vendor, nickname]
       );
-      
-      // If no rows were deleted with nickname, try vendor only
-      if (deleteResult.rowCount === 0) {
-        deleteResult = await client.query(
-          'DELETE FROM transactions WHERE vendor = $1',
-          [vendor]
-        );
-      }
     } else {
       // No nickname, delete all transactions for this vendor
       deleteResult = await client.query(

@@ -39,11 +39,11 @@ const handler = createApiHandler({
             id: row.id,
             vendor: row.vendor,
             account_number: row.account_number,
-            last4: row.account_number.slice(-4),
+            last4: row.account_number?.slice(-4) ?? '',
             balance: row.balance,
             balance_updated_at: row.balance_updated_at,
             is_hidden: row.is_hidden,
-            nickname: row.custom_bank_account_nickname || row.mapped_card_nickname || row.credential_nickname || `${row.vendor} •••• ${row.account_number.slice(-4)}`,
+            nickname: row.custom_bank_account_nickname || row.mapped_card_nickname || row.credential_nickname || `${row.vendor} •••• ${row.account_number?.slice(-4) ?? ''}`,
             credential: {
                 id: row.credential_id,
                 vendor: row.credential_vendor,

@@ -3,6 +3,8 @@ import logger from './logger.js';
 import { getBillingCycleSql } from "./transaction_logic.js";
 import { format } from 'date-fns';
 import { generateText } from './aiClient.js';
+import { BANK_VENDORS } from './constants.js';
+import { unwrapSettingValue } from './settingsValue.js';
 
 /**
  * Generates a daily financial summary using AI.
@@ -20,7 +22,7 @@ export async function generateDailySummary() {
 
         const settings = {};
         for (const row of settingsResult.rows) {
-            settings[row.key] = typeof row.value === 'string' ? row.value.replace(/"/g, '') : row.value;
+            settings[row.key] = unwrapSettingValue(row.value);
         }
 
         const summaryMode = settings.whatsapp_summary_mode || 'calendar';
@@ -90,10 +92,11 @@ export async function generateDailySummary() {
             `SELECT date, name, category, price, vendor
        FROM transactions
        WHERE (installments_number IS NULL OR installments_number = 1)
-         AND vendor NOT IN ('hapoalim', 'poalim', 'leumi', 'mizrahi', 'discount', 'yahav', 'union', 'fibi', 'jerusalem', 'onezero', 'pepper', 'otsarHahayal', 'otsar_hahayal', 'beinleumi', 'massad', 'pagi')
+         AND date >= $1
+         AND vendor != ALL($2)
        ORDER BY date DESC
        LIMIT 10`,
-            []
+            [sevenDaysAgoStr, BANK_VENDORS]
         );
 
         // Get actual spent for the calculated period
@@ -109,10 +112,10 @@ export async function generateDailySummary() {
          AND category IS NOT NULL 
          AND category != ''
          AND category != 'Bank'
-         AND vendor NOT IN ('hapoalim', 'poalim', 'leumi', 'mizrahi', 'discount', 'yahav', 'union', 'fibi', 'jerusalem', 'onezero', 'pepper', 'otsarHahayal', 'otsar_hahayal', 'beinleumi', 'massad', 'pagi')
+         AND vendor != ALL($${queryParams.length + 1})
        GROUP BY category
        ORDER BY actual_spent DESC`,
-            queryParams
+            [...queryParams, BANK_VENDORS]
         );
 
         const totalBudgetResult = await client.query(

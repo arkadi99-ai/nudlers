@@ -30,6 +30,21 @@ async function apiRequest<T>(
     return response.json() as Promise<T>;
 }
 
+// Sum only charges (negative amounts, app-wide convention) as positive spend;
+// refunds/income are excluded so they don't inflate "Total Spending" figures.
+function totalSpend(amounts: Array<number | string | null | undefined>): number {
+    return amounts.reduce((sum: number, raw) => {
+        const p = Number(raw) || 0;
+        return p < 0 ? sum - p : sum;
+    }, 0);
+}
+
+// Signed price for a manual transaction: charges are stored negative,
+// income positive (app-wide convention). Exported for tests.
+export function signedManualPrice(price: number, type: "expense" | "income"): number {
+    return type === "income" ? Math.abs(price) : -Math.abs(price);
+}
+
 // Helper to format currency
 function formatCurrency(amount: number): string {
     return new Intl.NumberFormat("he-IL", {
@@ -202,7 +217,7 @@ export function createMcpServer() {
                     };
                 }
 
-                const total = data.reduce((sum, t) => sum + Math.abs(Number(t.price) || 0), 0);
+                const total = totalSpend(data.map((t) => t.price));
 
                 const transactions = data.slice(0, 20).map((t: any) => {
                     const date = new Date(t.date).toLocaleDateString("he-IL");
@@ -214,7 +229,7 @@ export function createMcpServer() {
 
                 const summary = [
                     `📁 Category: ${category}`,
-                    `💰 Total: ${formatCurrency(total)} (${data.length} transactions)`,
+                    `💰 Total Spent: ${formatCurrency(total)} (${data.length} transactions)`,
                     "",
                     "--- Recent Transactions ---",
                     ...transactions,
@@ -314,7 +329,7 @@ export function createMcpServer() {
                     };
                 }
 
-                const total = data.reduce((sum, t) => sum + Math.abs(Number(t.price) || 0), 0);
+                const total = totalSpend(data.map((t) => t.price));
 
                 const transactions = data.slice(0, 25).map((t: any) => {
                     const date = new Date(t.date).toLocaleDateString("he-IL");
@@ -325,7 +340,7 @@ export function createMcpServer() {
 
                 const summary = [
                     `🔍 Search Results for "${query}"`,
-                    `Found ${data.length} transactions, Total: ${formatCurrency(total)}`,
+                    `Found ${data.length} transactions, Total Spent: ${formatCurrency(total)}`,
                     "",
                     ...transactions,
                     data.length > 25 ? `\n... and ${data.length - 25} more results` : "",
@@ -596,7 +611,7 @@ export function createMcpServer() {
 
                 // Sort by date descending
                 const sorted = data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                const total = sorted.reduce((sum, t) => sum + Math.abs(Number(t.price) || 0), 0);
+                const total = totalSpend(sorted.map((t) => t.price));
 
                 const transactions = sorted.slice(0, limit).map((t: any) => {
                     const date = new Date(t.date).toLocaleDateString("he-IL");
@@ -607,7 +622,7 @@ export function createMcpServer() {
                 const summary = [
                     `📜 All Transactions`,
                     `Period: ${billingCycle || `${startDate} to ${endDate}`}`,
-                    `Total: ${formatCurrency(total)} (${data.length} transactions)`,
+                    `Total Spent: ${formatCurrency(total)} (${data.length} transactions)`,
                     "",
                     ...transactions,
                     data.length > limit ? `\n... and ${data.length - limit} more transactions` : "",
@@ -633,13 +648,14 @@ export function createMcpServer() {
             description: "Add a manual expense or income transaction. Use this for cash purchases, transfers, or transactions not captured by bank scrapers.",
             inputSchema: {
                 name: z.string().min(1).describe("Transaction description (e.g., 'Coffee at local cafe', 'Grocery shopping')"),
-                price: z.number().describe("Amount in ILS. Positive for expenses, negative for income."),
+                price: z.number().describe("Amount in ILS as a positive number. Direction is determined by 'type'."),
+                type: z.enum(["expense", "income"]).optional().describe("Transaction type: 'expense' (default) or 'income'"),
                 date: z.string().describe("Transaction date in YYYY-MM-DD format"),
                 category: z.string().optional().describe("Category name (e.g., 'Dining', 'Groceries', 'Transportation')"),
                 memo: z.string().optional().describe("Additional notes or details about the transaction"),
             },
         },
-        async ({ name, price, date, category, memo }) => {
+        async ({ name, price, type = "expense", date, category, memo }) => {
             try {
                 // Validate date format
                 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -653,7 +669,8 @@ export function createMcpServer() {
                     method: "POST",
                     body: JSON.stringify({
                         name,
-                        price,
+                        // App-wide convention: charges negative, income positive.
+                        price: signedManualPrice(price, type),
                         date,
                         category,
                         memo,
@@ -665,7 +682,6 @@ export function createMcpServer() {
                     const txn = response.transaction;
                     const formattedDate = new Date(txn.date).toLocaleDateString("he-IL");
                     const formattedAmount = formatCurrency(Math.abs(txn.price));
-                    const type = txn.price >= 0 ? "expense" : "income";
 
                     const summary = [
                         `✅ Manual ${type} added successfully!`,
@@ -736,7 +752,7 @@ export function createMcpServer() {
                     const totalB = Math.abs(Number(b.total) || 0);
                     return totalB - totalA;
                 });
-                const grandTotal = sorted.reduce((sum, v) => sum + Math.abs(Number(v.total) || 0), 0);
+                const grandTotal = totalSpend(sorted.map((v) => v.total));
 
                 const lines = sorted.map((row) => {
                     const total = Math.abs(Number(row.total) || 0);

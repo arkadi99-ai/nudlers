@@ -247,3 +247,13 @@ describe('MCP Server API', () => {
         // Close any lingering sessions if possible
     });
 });
+
+describe('signedManualPrice', () => {
+    it('stores expenses negative and income positive regardless of input sign', async () => {
+        const { signedManualPrice } = await import('../utils/mcp-setup');
+        expect(signedManualPrice(50, 'expense')).toBe(-50);
+        expect(signedManualPrice(-50, 'expense')).toBe(-50);
+        expect(signedManualPrice(50, 'income')).toBe(50);
+        expect(signedManualPrice(-50, 'income')).toBe(50);
+    });
+});

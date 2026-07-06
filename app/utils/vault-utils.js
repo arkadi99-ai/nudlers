@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { getDB } from '../pages/api/db';
 import VaultStore from '../pages/api/utils/VaultStore';
 import logger from './logger.js';
+import { unwrapSettingValue } from './settingsValue.js';
 
 // Kept only for migrating pre-existing vaults that were created before
 // per-vault random salts were introduced. Never used for new vaults.
@@ -31,11 +32,10 @@ export async function unlockVaultWithPassphrase(passphrase) {
         );
         for (const row of result.rows) {
             if (row.key === 'wrapped_master_key') {
-                const raw = row.value;
-                try { wrappedKey = JSON.parse(raw); } catch { wrappedKey = raw; }
+                wrappedKey = unwrapSettingValue(row.value);
             } else if (row.key === 'vault_salt') {
                 // vault_salt is stored as JSON.stringify(hexString) — parse it back.
-                try { storedSaltHex = JSON.parse(row.value); } catch { storedSaltHex = row.value; }
+                storedSaltHex = unwrapSettingValue(row.value);
             }
         }
     } catch (err) {
@@ -106,16 +106,25 @@ async function migrateLegacyVault(passphrase, masterKey) {
     let client;
     try {
         client = await getDB();
-        await client.query(
-            `INSERT INTO app_settings (key, value, description)
-             VALUES ('vault_salt', $1, 'Random salt for vault key derivation (scrypt)')
-             ON CONFLICT (key) DO UPDATE SET value = $1`,
-            [JSON.stringify(newSalt.toString('hex'))]
-        );
-        await client.query(
-            "UPDATE app_settings SET value = $1 WHERE key = 'wrapped_master_key'",
-            [JSON.stringify(newWrappedStr)]
-        );
+        // Salt and re-wrapped key must land together — updating one without
+        // the other permanently bricks the vault.
+        await client.query('BEGIN');
+        try {
+            await client.query(
+                `INSERT INTO app_settings (key, value, description)
+                 VALUES ('vault_salt', $1, 'Random salt for vault key derivation (scrypt)')
+                 ON CONFLICT (key) DO UPDATE SET value = $1`,
+                [JSON.stringify(newSalt.toString('hex'))]
+            );
+            await client.query(
+                "UPDATE app_settings SET value = $1 WHERE key = 'wrapped_master_key'",
+                [JSON.stringify(newWrappedStr)]
+            );
+            await client.query('COMMIT');
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        }
         logger.info('Vault migrated to per-vault random salt');
     } finally {
         if (client) client.release();

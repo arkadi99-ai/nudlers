@@ -67,6 +67,14 @@ const VaultLockScreen: React.FC = () => {
     // Prevent auto-trigger loop
     const hasAutoTriggered = useRef(false);
 
+    // Reset the auto-trigger guard whenever the modal closes (any path: success,
+    // cancel, skip) so the passkey auto-prompt works again on reopen.
+    useEffect(() => {
+        if (!isVaultModalOpen) {
+            hasAutoTriggered.current = false;
+        }
+    }, [isVaultModalOpen]);
+
     const handleClose = () => {
         if (!loading) {
             setIsVaultModalOpen(false);

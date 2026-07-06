@@ -176,8 +176,9 @@ describe('Summary Generation', () => {
 
         const actualQuery = mockClient.query.mock.calls[3];
         const [, params] = actualQuery;
-        expect(params).toHaveLength(1);
+        expect(params).toHaveLength(2);
         expect(params[0]).toMatch(/^\d{4}-\d{2}$/);
+        expect(Array.isArray(params[1])).toBe(true); // bank vendor exclusion list
     });
 
     it('should release client even when AI provider throws', async () => {

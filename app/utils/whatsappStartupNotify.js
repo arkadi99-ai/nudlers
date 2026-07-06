@@ -1,4 +1,5 @@
 import logger from './logger.js';
+import { unwrapSettingValue } from './settingsValue.js';
 
 /**
  * Send a notification at app startup if the vault is initialized but locked
@@ -41,8 +42,7 @@ export async function notifyAppStartedWithLockedVault(opts = {}) {
         );
         const row = result.rows[0];
         if (row) {
-            let v = row.value;
-            try { v = JSON.parse(v); } catch { /* fall through with raw */ }
+            const v = unwrapSettingValue(row.value);
             vaultIsInitialized = typeof v === 'string' && v.length > 0;
         }
     } finally {

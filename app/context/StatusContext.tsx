@@ -398,13 +398,16 @@ export const StatusProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setIsFullPolling(full);
     }, []);
 
+    // Initial checks on mount only (deferred to avoid sync setState in effect)
     useEffect(() => {
-        // Initial checks (deferred to avoid sync setState in effect)
         queueMicrotask(() => {
             checkDb();
             refreshStatus();
         });
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only kick; the polling effect below handles subsequent refreshes
+    }, []);
 
+    useEffect(() => {
         let dbIntervalId: NodeJS.Timeout;
         let syncIntervalId: NodeJS.Timeout;
 

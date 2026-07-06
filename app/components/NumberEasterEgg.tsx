@@ -65,18 +65,25 @@ const GlobalEasterEggManager: React.FC = () => {
                     zIndex: 9999,
                 });
 
-                // 2. Surgical Highlight (Safe DOM manipulation)
-                const textNodeAsText = textNode as Text;
-                const middle = textNodeAsText.splitText(matchIndex);
-                middle.splitText(2); // Split off the part after "67"
-
-
+                // 2. Surgical Highlight
+                // ponytail: try/catch guard; overlay-based highlight if this ever misbehaves
+                // React owns these text nodes — a reconcile mid-animation can make
+                // splitText/insertBefore/removeChild throw NotFoundError.
                 const span = document.createElement('span');
                 span.className = 'nudler-egg-digit';
                 span.textContent = '67';
 
-                parent.insertBefore(span, middle);
-                parent.removeChild(middle);
+                try {
+                    const textNodeAsText = textNode as Text;
+                    const middle = textNodeAsText.splitText(matchIndex);
+                    middle.splitText(2); // Split off the part after "67"
+
+                    parent.insertBefore(span, middle);
+                    parent.removeChild(middle);
+                } catch {
+                    activeElements.delete(parent);
+                    return;
+                }
 
                 parent.classList.add('nudler-row-active');
 
@@ -100,11 +107,16 @@ const GlobalEasterEggManager: React.FC = () => {
                         activeElements.delete(parent);
 
                         // Revert: Replace span back with text node
-                        if (parent.contains(span)) {
-                            const newText = document.createTextNode('67');
-                            parent.replaceChild(newText, span);
-                            // Normalize to merge adjacent text nodes
-                            parent.normalize();
+                        // ponytail: try/catch guard — React may have reconciled these nodes away
+                        try {
+                            if (parent.contains(span)) {
+                                const newText = document.createTextNode('67');
+                                parent.replaceChild(newText, span);
+                                // Normalize to merge adjacent text nodes
+                                parent.normalize();
+                            }
+                        } catch {
+                            // Node tree changed under us; nothing to restore
                         }
                     }, 400); // Matches CSS transition duration
                 };

@@ -302,7 +302,8 @@ const BreakdownView: React.FC = () => {
 
             setModalData({
                 type: description,
-                data: transactions
+                data: transactions,
+                isBank: false
             });
             setIsModalOpen(true);
         } catch (err) {

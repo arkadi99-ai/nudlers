@@ -410,22 +410,20 @@ describe('Credential Truncate API (/api/credentials/truncate/[id])', () => {
         expect(params).toEqual(['visaCal', 'MyCard']);
     });
 
-    it('should fall back to vendor-only delete when nickname match returns 0', async () => {
+    it('should not fall back to vendor-only delete when nickname match returns 0', async () => {
         mockClient.query.mockResolvedValueOnce({
             rows: [{ vendor: 'visaCal', nickname: 'OldNickname', bank_account_number: null }]
         });
-        // Delete with nickname returns 0
+        // Delete with nickname returns 0 — must NOT wipe other accounts of the same vendor
         mockClient.query.mockResolvedValueOnce({ rowCount: 0 });
-        // Fallback: delete by vendor only
-        mockClient.query.mockResolvedValueOnce({ rowCount: 10 });
 
         await truncateHandler({
             method: 'DELETE', query: { id: '1' }
         } as any, mockRes as any);
 
-        expect(mockClient.query).toHaveBeenCalledTimes(3);
+        expect(mockClient.query).toHaveBeenCalledTimes(2);
         expect(mockRes.status).toHaveBeenCalledWith(200);
-        expect(mockRes.json.mock.calls[0][0].deletedCount).toBe(10);
+        expect(mockRes.json.mock.calls[0][0].deletedCount).toBe(0);
     });
 
     it('should delete by vendor only when no nickname', async () => {

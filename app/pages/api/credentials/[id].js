@@ -137,10 +137,24 @@ const innerHandler = createApiHandler({
   }
 });
 
+// If NUDLERS_API_KEY is set, GET (which returns the decrypted password) requires it
+// as an Authorization Bearer header. Otherwise, allow all requests (local-only mode).
+function verifyAuth(req) {
+  const requiredKey = process.env.NUDLERS_API_KEY;
+  if (!requiredKey) {
+    return true;
+  }
+  const authHeader = req.headers.authorization;
+  return !!(authHeader && authHeader.startsWith('Bearer ') && authHeader.slice(7) === requiredKey);
+}
+
 export default function handler(req, res) {
   if (!ALLOWED_METHODS.includes(req.method)) {
     res.setHeader('Allow', ALLOWED_METHODS);
     return res.status(405).json({ error: `Method ${req.method} not allowed` });
+  }
+  if (req.method === 'GET' && !verifyAuth(req)) {
+    return res.status(401).json({ error: 'Unauthorized' });
   }
   return innerHandler(req, res);
 }

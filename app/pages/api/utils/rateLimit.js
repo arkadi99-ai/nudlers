@@ -25,6 +25,11 @@ export function rateLimit({
     const key = `${keyPrefix}:${ip}`;
     const now = Date.now();
 
+    // ponytail: O(n) sweep per check; fine for a personal app, shard/cap if buckets grow large
+    for (const [k, v] of buckets) {
+      if (now >= v.resetAt) buckets.delete(k);
+    }
+
     const entry = buckets.get(key);
     if (!entry || now >= entry.resetAt) {
       buckets.set(key, { count: 1, resetAt: now + windowMs });

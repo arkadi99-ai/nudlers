@@ -13,7 +13,7 @@ export default async function handler(req, res) {
         }
 
         if (req.method === 'POST') {
-            const { name, amount, category, account_number, day_of_month, frequency = 'monthly' } = req.body;
+            const { name, amount, category, account_number, day_of_month, frequency = 'monthly' } = req.body || {};
 
             if (!name || amount === undefined || !day_of_month) {
                 return res.status(400).json({ error: 'Missing required fields' });
@@ -30,15 +30,19 @@ export default async function handler(req, res) {
         }
 
         if (req.method === 'PATCH') {
-            const { id, is_active } = req.body;
+            const { id, is_active } = req.body || {};
             if (!id) return res.status(400).json({ error: 'ID required' });
 
             const result = await client.query(`
-                UPDATE manual_recurring_payments 
+                UPDATE manual_recurring_payments
                 SET is_active = $1, updated_at = CURRENT_TIMESTAMP
                 WHERE id = $2
                 RETURNING *
             `, [is_active, id]);
+
+            if (result.rows.length === 0) {
+                return res.status(404).json({ error: 'Recurring payment not found' });
+            }
 
             return res.status(200).json(result.rows[0]);
         }
@@ -54,7 +58,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     } catch (err) {
         logger.error(err, "Error in manual-recurring API");
-        return res.status(500).json({ error: err.message });
+        return res.status(500).json({ error: 'Internal Server Error' });
     } finally {
         client.release();
     }

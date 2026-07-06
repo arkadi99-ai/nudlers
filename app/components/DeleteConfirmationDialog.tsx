@@ -9,7 +9,7 @@ import Typography from '@mui/material/Typography';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
-import { formatNumber } from './CategoryDashboard/utils/formatUtils';
+import { formatNumber } from './CategoryDashboard/utils/format';
 import { dateUtils } from './CategoryDashboard/utils/dateUtils';
 import { useTranslation } from 'react-i18next';
 

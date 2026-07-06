@@ -26,10 +26,6 @@ const ExpensesModal: React.FC<ExpensesModalProps> = ({ open, onClose, data, setM
   const [sortField, setSortField] = React.useState<SortField>('date');
   const [sortDirection, setSortDirection] = React.useState<SortDirection>('desc');
 
-  const isBankView = data.type === "Bank Transactions" ||
-    data.type === "All Bank Expenses" ||
-    (data.type && (data.type.startsWith('Account') || data.type.startsWith('Bank') || data.type.startsWith('Search:')));
-
   // Sort function for expenses
   const getSortedData = React.useCallback((expenses: Expense[]) => {
     if (!Array.isArray(expenses)) return expenses;
@@ -116,9 +112,9 @@ const ExpensesModal: React.FC<ExpensesModalProps> = ({ open, onClose, data, setM
 
 
 
-  const handleDeleteTransaction = async (expense: Expense) => {
+  // Returns success/failure so TransactionsTable can show the right snackbar
+  const handleDeleteTransaction = async (expense: Expense): Promise<boolean> => {
     try {
-      // Use identifier-based delete if available, otherwise fall back to name-based delete
       if (expense.identifier && expense.vendor) {
         const response = await fetch(`/api/transactions/${expense.identifier}|${expense.vendor}`, {
           method: 'DELETE',
@@ -136,19 +132,16 @@ const ExpensesModal: React.FC<ExpensesModalProps> = ({ open, onClose, data, setM
             data: updatedData
           });
 
-          showSnackbar(t('snackbar.deleteSuccess'), 'success');
-
           window.dispatchEvent(new CustomEvent('dataRefresh'));
-        } else {
-          showSnackbar(t('snackbar.deleteTransactionFailed'), 'error');
+          return true;
         }
-      } else {
-        logger.error('Cannot delete transaction: missing identifier or vendor', expense);
-        showSnackbar(t('snackbar.missingIdentifier'), 'error');
+        return false;
       }
+      logger.error('Cannot delete transaction: missing identifier or vendor', expense);
+      return false;
     } catch (error) {
       logger.error('Error deleting transaction', error as Error);
-      showSnackbar(t('snackbar.deleteError'), 'error');
+      return false;
     }
   };
 
@@ -201,7 +194,7 @@ const ExpensesModal: React.FC<ExpensesModalProps> = ({ open, onClose, data, setM
             sortOrder={sortDirection}
             onSort={handleSortChange}
             showProcessedDate={true}
-            isBankView={!!isBankView}
+            isBankView={data.isBank}
             disableWrapper={true}
           />
         </Box>

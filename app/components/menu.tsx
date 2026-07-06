@@ -33,7 +33,6 @@ import TimelineIcon from '@mui/icons-material/Timeline';
 import dynamic from 'next/dynamic';
 import DatabaseIndicator from './DatabaseIndicator';
 import SyncStatusIndicator from './SyncStatusIndicator';
-import { useNotification } from './NotificationContext';
 import RepeatIcon from '@mui/icons-material/Repeat';
 import InsightsIcon from '@mui/icons-material/Insights';
 import TuneIcon from '@mui/icons-material/Tune';
@@ -49,8 +48,6 @@ import LockOpenIcon from '@mui/icons-material/LockOpen';
 import { useStatus } from '../context/StatusContext';
 import { useTranslation } from 'react-i18next';
 
-const ScrapeModal = dynamic(() => import('./ScrapeModal'), { ssr: false });
-const _AccountsModal = dynamic(() => import('./AccountsModal'), { ssr: false });
 const CategoryManagementModal = dynamic(() => import('./CategoryDashboard/components/CategoryManagementModal'), { ssr: false });
 const CardVendorsModal = dynamic(() => import('./CardVendorsModal'), { ssr: false });
 const DatabaseBackupModal = dynamic(() => import('./DatabaseBackupModal'), { ssr: false });
@@ -108,7 +105,6 @@ function ResponsiveAppBar({ currentView = 'summary', onViewChange }: ResponsiveA
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileDrawerOpen, setMobileDrawerOpen] = React.useState(false);
   const [desktopDrawerOpen, setDesktopDrawerOpen] = React.useState(true); // Persistent drawer for desktop
-  const [isScrapeModalOpen, setIsScrapeModalOpen] = React.useState(false);
   const [isCategoryManagementOpen, setIsCategoryManagementOpen] = React.useState(false);
   const [isCardVendorsOpen, setIsCardVendorsOpen] = React.useState(false);
   const [isBackupOpen, setIsBackupOpen] = React.useState(false);
@@ -118,8 +114,6 @@ function ResponsiveAppBar({ currentView = 'summary', onViewChange }: ResponsiveA
   const { syncDrawerOpen, setSyncDrawerOpen, syncDrawerWidth, setSyncDrawerWidth } = useView();
   const { toggleAI, isOpen: isAIOpen } = useAI();
   const { isVaultLocked, setIsVaultModalOpen, lockVault } = useStatus();
-
-  const { showNotification } = useNotification();
 
   const handleDrawerToggle = () => {
     setMobileDrawerOpen(!mobileDrawerOpen);
@@ -192,12 +186,6 @@ function ResponsiveAppBar({ currentView = 'summary', onViewChange }: ResponsiveA
   ];
 
 
-
-  const handleScrapeSuccess = () => {
-    showNotification(t('notification.scrapeSuccess'), 'success');
-    // Dispatch a custom event to trigger data refresh
-    window.dispatchEvent(new CustomEvent('dataRefresh'));
-  };
 
   // Shared drawer content component
   const drawerContent = (isMobile: boolean) => (
@@ -466,11 +454,6 @@ function ResponsiveAppBar({ currentView = 'summary', onViewChange }: ResponsiveA
       >
         {drawerContent(false)}
       </Drawer>
-      <ScrapeModal
-        open={isScrapeModalOpen}
-        onClose={() => setIsScrapeModalOpen(false)}
-        onSuccess={handleScrapeSuccess}
-      />
       <CategoryManagementModal
         open={isCategoryManagementOpen}
         onClose={() => setIsCategoryManagementOpen(false)}

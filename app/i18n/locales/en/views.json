@@ -41,7 +41,8 @@
       "newRecurring": "Started {{date}}",
       "categorySpike": "Week of {{date}}",
       "categorySpikeRaw": "Week {{week}}"
-    }
+    },
+    "actionFailed": "Action failed — try again"
   },
   "summary": {
     "title": "Summary",
