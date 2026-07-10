@@ -1138,7 +1138,7 @@ export async function runScraper(client, scraperOptions, credentials, onProgress
     // Race between the scrape process and the global timeout
     const result = await Promise.race([scrapePromise, timeoutPromise]);
     clearTimeout(timeoutId);
-    logger.info({ success: result?.success }, '[Scraper] Base scrape completed');
+    logger.info({ success: result?.success, errorType: result?.errorType, errorMessage: result?.errorMessage }, '[Scraper] Base scrape completed');
 
     if (result.success && result.accounts && !Array.isArray(result.accounts)) {
       result.accounts = [];
