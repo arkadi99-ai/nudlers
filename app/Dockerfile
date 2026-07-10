@@ -41,6 +41,15 @@ FROM node:22-bookworm-slim AS runner
 
 WORKDIR /app
 
+# Chrome for Testing version — MUST match the browser pinned by our puppeteer version
+# (see node_modules/puppeteer-core/lib/cjs/puppeteer/revisions.js for puppeteer 24.40.0).
+# On amd64 we use Google's pinned build instead of Debian's `chromium` package because the
+# Debian build drifts to a new version on every image rebuild, and newer builds crash on
+# launch (SIGTRAP / "Failed to launch the browser process: Code: null") in some virtualized
+# environments (see #120). Google does not publish linux/arm64 builds, so arm64 keeps the
+# Debian package (which does not exhibit the crash).
+ARG CHROME_VERSION=146.0.7680.153
+
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
@@ -52,24 +61,26 @@ ENV NODE_ENV=production \
     # Reduce logging verbosity for NAS
     LOG_LEVEL=warn
 
-# 1. Install minimal Chromium and its dependencies + Xvfb + Tini + gosu (for privilege dropping)
-# We use Chromium from the Debian repo to keep the image small
+# 1. Install Chromium runtime dependencies + Xvfb + Tini + gosu (for privilege dropping)
+# (the browser itself is Google's pinned Chrome for Testing, installed in step 1b)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    chromium \
     fonts-liberation \
     fonts-noto-core \
     fonts-noto-ui-core \
     libasound2 \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
+    libatspi2.0-0 \
     libcairo2 \
     libcups2 \
     libdbus-1-3 \
+    libdrm2 \
     libexpat1 \
     libfontconfig1 \
     libgbm1 \
     libglib2.0-0 \
     libgtk-3-0 \
+    libxkbcommon0 \
     libnspr4 \
     libnss3 \
     libpango-1.0-0 \
@@ -92,6 +103,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tini \
     gosu \
     && rm -rf /var/lib/apt/lists/*
+
+# 1b. Install the browser behind /usr/bin/chromium (see CHROME_VERSION comment above):
+#     amd64 → Google's pinned Chrome for Testing; arm64 → Debian chromium package
+RUN ARCH="$(dpkg --print-architecture)" \
+    && if [ "$ARCH" = "amd64" ]; then \
+    apt-get update && apt-get install -y --no-install-recommends unzip \
+    && npx -y @puppeteer/browsers install chrome@${CHROME_VERSION} --path /opt/chrome \
+    && ln -sf "/opt/chrome/chrome/linux-${CHROME_VERSION}/chrome-linux64/chrome" /usr/bin/chromium \
+    && chmod -R a+rX /opt/chrome \
+    && apt-get purge -y unzip && apt-get autoremove -y && rm -rf /var/lib/apt/lists/* /root/.npm; \
+    else \
+    apt-get update && apt-get install -y --no-install-recommends chromium \
+    && rm -rf /var/lib/apt/lists/*; \
+    fi \
+    # Build-time assertion: fail the build (instead of failing at runtime in production)
+    # if /usr/bin/chromium is a dangling symlink or the browser can't execute.
+    && /usr/bin/chromium --version
 
 # 2. Setup non-root user for running the app
 # Handle case where GID/UID might already exist in base image

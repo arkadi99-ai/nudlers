@@ -36,13 +36,17 @@ const RETRYABLE = {
   UNKNOWN: true,
 };
 
+// Keys are the israeli-bank-scrapers ScraperErrorTypes enum VALUES (UPPER_SNAKE —
+// see node_modules/israeli-bank-scrapers/lib/scrapers/errors.js), which is what
+// scrape results carry in `errorType`.
 const LIB_ERROR_TYPE_MAP = {
-  invalidPassword: ScrapeErrorTypes.INVALID_CREDENTIALS,
-  changePassword: ScrapeErrorTypes.CHANGE_PASSWORD_REQUIRED,
-  accountBlocked: ScrapeErrorTypes.ACCOUNT_BLOCKED,
-  timeout: ScrapeErrorTypes.TIMEOUT,
-  twoFactorRetrieverMissing: ScrapeErrorTypes.OTP_REQUIRED,
-  generic: ScrapeErrorTypes.UNKNOWN,
+  INVALID_PASSWORD: ScrapeErrorTypes.INVALID_CREDENTIALS,
+  CHANGE_PASSWORD: ScrapeErrorTypes.CHANGE_PASSWORD_REQUIRED,
+  ACCOUNT_BLOCKED: ScrapeErrorTypes.ACCOUNT_BLOCKED,
+  TIMEOUT: ScrapeErrorTypes.TIMEOUT,
+  TWO_FACTOR_RETRIEVER_MISSING: ScrapeErrorTypes.OTP_REQUIRED,
+  GENERIC: ScrapeErrorTypes.UNKNOWN,
+  GENERAL_ERROR: ScrapeErrorTypes.UNKNOWN,
 };
 
 function classifyByMessage(rawMessage) {
