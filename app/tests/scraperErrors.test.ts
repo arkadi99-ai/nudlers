@@ -8,20 +8,33 @@ import { vi } from 'vitest';
 import { classifyScrapeError, ScrapeErrorTypes } from '../pages/api/utils/scraperErrors.js';
 
 describe('classifyScrapeError', () => {
-    it('maps library errorType invalidPassword to INVALID_CREDENTIALS', () => {
+    // errorType values below are the israeli-bank-scrapers ScraperErrorTypes enum
+    // VALUES (UPPER_SNAKE), i.e. what scrape results actually carry — see
+    // node_modules/israeli-bank-scrapers/lib/scrapers/errors.js.
+    it('maps library errorType INVALID_PASSWORD to INVALID_CREDENTIALS', () => {
         const result = classifyScrapeError({
-            libResult: { success: false, errorType: 'invalidPassword', errorMessage: 'wrong password' }
+            libResult: { success: false, errorType: 'INVALID_PASSWORD', errorMessage: 'wrong password' }
         });
         expect(result.type).toBe(ScrapeErrorTypes.INVALID_CREDENTIALS);
         expect(result.retryable).toBe(false);
     });
 
-    it('maps library errorType timeout to TIMEOUT (retryable)', () => {
+    it('maps library errorType TIMEOUT to TIMEOUT (retryable)', () => {
         const result = classifyScrapeError({
-            libResult: { success: false, errorType: 'timeout', errorMessage: 'timed out' }
+            libResult: { success: false, errorType: 'TIMEOUT', errorMessage: 'timed out' }
         });
         expect(result.type).toBe(ScrapeErrorTypes.TIMEOUT);
         expect(result.retryable).toBe(true);
+    });
+
+    it('maps library errorType CHANGE_PASSWORD to CHANGE_PASSWORD_REQUIRED even with empty errorMessage', () => {
+        // Regression: the lib emits UPPER_SNAKE errorType values with often-empty
+        // errorMessage; classification must not depend on message heuristics here.
+        const result = classifyScrapeError({
+            libResult: { success: false, errorType: 'CHANGE_PASSWORD', errorMessage: '' }
+        });
+        expect(result.type).toBe(ScrapeErrorTypes.CHANGE_PASSWORD_REQUIRED);
+        expect(result.retryable).toBe(false);
     });
 
     it('classifies OneZero ErrorLoginFailed body as INVALID_CREDENTIALS', () => {

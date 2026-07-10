@@ -70,14 +70,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libasound2 \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
+    libatspi2.0-0 \
     libcairo2 \
     libcups2 \
     libdbus-1-3 \
+    libdrm2 \
     libexpat1 \
     libfontconfig1 \
     libgbm1 \
     libglib2.0-0 \
     libgtk-3-0 \
+    libxkbcommon0 \
     libnspr4 \
     libnss3 \
     libpango-1.0-0 \
@@ -113,7 +116,10 @@ RUN ARCH="$(dpkg --print-architecture)" \
     else \
     apt-get update && apt-get install -y --no-install-recommends chromium \
     && rm -rf /var/lib/apt/lists/*; \
-    fi
+    fi \
+    # Build-time assertion: fail the build (instead of failing at runtime in production)
+    # if /usr/bin/chromium is a dangling symlink or the browser can't execute.
+    && /usr/bin/chromium --version
 
 # 2. Setup non-root user for running the app
 # Handle case where GID/UID might already exist in base image
