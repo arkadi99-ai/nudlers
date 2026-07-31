@@ -18,8 +18,10 @@ function buildPriceHikeTransactions() {
     const months = [3, 2, 1, 0]; // months ago
     const amounts = [-19.9, -19.9, -19.9, -29.9];
     return months.map((mAgo, i) => {
+        // setMonth() would land on non-existent days and roll over (Apr 31 -> May 1),
+        // breaking the monthly cadence whenever the suite runs on the 29th-31st.
         const date = new Date(now);
-        date.setMonth(date.getMonth() - mAgo);
+        date.setDate(date.getDate() - mAgo * 30);
         return {
             identifier: `apple-${i}`,
             vendor: 'visaCal',
