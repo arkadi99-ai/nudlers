@@ -335,7 +335,9 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
 
       const card = cards.find(c => c.last4_digits === last4_digits);
 
-      if (card?.card_ownership_id) {
+      {
+        // No ownership row yet -> let the API create one from the card's last 4 digits
+        const ownershipId = card?.card_ownership_id ?? `last4:${last4_digits}`;
         const payload: Record<string, unknown> = {};
 
         if (values.bankAccountId === -1) {
@@ -351,7 +353,7 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
           payload.custom_bank_account_nickname = null;
         }
 
-        const bankResponse = await fetch(`/api/cards/ownerships/${card.card_ownership_id}`, {
+        const bankResponse = await fetch(`/api/cards/ownerships/${ownershipId}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',

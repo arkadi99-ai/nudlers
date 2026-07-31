@@ -85,7 +85,6 @@
     "modalTitleAccountEnding": "חשבון המסתיים ב-{{last4}}",
     "modalTitleCardEnding": "כרטיס המסתיים ב-{{last4}}",
     "modalTitleCategory": "קטגוריה: {{name}}",
-    "snackbarMoveCardNoSystemId": "לא ניתן להעביר את הכרטיס (לא נמצא מזהה מערכת)",
     "snackbarCardMoved": "הכרטיס הועבר בהצלחה",
     "snackbarFailedToMove": "העברת הכרטיס נכשלה",
     "snackbarMoveFailed": "ההעברה נכשלה",
