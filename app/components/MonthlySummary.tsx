@@ -196,11 +196,8 @@ const MonthlySummary: React.FC = () => {
 
     if (!cardLast4 || isNaN(targetBankId)) return;
 
-    const cardOwnershipId = cardOwnershipMap[cardLast4];
-    if (!cardOwnershipId) {
-      showSnackbar(t('summary.snackbarMoveCardNoSystemId'), 'error');
-      return;
-    }
+    // No ownership row yet -> let the API create one from the card's last 4 digits
+    const cardOwnershipId = cardOwnershipMap[cardLast4] ?? `last4:${cardLast4}`;
 
     try {
       const response = await fetch(`/api/cards/ownerships/${cardOwnershipId}`, {
@@ -211,6 +208,7 @@ const MonthlySummary: React.FC = () => {
 
       if (response.ok) {
         showSnackbar(t('summary.snackbarCardMoved'), 'success');
+        fetchCardVendors();
         fetchMonthlySummary(true);
       } else {
         showSnackbar(t('summary.snackbarFailedToMove'), 'error');
@@ -1261,8 +1259,6 @@ const MonthlySummary: React.FC = () => {
                         ? Math.round((bank.total_cc_expenses / totals.card_expenses) * 100)
                         : 0;
 
-                      const isLargeBank = bank.card_count > 3;
-
                       const BankContent = (
                         <Box
                           key={bank.bank_account_id ? `cc-id-${bank.bank_account_id}` : `cc-nick-${bank.bank_account_nickname}`}
@@ -1276,11 +1272,6 @@ const MonthlySummary: React.FC = () => {
                             display: 'flex',
                             flexDirection: 'column',
                             transition: 'all 0.3s',
-                            gridColumn: {
-                              xs: 'span 1',
-                              sm: (isLargeBank && !isMobile) ? 'span 2' : 'span 1',
-                              lg: (isLargeBank && !isMobile) ? 'span 2' : 'span 1'
-                            },
                             '&:hover': {
                               boxShadow: '0 12px 24px -10px rgba(0, 0, 0, 0.1)',
                               bgcolor: theme.palette.mode === 'dark' ? 'rgba(30, 41, 59, 0.6)' : 'rgba(255, 255, 255, 1)',
@@ -1378,15 +1369,7 @@ const MonthlySummary: React.FC = () => {
                               </Typography>
                             </Box>
 
-                            <Box sx={{
-                              display: 'grid',
-                              gridTemplateColumns: {
-                                xs: '1fr',
-                                sm: '1fr',
-                                lg: (isLargeBank && !isMobile) ? 'repeat(2, 1fr)' : '1fr'
-                              },
-                              gap: 1
-                            }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                               {cardSummary
                                 .filter(card => {
                                   const cardTransVendor = card.transaction_vendor;

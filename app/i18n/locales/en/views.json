@@ -85,7 +85,6 @@
     "modalTitleAccountEnding": "Account ending in {{last4}}",
     "modalTitleCardEnding": "Card ending in {{last4}}",
     "modalTitleCategory": "Category: {{name}}",
-    "snackbarMoveCardNoSystemId": "Cannot move this card (System ID not found)",
     "snackbarCardMoved": "Card moved successfully",
     "snackbarFailedToMove": "Failed to move card",
     "snackbarMoveFailed": "Move failed",
