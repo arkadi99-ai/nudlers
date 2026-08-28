@@ -7,6 +7,53 @@ function formatDateParam(date) {
   return new Date(date).toISOString().slice(0, 10);
 }
 
+// Category names Moneytor uses for bank-side "meta" entries that are not
+// real spending: the monthly lump-sum credit-card settlement debit (already
+// counted once via the itemized card purchases), and inter-account transfers.
+// Matched by exact name first, then by keyword as a safety net for names we
+// haven't seen yet.
+const BANK_META_EXACT = new Set(['CREDIT_CARD_CHECKING', 'BANK_TRANSFER']);
+const BANK_META_KEYWORDS = ['TRANSFER', 'CHECKING'];
+
+function prettifyCategory(rawCategory) {
+  if (!rawCategory) return null;
+  return rawCategory
+    .split('_')
+    .map(word => (word === '&' ? word : word.charAt(0) + word.slice(1).toLowerCase()))
+    .join(' ');
+}
+
+/**
+ * Decide the nudlers-facing category for a raw Moneytor transaction.
+ *
+ * Positive amounts (money in) are always "Income" regardless of Moneytor's
+ * own label - salary sometimes comes through generically as "OTHER", and
+ * nudlers' own spending queries already exclude the 'Income' category
+ * everywhere, so this is the most reliable way to keep inflows out of
+ * spending totals.
+ *
+ * Negative amounts matching a known bank-meta category (the credit card
+ * company's monthly settlement debit, or a transfer) are tagged "Bank" -
+ * same reasoning: nudlers already excludes 'Bank' from spending sums, and
+ * the settlement debit would otherwise double-count every purchase that's
+ * already itemized on the card feed.
+ *
+ * Everything else is real, itemized spending - keep it, just prettified.
+ */
+function classifyCategory(raw) {
+  if (typeof raw.amount === 'number' && raw.amount > 0) {
+    return 'Income';
+  }
+
+  const rawCategory = raw.category || '';
+  const upper = rawCategory.toUpperCase();
+  if (BANK_META_EXACT.has(upper) || BANK_META_KEYWORDS.some(kw => upper.includes(kw))) {
+    return 'Bank';
+  }
+
+  return prettifyCategory(raw.category);
+}
+
 function mapTransaction(raw) {
   return {
     identifier: raw.id,
@@ -18,7 +65,7 @@ function mapTransaction(raw) {
     description: raw.description || raw.extra_info || 'Unknown',
     memo: raw.extra_info || null,
     status: 'completed',
-    category: raw.category || null,
+    category: classifyCategory(raw),
     type: 'normal'
   };
 }
