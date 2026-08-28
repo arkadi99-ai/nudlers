@@ -84,7 +84,9 @@ async function handler(req, res) {
     }
 
     const { options, credentials, credentialId } = req.body;
-    const companyId = CompanyTypes[options.companyId];
+    // Moneytor is not a real israeli-bank-scrapers company - it's handled entirely
+    // by our own Moneytor API adapter and never reaches CompanyTypes.
+    const companyId = options.companyId === 'moneytor' ? options.companyId : CompanyTypes[options.companyId];
 
     if (!companyId) {
       sendSSE(res, 'error', { message: 'Invalid company ID' });
@@ -231,7 +233,7 @@ async function handler(req, res) {
     };
 
     // Insert audit row
-    const triggeredBy = credentials?.username || credentials?.id || credentials?.nickname || 'unknown';
+    const triggeredBy = credentials?.username || credentials?.nickname || 'unknown';
     auditId = await insertScrapeAudit(client, triggeredBy, options.companyId, new Date(options.startDate));
 
     sendSSE(res, 'progress', {

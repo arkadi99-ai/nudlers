@@ -69,7 +69,7 @@ async function handler(req, res) {
     }
 
     const { options, credentials, credentialId } = req.body;
-    const companyId = CompanyTypes[options.companyId];
+    const companyId = options.companyId === 'moneytor' ? options.companyId : CompanyTypes[options.companyId];
     if (!companyId) {
       throw new Error('Invalid company ID');
     }

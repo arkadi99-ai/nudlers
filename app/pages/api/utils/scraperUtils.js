@@ -278,6 +278,9 @@ export function prepareCredentials(vendor, rawCredentials) {
   } else if (vendor === 'max' || vendor === 'visaCal') {
     credentials.username = username;
     credentials.password = password;
+  } else if (vendor === 'moneytor') {
+    // Moneytor is not a scraper vendor - the "password" field carries the API key.
+    credentials.apiKey = String(password || '');
   }
 
   return credentials;
@@ -305,6 +308,10 @@ export function validateCredentials(credentials, vendor) {
   } else if (vendor === 'max' || vendor === 'visaCal') {
     if (!credentials.username || !credentials.password) {
       throw new Error(`Invalid credentials for ${vendor}: username and password are required.`);
+    }
+  } else if (vendor === 'moneytor') {
+    if (!credentials.apiKey) {
+      throw new Error(`Invalid credentials for ${vendor}: apiKey is required.`);
     }
   } else {
     if (!credentials.username || !credentials.password) {
@@ -796,6 +803,14 @@ export async function runScraper(client, scraperOptions, credentials, onProgress
 
   // Fix non-serializable options
   const startDate = new Date(scraperOptions.startDate);
+
+  // Moneytor is a licensed Open Banking API, not a browser-automation scraper -
+  // skip all of the Puppeteer/israeli-bank-scrapers machinery entirely.
+  if (scraperOptions.companyId === 'moneytor') {
+    const { scrapeMoneytor } = await import('../../../scrapers/moneytor.js');
+    return await scrapeMoneytor(credentials, startDate);
+  }
+
   const logRequests = scraperOptions.logRequests ?? false;
   const isRateLimited = scraperOptions.isRateLimited ?? false;
 

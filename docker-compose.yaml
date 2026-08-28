@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: ${NUDLERS_DB_USER}
       POSTGRES_PASSWORD: ${NUDLERS_DB_PASSWORD}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./app/migrations:/docker-entrypoint-initdb.d
@@ -41,7 +41,7 @@ services:
       # Legacy support (RESOURCE_MODE takes precedence if set)
       - LOW_RESOURCES_MODE=${LOW_RESOURCES_MODE:-true}
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       nudlers-db:
         condition: service_healthy

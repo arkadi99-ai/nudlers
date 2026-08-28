@@ -289,7 +289,9 @@ const AccountsView: React.FC = () => {
     };
 
     const bankAccounts = accounts.filter(a => BANK_VENDORS.includes(a.vendor));
-    const creditAccounts = accounts.filter(a => CREDIT_CARD_VENDORS.includes(a.vendor));
+    // Moneytor isn't in CREDIT_CARD_VENDORS on purpose - it drives RATE_LIMITED_VENDORS
+    // for the Puppeteer scraper path, which doesn't apply to the Moneytor API adapter.
+    const creditAccounts = accounts.filter(a => CREDIT_CARD_VENDORS.includes(a.vendor) || a.vendor === 'moneytor');
 
     return (
         <Box sx={{ pb: 8 }}>
@@ -473,12 +475,13 @@ const AccountsView: React.FC = () => {
                             <MenuItem value="amex">American Express</MenuItem>
                             <MenuItem value="visaCal">Visa Cal</MenuItem>
                             <MenuItem value="max">Max</MenuItem>
+                            <MenuItem value="moneytor">Moneytor</MenuItem>
                             {BANK_VENDORS.map(v => (
                                 <MenuItem key={v} value={v}>{v.charAt(0).toUpperCase() + v.slice(1)}</MenuItem>
                             ))}
                         </TextField>
 
-                        {formAccount.vendor === 'onezero' ? (
+                        {formAccount.vendor === 'moneytor' ? null : formAccount.vendor === 'onezero' ? (
                             <>
                                 <TextField
                                     fullWidth
@@ -532,7 +535,9 @@ const AccountsView: React.FC = () => {
                         <TextField
                             fullWidth
                             type="password"
-                            label={isEditing ? t('accounts.fields.passwordEdit') : t('accounts.fields.password')}
+                            label={formAccount.vendor === 'moneytor'
+                                ? 'API Key'
+                                : (isEditing ? t('accounts.fields.passwordEdit') : t('accounts.fields.password'))}
                             value={formAccount.password}
                             onChange={(e) => setFormAccount({ ...formAccount, password: e.target.value })}
                         />

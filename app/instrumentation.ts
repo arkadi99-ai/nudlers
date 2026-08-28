@@ -116,6 +116,20 @@ export async function register() {
 
 
 
+    // Start the Telegram inbound-message listener (long-polling, fire-and-forget).
+    // Runs for the life of the process; internally no-ops when telegram_enabled
+    // is off, so it's always safe to start.
+    try {
+      logger.info('[startup] Starting Telegram listener');
+      const { startTelegramListener } = await import('./utils/telegramListener.js');
+      startTelegramListener().catch((err: Error) => {
+        logger.error({ error: err.message }, '[startup] Telegram listener crashed');
+      });
+    } catch (error: unknown) {
+      const err = error as Error;
+      logger.error({ error: err.message }, '[startup] Failed to start Telegram listener');
+    }
+
     // Initialize WhatsApp daily summary cron job
     try {
       logger.info('[startup] Initializing WhatsApp daily summary cron job');
