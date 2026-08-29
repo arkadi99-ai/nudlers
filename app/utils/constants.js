@@ -3,6 +3,9 @@ import { RESOURCE_CONFIG, isLowResourceMode } from '../config/resource-config.js
 // Credit card vendors
 export const CREDIT_CARD_VENDORS = ['visaCal', 'max', 'isracard', 'amex'];
 
+// Open Banking / personal-access-token API vendors (not browser scrapers)
+export const API_VENDORS = ['moneytor', 'riseup'];
+
 // Bank vendors (standard format: id, password, num)
 export const STANDARD_BANK_VENDORS = ['hapoalim', 'leumi', 'mizrahi', 'discount', 'yahav', 'union', 'fibi', 'jerusalem', 'onezero', 'pepper'];
 

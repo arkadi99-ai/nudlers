@@ -28,7 +28,7 @@ const handler = createApiHandler({
           cv.card_vendor as mapped_card_vendor
         FROM card_ownership co
         LEFT JOIN vendor_credentials vc ON co.credential_id = vc.id
-        LEFT JOIN card_vendors cv ON RIGHT(co.account_number, 4) = cv.last4_digits
+        LEFT JOIN card_vendors cv ON (CASE WHEN co.vendor = 'riseup' THEN co.account_number ELSE RIGHT(co.account_number, 4) END) = cv.last4_digits
         ${whereClause}
         ORDER BY co.vendor, co.account_number
       `

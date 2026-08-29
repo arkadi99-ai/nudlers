@@ -69,11 +69,16 @@ export const CARD_VENDORS = {
   },
 };
 
+// Preset account types. Free-form is still possible (stored as plain text),
+// this list is just what shows up in the dropdown for the common cases.
+export const ACCOUNT_TYPES = ['כרטיס אשראי', 'חשבון בנק', 'קופת גמל להשקעה', 'קרן פנסיה', 'אחר'];
+
 interface CardData {
   last4_digits: string;
   transaction_count: number;
   card_vendor: string | null;
   card_nickname: string | null;
+  account_type: string | null;
   card_vendor_id: number | null;
   card_ownership_id?: number | null;
   linked_bank_account_id?: number | null;
@@ -190,12 +195,14 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
   const [editValues, setEditValues] = useState<{
     vendor: string;
     nickname: string;
+    accountType: string;
     bankAccountId: number | null;
     customBankNumber: string;
     customBankNickname: string;
   }>({
     vendor: '',
     nickname: '',
+    accountType: '',
     bankAccountId: null,
     customBankNumber: '',
     customBankNickname: ''
@@ -273,6 +280,7 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
     const initialValues = {
       vendor: card.card_vendor || '',
       nickname: card.card_nickname || '',
+      accountType: card.account_type || '',
       bankAccountId: card.linked_bank_account_id || ((card.custom_bank_account_number || card.custom_bank_account_nickname) ? -1 : null),
       customBankNumber: card.custom_bank_account_number || '',
       customBankNickname: card.custom_bank_account_nickname || '',
@@ -301,6 +309,7 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
             ...c,
             card_vendor: values.vendor,
             card_nickname: values.nickname,
+            account_type: values.accountType,
             linked_bank_account_id: values.bankAccountId === -1 ? null : values.bankAccountId,
             bank_account_nickname: linkedBank?.nickname || null,
             bank_account_number: linkedBank?.bank_account_number || null,
@@ -326,6 +335,7 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
           last4_digits,
           card_vendor: values.vendor,
           card_nickname: values.nickname,
+          account_type: values.accountType,
         }),
       });
 
@@ -421,86 +431,6 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
       )
     },
     {
-      id: 'vendor',
-      label: t('misc:cardVendors.columns.vendor'),
-      minWidth: '200px',
-      format: (_: unknown, card: CardData) => editingCard === card.last4_digits ? (
-        <TextField
-          key={`vendor-edit-${card.last4_digits}`}
-          className={`edit-group-${card.last4_digits}`}
-          select
-          size="small"
-          autoFocus={focusedField === 'vendor'}
-          value={editValues.vendor}
-          onClick={(e) => e.stopPropagation()}
-          onChange={(e) => {
-            const newValue = e.target.value;
-            setEditValues(prev => ({ ...prev, vendor: newValue }));
-
-            const newValues = { ...editValues, vendor: newValue };
-            if (JSON.stringify(newValues) !== JSON.stringify(originalValues)) {
-              setTimeout(() => {
-                handleSave(editingCard, newValues).then((success) => {
-                  if (success) {
-                    setEditingCard(null);
-                    showSnackbar(t('misc:cardVendors.snackbar.vendorUpdated'), 'success');
-                  }
-                });
-              }, 200);
-            } else {
-              setEditingCard(null);
-            }
-          }}
-          fullWidth
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '12px',
-            },
-          }}
-          slotProps={{
-            select: {
-              defaultOpen: focusedField === 'vendor',
-            }
-          }}
-        >
-          <MenuItem value="">
-            <em>{t('misc:cardVendors.vendorNone')}</em>
-          </MenuItem>
-          {Object.entries(CARD_VENDORS).map(([key, config]) => (
-            <MenuItem key={key} value={key}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <CardVendorIcon vendor={key} size={24} />
-                {config.name}
-              </Box>
-            </MenuItem>
-          ))}
-        </TextField>
-      ) : (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            cursor: 'pointer',
-            padding: '8px 12px',
-            borderRadius: '12px',
-            transition: 'all 0.2s',
-            '&:hover': {
-              backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            },
-          }}
-          onClick={(e) => handleEdit(card, 'vendor', e)}
-        >
-          <CardVendorIcon vendor={card.card_vendor} size={24} />
-          <Typography sx={{ color: card.card_vendor ? theme.palette.text.primary : theme.palette.text.disabled }}>
-            {card.card_vendor
-              ? CARD_VENDORS[card.card_vendor as keyof typeof CARD_VENDORS]?.name || card.card_vendor
-              : t('misc:cardVendors.clickToSetVendor')}
-          </Typography>
-        </Box>
-      )
-    },
-    {
       id: 'nickname',
       label: t('misc:cardVendors.columns.nickname'),
       format: (_: unknown, card: CardData) => editingCard === card.last4_digits ? (
@@ -559,132 +489,67 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
       )
     },
     {
-      id: 'bankAccount',
-      label: t('misc:cardVendors.columns.bankAccount'),
-      minWidth: '200px',
+      id: 'accountType',
+      label: t('misc:cardVendors.columns.accountType'),
+      minWidth: '160px',
       format: (_: unknown, card: CardData) => editingCard === card.last4_digits ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <TextField
-            key={`bank-edit-${card.last4_digits}`}
-            className={`edit-group-${card.last4_digits}`}
-            select
-            size="small"
-            autoFocus={focusedField === 'bankAccount'}
-            value={editValues.bankAccountId !== null ? editValues.bankAccountId : ''}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) => {
-              const val = e.target.value ? Number(e.target.value) : null;
-              const newValues = { ...editValues, bankAccountId: val };
-              setEditValues(newValues);
+        <TextField
+          key={`type-edit-${card.last4_digits}`}
+          className={`edit-group-${card.last4_digits}`}
+          select
+          size="small"
+          autoFocus={focusedField === 'accountType'}
+          value={editValues.accountType}
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => {
+            const newValue = e.target.value;
+            setEditValues(prev => ({ ...prev, accountType: newValue }));
 
-              if (val !== -1) {
-                if (JSON.stringify(newValues) !== JSON.stringify(originalValues)) {
-                  setTimeout(() => {
-                    handleSave(editingCard, newValues).then((success) => {
-                      if (success) {
-                        setEditingCard(null);
-                        showSnackbar(t('misc:cardVendors.snackbar.bankAccountUpdated'), 'success');
-                      }
-                    });
-                  }, 200);
-                } else {
-                  setEditingCard(null);
-                }
-              }
-            }}
-            fullWidth
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '12px',
-              },
-            }}
-            slotProps={{
-              select: {
-                defaultOpen: focusedField === 'bankAccount',
-              }
-            }}
-          >
-            <MenuItem value="">
-              <em>{t('misc:cardVendors.noBankAccount')}</em>
-            </MenuItem>
-            <MenuItem value="-1">
-              <em>{t('misc:cardVendors.customBankAccount')}</em>
-            </MenuItem>
-            {bankAccounts.map((bankAccount) => (
-              <MenuItem key={bankAccount.id} value={bankAccount.id}>
-                {bankAccount.nickname} ({bankAccount.bank_account_number || bankAccount.vendor})
-              </MenuItem>
-            ))}
-          </TextField>
-          {editValues.bankAccountId === -1 && (
-            <Box
-              sx={{ mt: 0.5, display: 'flex', flexDirection: 'column', gap: 1 }}
-              onBlur={(e) => {
-                if (e.relatedTarget && (e.relatedTarget as Element).closest(`.edit-group-${card.last4_digits}`)) {
-                  return;
-                }
-                if (JSON.stringify(editValues) !== JSON.stringify(originalValues)) {
-                  if (editValues.customBankNumber?.trim() || editValues.customBankNickname?.trim()) {
-                    handleSave(editingCard, editValues).then((success) => {
-                      if (success) {
-                        setEditingCard(null);
-                        showSnackbar(t('misc:cardVendors.snackbar.customBankSaved'), 'success');
-                      }
-                    });
+            const newValues = { ...editValues, accountType: newValue };
+            if (JSON.stringify(newValues) !== JSON.stringify(originalValues)) {
+              setTimeout(() => {
+                handleSave(editingCard, newValues).then((success) => {
+                  if (success) {
+                    setEditingCard(null);
+                    showSnackbar(t('misc:cardVendors.snackbar.accountTypeUpdated'), 'success');
                   }
-                } else {
-                  setEditingCard(null);
-                }
-              }}
-              className={`custom-bank-group edit-group-${card.last4_digits}`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <TextField
-                size="small"
-                className={`edit-group-${card.last4_digits}`}
-                placeholder={t('misc:cardVendors.customNicknamePlaceholder')}
-                value={editValues.customBankNickname}
-                onChange={(e) => setEditValues(prev => ({ ...prev, customBankNickname: e.target.value }))}
-                fullWidth
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-                onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLElement).blur(); }}
-              />
-              <TextField
-                size="small"
-                className={`edit-group-${card.last4_digits}`}
-                placeholder={t('misc:cardVendors.customNumberPlaceholder')}
-                value={editValues.customBankNumber}
-                onChange={(e) => setEditValues(prev => ({ ...prev, customBankNumber: e.target.value }))}
-                fullWidth
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-                onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLElement).blur(); }}
-              />
-            </Box>
-          )}
-        </Box>
+                });
+              }, 200);
+            } else {
+              setEditingCard(null);
+            }
+          }}
+          fullWidth
+          sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+          slotProps={{ select: { defaultOpen: focusedField === 'accountType' } }}
+        >
+          <MenuItem value="">
+            <em>{t('misc:cardVendors.accountTypeNone')}</em>
+          </MenuItem>
+          {ACCOUNT_TYPES.map((typeLabel) => (
+            <MenuItem key={typeLabel} value={typeLabel}>{typeLabel}</MenuItem>
+          ))}
+        </TextField>
       ) : (
-        <Typography
+        <Box
           sx={{
-            color: card.bank_account_nickname || card.custom_bank_account_nickname ? theme.palette.text.primary : theme.palette.text.disabled,
-            fontStyle: card.bank_account_nickname || card.custom_bank_account_nickname ? 'normal' : 'italic',
+            display: 'flex',
+            alignItems: 'center',
             cursor: 'pointer',
             padding: '8px 12px',
             borderRadius: '12px',
-            '&:hover': {
-              backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            }
+            transition: 'all 0.2s',
+            '&:hover': { backgroundColor: 'rgba(59, 130, 246, 0.1)' },
           }}
-          onClick={(e) => handleEdit(card, 'bankAccount', e)}
+          onClick={(e) => handleEdit(card, 'accountType', e)}
         >
-          {card.bank_account_nickname
-            ? t('misc:cardVendors.bankPrefix', { name: `${card.bank_account_nickname} (${card.bank_account_number || card.bank_account_vendor})` })
-            : card.custom_bank_account_nickname
-              ? t('misc:cardVendors.bankPrefix', { name: `${card.custom_bank_account_nickname} (${card.custom_bank_account_number})` })
-              : t('misc:cardVendors.noBankAccount')}
-        </Typography>
+          <Typography sx={{ color: card.account_type ? theme.palette.text.primary : theme.palette.text.disabled, fontStyle: card.account_type ? 'normal' : 'italic' }}>
+            {card.account_type || t('misc:cardVendors.accountTypeNone')}
+          </Typography>
+        </Box>
       )
-    }
-  ], [editingCard, editValues, originalValues, bankAccounts, theme, focusedField, t, handleEdit, handleSave, showSnackbar]);
+    },
+  ], [editingCard, editValues, originalValues, theme, focusedField, t, handleEdit, handleSave, showSnackbar]);
 
   return (
     <>
@@ -767,23 +632,6 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
                       </Typography>
                     </Box>
                     <Box sx={{ mb: 2 }}>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          mb: 1,
-                          cursor: 'pointer',
-                        }}
-                        onClick={() => handleEdit(card)}
-                      >
-                        <CardVendorIcon vendor={card.card_vendor} size={20} />
-                        <Typography variant="body2" sx={{ color: card.card_vendor ? theme.palette.text.primary : theme.palette.text.disabled }}>
-                          {card.card_vendor
-                            ? CARD_VENDORS[card.card_vendor as keyof typeof CARD_VENDORS]?.name || card.card_vendor
-                            : t('misc:cardVendors.clickToSetVendor')}
-                        </Typography>
-                      </Box>
                       <Typography
                         variant="body2"
                         sx={{
@@ -799,17 +647,14 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
                       <Typography
                         variant="caption"
                         sx={{
-                          color: 'text.secondary',
+                          color: card.account_type ? theme.palette.text.primary : theme.palette.text.disabled,
+                          fontStyle: card.account_type ? 'normal' : 'italic',
                           display: 'block',
                           cursor: 'pointer'
                         }}
                         onClick={() => handleEdit(card)}
                       >
-                        {card.bank_account_nickname
-                          ? t('misc:cardVendors.bankPrefix', { name: card.bank_account_nickname })
-                          : card.custom_bank_account_nickname
-                            ? t('misc:cardVendors.bankPrefix', { name: card.custom_bank_account_nickname })
-                            : t('misc:cardVendors.noBankAccountLinked')}
+                        {card.account_type || t('misc:cardVendors.accountTypeNone')}
                       </Typography>
                     </Box>
 

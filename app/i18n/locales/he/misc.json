@@ -1,7 +1,7 @@
 {
   "cardVendors": {
-    "title": "ספקי כרטיסים",
-    "subtitle": "שייכו את ספק הכרטיס או המותג לכל כרטיס. הלוגו של הכרטיס יוצג בכל חלקי האפליקציה.",
+    "title": "מקורות פיננסיים",
+    "subtitle": "הגדירו כינוי וסוג לכל מקור (כרטיס, חשבון בנק, ועוד) שמזוהה לפי 4 הספרות האחרונות שלו.",
     "loading": "טוען כרטיסים...",
     "emptyState": "לא נמצאו כרטיסים במערכת",
     "emptyTableMessage": "לא נמצאו כרטיסים",
@@ -10,9 +10,11 @@
       "transactions": "עסקאות",
       "vendor": "ספק הכרטיס",
       "nickname": "כינוי",
+      "accountType": "סוג",
       "bankAccount": "חשבון בנק"
     },
     "vendorNone": "ללא",
+    "accountTypeNone": "לא הוגדר",
     "clickToSetVendor": "לחצו לבחירת ספק",
     "noNickname": "ללא כינוי",
     "noNicknameSet": "לא הוגדר כינוי",
@@ -36,6 +38,7 @@
     "snackbar": {
       "vendorUpdated": "ספק הכרטיס עודכן",
       "nicknameSaved": "הכינוי נשמר",
+      "accountTypeUpdated": "הסוג עודכן",
       "bankAccountUpdated": "חשבון הבנק עודכן",
       "customBankSaved": "החשבון המותאם נשמר"
     }

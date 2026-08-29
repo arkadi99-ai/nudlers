@@ -27,7 +27,7 @@ const handler = createApiHandler({
             SELECT t.vendor, t.account_number, vc.id, $2, $3, $4
             FROM transactions t
             JOIN vendor_credentials vc ON vc.vendor = t.vendor
-            WHERE RIGHT(t.account_number, 4) = $1
+            WHERE (CASE WHEN t.vendor = 'riseup' THEN t.account_number ELSE RIGHT(t.account_number, 4) END) = $1
               AND (t.transaction_type IS NULL OR t.transaction_type != 'bank')
             ORDER BY t.date DESC
             LIMIT 1

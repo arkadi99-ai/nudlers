@@ -6,25 +6,29 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === "GET") {
-      // Get all unique last 4 digits from transactions and their associated card vendors
-      // Also include card ownership and bank account information
+      // Get all unique account numbers from transactions and their associated card vendors.
+      // Real bank/card account numbers are matched by their last 4 digits (a physical card
+      // reported by two different credentials should still merge into one row here) - but
+      // RiseUp identifies accounts with an opaque hash, not real digits, so truncating it
+      // to 4 characters risks colliding two unrelated accounts. RiseUp accounts are matched
+      // by their full identifier instead.
       const result = await client.query(`
         WITH unique_cards AS (
-          SELECT DISTINCT 
-            RIGHT(account_number, 4) as last4_digits,
+          SELECT DISTINCT
+            CASE WHEN vendor = 'riseup' THEN account_number ELSE RIGHT(account_number, 4) END as last4_digits,
             COUNT(*) as transaction_count
           FROM transactions
-          WHERE account_number IS NOT NULL 
+          WHERE account_number IS NOT NULL
             AND account_number != ''
-            AND LENGTH(account_number) >= 4
-            AND (transaction_type IS NULL OR transaction_type != 'bank')
-          GROUP BY RIGHT(account_number, 4)
+            AND (vendor = 'riseup' OR LENGTH(account_number) >= 4)
+          GROUP BY CASE WHEN vendor = 'riseup' THEN account_number ELSE RIGHT(account_number, 4) END
         )
-        SELECT 
+        SELECT
           uc.last4_digits,
           uc.transaction_count,
           cv.card_vendor,
           cv.card_nickname,
+          cv.account_type,
           cv.id as card_vendor_id,
           co.id as card_ownership_id,
           co.linked_bank_account_id,
@@ -36,7 +40,7 @@ export default async function handler(req, res) {
           co.custom_bank_account_nickname
         FROM unique_cards uc
         LEFT JOIN card_vendors cv ON uc.last4_digits = cv.last4_digits
-        LEFT JOIN card_ownership co ON uc.last4_digits = RIGHT(co.account_number, 4)
+        LEFT JOIN card_ownership co ON uc.last4_digits = CASE WHEN co.vendor = 'riseup' THEN co.account_number ELSE RIGHT(co.account_number, 4) END
         LEFT JOIN vendor_credentials ba ON co.linked_bank_account_id = ba.id
         ORDER BY uc.transaction_count DESC
       `);
@@ -44,23 +48,26 @@ export default async function handler(req, res) {
       res.status(200).json(result.rows);
     } else if (req.method === "POST") {
       // Create or update a card vendor mapping
-      const { last4_digits, card_vendor, card_nickname } = req.body || {};
+      const { last4_digits, card_vendor, card_nickname, account_type } = req.body || {};
 
-      if (!last4_digits || !card_vendor) {
-        return res.status(400).json({ error: "last4_digits and card_vendor are required" });
+      if (!last4_digits) {
+        return res.status(400).json({ error: "last4_digits is required" });
       }
 
-      // Upsert the card vendor
+      // Upsert the card vendor. card_vendor (a card BRAND, for icon display)
+      // is optional now - a bank account or investment fund has no brand,
+      // only an account_type.
       const result = await client.query(
-        `INSERT INTO card_vendors (last4_digits, card_vendor, card_nickname, updated_at)
-         VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
-         ON CONFLICT (last4_digits) 
-         DO UPDATE SET 
+        `INSERT INTO card_vendors (last4_digits, card_vendor, card_nickname, account_type, updated_at)
+         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+         ON CONFLICT (last4_digits)
+         DO UPDATE SET
            card_vendor = EXCLUDED.card_vendor,
            card_nickname = EXCLUDED.card_nickname,
+           account_type = EXCLUDED.account_type,
            updated_at = CURRENT_TIMESTAMP
          RETURNING *`,
-        [last4_digits, card_vendor, card_nickname || null]
+        [last4_digits, card_vendor || null, card_nickname || null, account_type || null]
       );
 
       res.status(200).json(result.rows[0]);

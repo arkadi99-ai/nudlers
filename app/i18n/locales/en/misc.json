@@ -1,7 +1,7 @@
 {
   "cardVendors": {
-    "title": "Card Vendors",
-    "subtitle": "Assign a card issuer/brand to each card. This will display the card logo throughout the app.",
+    "title": "Financial Sources",
+    "subtitle": "Set a nickname and a type (card, bank account, etc.) for each source, identified by its last 4 digits.",
     "loading": "Loading cards...",
     "emptyState": "No cards found in the system",
     "emptyTableMessage": "No cards found",
@@ -10,9 +10,11 @@
       "transactions": "Transactions",
       "vendor": "Card Vendor",
       "nickname": "Nickname",
+      "accountType": "Type",
       "bankAccount": "Bank Account"
     },
     "vendorNone": "None",
+    "accountTypeNone": "Not set",
     "clickToSetVendor": "Click to set vendor",
     "noNickname": "No nickname",
     "noNicknameSet": "No nickname set",
@@ -36,6 +38,7 @@
     "snackbar": {
       "vendorUpdated": "Vendor updated",
       "nicknameSaved": "Nickname saved",
+      "accountTypeUpdated": "Type updated",
       "bankAccountUpdated": "Bank account updated",
       "customBankSaved": "Custom bank saved"
     }

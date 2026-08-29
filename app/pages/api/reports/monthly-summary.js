@@ -69,8 +69,15 @@ const handler = createApiHandler({
       }
     }
 
+    // Real bank/card account numbers are matched by their last 4 digits (a physical card
+    // reported by two different credentials should still merge into one row) - but RiseUp
+    // identifies accounts with an opaque hash, not real digits, so truncating it to 4
+    // characters risks colliding two unrelated accounts. RiseUp accounts are matched by
+    // their full identifier instead.
+    const accountKeyExpr = (alias) => `CASE WHEN ${alias}.vendor = 'riseup' THEN ${alias}.account_number ELSE RIGHT(${alias}.account_number, 4) END`;
+
     const credentialJoin = `
-      LEFT JOIN card_ownership co ON t.vendor = co.vendor AND RIGHT(t.account_number, 4) = RIGHT(co.account_number, 4) AND (co.is_hidden = false OR co.is_hidden IS NULL)
+      LEFT JOIN card_ownership co ON t.vendor = co.vendor AND ${accountKeyExpr('t')} = ${accountKeyExpr('co')} AND (co.is_hidden = false OR co.is_hidden IS NULL)
       LEFT JOIN vendor_credentials vc ON co.credential_id = vc.id
     `;
 
@@ -93,16 +100,16 @@ const handler = createApiHandler({
         _default: `category`,
       },
       last4digits: {
-        name: `COALESCE(RIGHT(t.account_number, 4), 'Unknown')`,
-        count: `COUNT(DISTINCT (t.identifier, t.vendor)) ${dir}, COALESCE(RIGHT(t.account_number, 4), 'Unknown') ASC`,
-        transaction_count: `COUNT(DISTINCT (t.identifier, t.vendor)) ${dir}, COALESCE(RIGHT(t.account_number, 4), 'Unknown') ASC`,
+        name: `COALESCE(${accountKeyExpr('t')}, 'Unknown')`,
+        count: `COUNT(DISTINCT (t.identifier, t.vendor)) ${dir}, COALESCE(${accountKeyExpr('t')}, 'Unknown') ASC`,
+        transaction_count: `COUNT(DISTINCT (t.identifier, t.vendor)) ${dir}, COALESCE(${accountKeyExpr('t')}, 'Unknown') ASC`,
         _default: `(
           COALESCE(SUM(CASE WHEN t.category = 'Bank' AND t.price > 0 THEN t.price ELSE 0 END), 0) +
           COALESCE(SUM(CASE WHEN t.category = 'Bank' AND t.price < 0 THEN ABS(t.price) ELSE 0 END), 0) +
           COALESCE(SUM(
             CASE WHEN COALESCE(t.category, 'Uncategorized') NOT IN ('Bank', 'Income') THEN ABS(t.price) ELSE 0 END
           ), 0)
-        ) ${dir}, COALESCE(RIGHT(t.account_number, 4), 'Unknown') ASC`,
+        ) ${dir}, COALESCE(${accountKeyExpr('t')}, 'Unknown') ASC`,
       },
       _default: {
         month: `month`,
@@ -149,7 +156,7 @@ const handler = createApiHandler({
     } else if (groupBy === 'last4digits') {
       sql = `
         SELECT 
-          COALESCE(RIGHT(t.account_number, 4), 'Unknown') as last4digits,
+          COALESCE(${accountKeyExpr('t')}, 'Unknown') as last4digits,
           COUNT(DISTINCT (t.identifier, t.vendor)) as transaction_count,
           COALESCE(SUM(CASE WHEN t.category = 'Bank' AND t.price > 0 THEN t.price ELSE 0 END), 0)::numeric as bank_income,
           COALESCE(SUM(CASE WHEN t.category = 'Bank' AND t.price < 0 THEN ABS(t.price) ELSE 0 END), 0)::numeric as bank_expenses,
@@ -179,7 +186,7 @@ const handler = createApiHandler({
         ${credentialJoin}
         LEFT JOIN vendor_credentials ba ON co.linked_bank_account_id = ba.id
         ${whereClause}
-        GROUP BY COALESCE(RIGHT(t.account_number, 4), 'Unknown'), t.vendor, ba.id, ba.nickname, ba.bank_account_number, ba.vendor, co.custom_bank_account_nickname, co.custom_bank_account_number, co.balance, co.balance_updated_at, vc.id, vc.nickname, vc.vendor, co.account_number
+        GROUP BY COALESCE(${accountKeyExpr('t')}, 'Unknown'), t.vendor, ba.id, ba.nickname, ba.bank_account_number, ba.vendor, co.custom_bank_account_nickname, co.custom_bank_account_number, co.balance, co.balance_updated_at, vc.id, vc.nickname, vc.vendor, co.account_number
         ORDER BY ${orderClause}
         LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
       `;

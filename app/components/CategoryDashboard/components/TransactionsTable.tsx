@@ -242,7 +242,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
   if (isLoading) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><Typography>{t('tx:table.loading')}</Typography></Box>;
   if (!transactions || transactions.length === 0) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><Typography>{t('tx:table.empty')}</Typography></Box>;
 
-  const columnWidths = { description: '35%', category: '15%', amount: '12%', installment: '8%', card: '12%', date: '10%', actions: '8%' };
+  const columnWidths = { description: '30%', category: '15%', amount: '12%', installment: '8%', card: '10%', nickname: '10%', date: '10%', actions: '8%' };
   const tableHeaderBaseStyle = getTableHeaderCellStyle(theme);
 
   const renderSortableHeader = (label: string, field: string, align: 'left' | 'right' = 'left', width?: string) => {
@@ -302,6 +302,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
               {renderSortableHeader(t('tx:table.columnAmount'), 'price', 'right', columnWidths.amount)}
               {!hideInstallmentsColumn && <TableCell style={{ ...tableHeaderBaseStyle, width: columnWidths.installment }}>{t('tx:table.columnInstallments')}</TableCell>}
               {renderSortableHeader(t('tx:table.columnCard'), 'account_number', 'left', columnWidths.card)}
+              <TableCell style={{ ...tableHeaderBaseStyle, width: columnWidths.nickname }}>{t('tx:table.columnNickname')}</TableCell>
               {!groupByDate && renderSortableHeader(t('tx:table.columnDate'), 'date', 'left', columnWidths.date)}
               {!hideActions && <TableCell align="right" style={{ ...tableHeaderBaseStyle, width: columnWidths.actions }}>{t('tx:table.columnActions')}</TableCell>}
             </TableRow>
@@ -310,7 +311,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
             {groupByDate ? sortedDates.map(date => (
               <React.Fragment key={date}>
                 <TableRow sx={{ background: theme.palette.mode === 'dark' ? 'rgba(30, 41, 59, 1)' : '#f8fafc', position: 'sticky', top: 53, zIndex: 9 }}>
-                  <TableCell colSpan={7} sx={{ fontWeight: 700, p: 1 }}>{formatDateHeader(date)}</TableCell>
+                  <TableCell colSpan={8} sx={{ fontWeight: 700, p: 1 }}>{formatDateHeader(date)}</TableCell>
                 </TableRow>
                 {groupedTransactions[date].map((t) => {
                   const isRowEditing = editingTransaction?.identifier === t.identifier && editingTransaction?.vendor === t.vendor;
@@ -540,6 +541,11 @@ const TransactionRow = React.memo(({
       )}
       <TableCell style={cellStyle}>
         <AccountDisplay transaction={transaction} compact={isWidget} />
+      </TableCell>
+      <TableCell style={cellStyle}>
+        <span style={{ color: theme.palette.text.secondary }}>
+          {transaction.vendor_nickname || _getCardNickname(transaction.account_number) || '—'}
+        </span>
       </TableCell>
       {!groupByDate && (
         <TableCell style={cellStyle}>

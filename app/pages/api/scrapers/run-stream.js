@@ -86,7 +86,7 @@ async function handler(req, res) {
     const { options, credentials, credentialId } = req.body;
     // Moneytor is not a real israeli-bank-scrapers company - it's handled entirely
     // by our own Moneytor API adapter and never reaches CompanyTypes.
-    const companyId = options.companyId === 'moneytor' ? options.companyId : CompanyTypes[options.companyId];
+    const companyId = ['moneytor', 'riseup'].includes(options.companyId) ? options.companyId : CompanyTypes[options.companyId];
 
     if (!companyId) {
       sendSSE(res, 'error', { message: 'Invalid company ID' });

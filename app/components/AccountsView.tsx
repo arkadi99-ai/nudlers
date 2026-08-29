@@ -24,9 +24,10 @@ import CreditCardIcon from '@mui/icons-material/CreditCard';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import AccountCard from './AccountCard';
 import SyncHistoryModal from './SyncHistoryModal';
+import CardVendorsModal from './CardVendorsModal';
 import { useNotification } from './NotificationContext';
 import { useView } from './Layout';
-import { CREDIT_CARD_VENDORS, BANK_VENDORS, STANDARD_BANK_VENDORS } from '../utils/constants';
+import { CREDIT_CARD_VENDORS, BANK_VENDORS, STANDARD_BANK_VENDORS, API_VENDORS } from '../utils/constants';
 import { logger } from '../utils/client-logger';
 import PageHeader from './PageHeader';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
@@ -69,6 +70,7 @@ const AccountsView: React.FC = () => {
     const [cardOwnership, setCardOwnership] = useState<CardOwnership[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [isSourcesModalOpen, setIsSourcesModalOpen] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editingAccount, setEditingAccount] = useState<Account | null>(null);
@@ -289,9 +291,9 @@ const AccountsView: React.FC = () => {
     };
 
     const bankAccounts = accounts.filter(a => BANK_VENDORS.includes(a.vendor));
-    // Moneytor isn't in CREDIT_CARD_VENDORS on purpose - it drives RATE_LIMITED_VENDORS
-    // for the Puppeteer scraper path, which doesn't apply to the Moneytor API adapter.
-    const creditAccounts = accounts.filter(a => CREDIT_CARD_VENDORS.includes(a.vendor) || a.vendor === 'moneytor');
+    // API vendors (Moneytor, RiseUp) aren't in CREDIT_CARD_VENDORS on purpose - it drives
+    // RATE_LIMITED_VENDORS for the Puppeteer scraper path, which doesn't apply to them.
+    const creditAccounts = accounts.filter(a => CREDIT_CARD_VENDORS.includes(a.vendor) || API_VENDORS.includes(a.vendor));
 
     return (
         <Box sx={{ pb: 8 }}>
@@ -391,12 +393,22 @@ const AccountsView: React.FC = () => {
 
                         {/* Credit Cards Section */}
                         <Box sx={{ mb: 6 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3, flexWrap: 'wrap' }}>
                                 <CreditCardIcon sx={{ color: '#8b5cf6' }} />
                                 <Typography variant="h5" sx={{
                                     fontWeight: 700
                                 }}>{t('accounts.creditCards')}</Typography>
                                 <Typography variant="body2" sx={{ color: 'text.secondary', ml: 1 }}>{creditAccounts.length}</Typography>
+                                {creditAccounts.some(a => API_VENDORS.includes(a.vendor)) && (
+                                    <Button
+                                        size="small"
+                                        variant="outlined"
+                                        onClick={() => setIsSourcesModalOpen(true)}
+                                        sx={{ ml: 'auto', borderRadius: '10px' }}
+                                    >
+                                        {t('accounts.manageSources')}
+                                    </Button>
+                                )}
                             </Box>
                             <Grid container spacing={3}>
                                 {creditAccounts.map(account => (
@@ -440,6 +452,11 @@ const AccountsView: React.FC = () => {
                 open={isHistoryOpen}
                 onClose={() => setIsHistoryOpen(false)}
             />
+            {/* Sources management (nickname + type per real underlying account) */}
+            <CardVendorsModal
+                open={isSourcesModalOpen}
+                onClose={() => setIsSourcesModalOpen(false)}
+            />
             {/* Add/Edit Modal */}
             <Dialog
                 open={isAdding || isEditing}
@@ -476,12 +493,13 @@ const AccountsView: React.FC = () => {
                             <MenuItem value="visaCal">Visa Cal</MenuItem>
                             <MenuItem value="max">Max</MenuItem>
                             <MenuItem value="moneytor">Moneytor</MenuItem>
+                            <MenuItem value="riseup">RiseUp</MenuItem>
                             {BANK_VENDORS.map(v => (
                                 <MenuItem key={v} value={v}>{v.charAt(0).toUpperCase() + v.slice(1)}</MenuItem>
                             ))}
                         </TextField>
 
-                        {formAccount.vendor === 'moneytor' ? null : formAccount.vendor === 'onezero' ? (
+                        {API_VENDORS.includes(formAccount.vendor) ? null : formAccount.vendor === 'onezero' ? (
                             <>
                                 <TextField
                                     fullWidth
@@ -537,7 +555,9 @@ const AccountsView: React.FC = () => {
                             type="password"
                             label={formAccount.vendor === 'moneytor'
                                 ? 'API Key'
-                                : (isEditing ? t('accounts.fields.passwordEdit') : t('accounts.fields.password'))}
+                                : formAccount.vendor === 'riseup'
+                                    ? 'Personal Access Token'
+                                    : (isEditing ? t('accounts.fields.passwordEdit') : t('accounts.fields.password'))}
                             value={formAccount.password}
                             onChange={(e) => setFormAccount({ ...formAccount, password: e.target.value })}
                         />

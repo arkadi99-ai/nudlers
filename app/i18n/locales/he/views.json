@@ -287,6 +287,7 @@
     "creditCard": "כרטיס אשראי",
     "bankAccounts": "חשבונות בנק",
     "creditCards": "כרטיסי אשראי",
+    "manageSources": "ניהול מקורות",
     "bankAccountsCount": "חשבונות בנק ({{count}})",
     "creditCardAccountsCount": "חשבונות כרטיסי אשראי ({{count}})",
     "fields": {

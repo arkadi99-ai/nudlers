@@ -13,10 +13,13 @@ export default async function handler(req, res) {
     const client = await getDB();
     try {
         // Run all independent queries in parallel for maximum efficiency
-        const [accountsRes, bankTransRes, manualRes, ccRes] = await Promise.all([
-            // 1. Get Accounts
+        const [accountsRes, bankTransRes, manualRes, ccRes, riseupFixedRes] = await Promise.all([
+            // 1. Get Accounts. Direct-bank vendors are always a bank account. RiseUp
+            // mixes cards and one checking account under a single vendor - include a
+            // riseup account here only if it actually has bank-tagged transactions
+            // (i.e. it's the checking account, not one of the cards).
             client.query(`
-                SELECT 
+                SELECT
                     co.id,
                     co.account_number,
                     co.balance,
@@ -26,10 +29,18 @@ export default async function handler(req, res) {
                     vc.id as credential_id
                 FROM card_ownership co
                 JOIN vendor_credentials vc ON co.credential_id = vc.id
-                WHERE co.vendor = ANY($1)
-                  AND co.is_hidden = false
+                WHERE co.is_hidden = false
+                  AND (
+                    co.vendor = ANY($1)
+                    OR (co.vendor = 'riseup' AND EXISTS (
+                        SELECT 1 FROM transactions t
+                        WHERE t.vendor = 'riseup' AND t.account_number = co.account_number AND t.transaction_type = 'bank'
+                    ))
+                  )
             `, [BANK_VENDORS]),
-            // 2. Get Bank Transactions (for recurring detection)
+            // 2. Get Bank Transactions (for pattern-based recurring detection). RiseUp is
+            // excluded here - it has its own authoritative "fixed" classification (query 5
+            // below), so running the statistical guesser on it too would double-count.
             client.query(`
                 WITH excluded AS (
                     SELECT LOWER(TRIM(name)) as name, account_number
@@ -38,6 +49,7 @@ export default async function handler(req, res) {
                 SELECT t.name, t.price, t.category, t.vendor, t.account_number, t.date, t.processed_date, t.transaction_type
                 FROM transactions t
                 WHERE t.transaction_type = 'bank'
+                  AND t.vendor != 'riseup'
                   AND t.date >= CURRENT_DATE - INTERVAL '180 days'
                   AND t.category NOT IN ('Bank', 'Income')
                   AND NOT EXISTS (
@@ -59,19 +71,36 @@ export default async function handler(req, res) {
                     t.name, t.price, t.date, t.processed_date, t.vendor, t.account_number, t.category,
                     co.linked_bank_account_id,
                     COALESCE(cv.card_nickname, vc_card.nickname, t.vendor) as card_name,
-                    RIGHT(t.account_number, 4) as last4
+                    (CASE WHEN t.vendor = 'riseup' THEN t.account_number ELSE RIGHT(t.account_number, 4) END) as last4
                 FROM transactions t
-                LEFT JOIN card_ownership co ON t.vendor = co.vendor AND RIGHT(t.account_number, 4) = RIGHT(co.account_number, 4)
+                LEFT JOIN card_ownership co ON t.vendor = co.vendor AND (CASE WHEN t.vendor = 'riseup' THEN t.account_number ELSE RIGHT(t.account_number, 4) END) = (CASE WHEN co.vendor = 'riseup' THEN co.account_number ELSE RIGHT(co.account_number, 4) END)
                 LEFT JOIN vendor_credentials vc_card ON co.credential_id = vc_card.id
                 LEFT JOIN vendor_credentials vc_bank ON co.linked_bank_account_id = vc_bank.id
-                LEFT JOIN card_vendors cv ON RIGHT(t.account_number, 4) = cv.last4_digits AND t.vendor = cv.card_vendor
+                LEFT JOIN card_vendors cv ON (CASE WHEN t.vendor = 'riseup' THEN t.account_number ELSE RIGHT(t.account_number, 4) END) = cv.last4_digits AND t.vendor = cv.card_vendor
                 WHERE t.transaction_type = 'credit_card'
                   AND (
-                    (t.processed_date >= CURRENT_DATE) 
-                    OR 
+                    (t.processed_date >= CURRENT_DATE)
+                    OR
                     (t.processed_date IS NULL AND t.date >= CURRENT_DATE)
                   )
                 AND COALESCE(t.processed_date, t.date) <= CURRENT_DATE + INTERVAL '35 days'
+            `),
+            // 5. Get RiseUp's own "fixed" bank-side commitments (direct debits / standing
+            // orders the user already classified as fixed inside RiseUp itself - e.g.
+            // property tax, insurance, utilities) - the most recent occurrence of each,
+            // projected forward onto the same day next month. Scoped to bank-tagged
+            // transactions only: fixed subscriptions billed via a card are already
+            // covered by the "Future CC Payments" query above once they're next charged.
+            client.query(`
+                SELECT DISTINCT ON (name, account_number)
+                    name, price, category, account_number,
+                    EXTRACT(DAY FROM date)::int as day_of_month
+                FROM transactions
+                WHERE vendor = 'riseup'
+                  AND transaction_type = 'bank'
+                  AND commitment_type = 'fixed'
+                  AND date >= CURRENT_DATE - INTERVAL '45 days'
+                ORDER BY name, account_number, date DESC
             `)
         ]);
 
@@ -99,11 +128,21 @@ export default async function handler(req, res) {
         const futureCCPayments = ccRes.rows;
         normalizeTransactionDates(futureCCPayments);
 
+        // RiseUp's own "fixed" commitments slot into the same shape generateProjection
+        // already expects for manual recurring payments (name/amount/category/account_number/day_of_month).
+        const riseupFixedRecurring = riseupFixedRes.rows.map(row => ({
+            name: row.name,
+            amount: parseFloat(row.price),
+            category: row.category,
+            account_number: row.account_number,
+            day_of_month: row.day_of_month
+        }));
+
         // Generate Projection
         const projection = generateProjection(
             accounts,
             allRecurring,
-            manualRes.rows,
+            [...manualRes.rows, ...riseupFixedRecurring],
             futureCCPayments,
             30
         );

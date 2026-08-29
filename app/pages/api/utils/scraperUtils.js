@@ -278,8 +278,8 @@ export function prepareCredentials(vendor, rawCredentials) {
   } else if (vendor === 'max' || vendor === 'visaCal') {
     credentials.username = username;
     credentials.password = password;
-  } else if (vendor === 'moneytor') {
-    // Moneytor is not a scraper vendor - the "password" field carries the API key.
+  } else if (vendor === 'moneytor' || vendor === 'riseup') {
+    // Moneytor and RiseUp are API vendors, not scrapers - the "password" field carries the API key/token.
     credentials.apiKey = String(password || '');
   }
 
@@ -309,7 +309,7 @@ export function validateCredentials(credentials, vendor) {
     if (!credentials.username || !credentials.password) {
       throw new Error(`Invalid credentials for ${vendor}: username and password are required.`);
     }
-  } else if (vendor === 'moneytor') {
+  } else if (vendor === 'moneytor' || vendor === 'riseup') {
     if (!credentials.apiKey) {
       throw new Error(`Invalid credentials for ${vendor}: apiKey is required.`);
     }
@@ -337,8 +337,14 @@ export async function insertTransaction(client, transaction, vendor, accountNumb
     identifier,
     type,
     category: scraperCategory,
-    installments
+    installments,
+    commitmentType
   } = transaction;
+
+  // Most vendors are entirely bank or entirely card for a whole scrape run, so
+  // the caller's isBank is decided once. RiseUp mixes both in one feed, so a
+  // transaction that declares its own isBank (via sourceType) overrides that.
+  const effectiveIsBank = typeof transaction.isBank === 'boolean' ? transaction.isBank : isBank;
 
   // Use either top-level or nested installments data
   const finalInstallmentsNumber = transaction.installmentsNumber || installments?.number || null;
@@ -529,7 +535,7 @@ export async function insertTransaction(client, transaction, vendor, accountNumb
 
   // 5. Build Processed Date
   let finalProcessedDate = processedDate || date;
-  if (!isBank && (!processedDate || new Date(processedDate).getTime() === new Date(date).getTime())) {
+  if (!effectiveIsBank && (!processedDate || new Date(processedDate).getTime() === new Date(date).getTime())) {
     const billingStartDay = billingCycleStartDay || 10;
     if (new Date(date).getDate() >= billingStartDay) {
       const d = new Date(date);
@@ -538,11 +544,11 @@ export async function insertTransaction(client, transaction, vendor, accountNumb
   }
 
   // 6. Final Insert
-  const transactionType = isBank ? 'bank' : 'credit_card';
+  const transactionType = effectiveIsBank ? 'bank' : 'credit_card';
   try {
     await client.query(
-      `INSERT INTO transactions (identifier, vendor, date, name, price, category, type, processed_date, original_amount, original_currency, charged_currency, memo, status, installments_number, installments_total, account_number, category_source, rule_matched, transaction_type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) ON CONFLICT (identifier, vendor) DO NOTHING`,
-      [txId, vendor, date, description || '', finalPrice, finalCategory, type, finalProcessedDate, originalAmount, originalCurrency, defaultCurrency, memo, status || 'completed', finalInstallmentsNumber, finalInstallmentsTotal, accountNumber, categorySource, ruleDetails, transactionType]
+      `INSERT INTO transactions (identifier, vendor, date, name, price, category, type, processed_date, original_amount, original_currency, charged_currency, memo, status, installments_number, installments_total, account_number, category_source, rule_matched, transaction_type, commitment_type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) ON CONFLICT (identifier, vendor) DO NOTHING`,
+      [txId, vendor, date, description || '', finalPrice, finalCategory, type, finalProcessedDate, originalAmount, originalCurrency, defaultCurrency, memo, status || 'completed', finalInstallmentsNumber, finalInstallmentsTotal, accountNumber, categorySource, ruleDetails, transactionType, commitmentType || null]
     );
     if (historyCache) {
       historyCache.idMap.set(txId, {
@@ -604,11 +610,28 @@ export async function claimCardOwnership(client, accountNumber, vendor, credenti
     await client.query(
       `INSERT INTO card_ownership (vendor, account_number, credential_id)
        VALUES ($1, $2, $3)
-       ON CONFLICT (vendor, account_number) 
+       ON CONFLICT (vendor, account_number)
        DO UPDATE SET credential_id = $3`,
       [vendor, accountNumber, credentialId]
     );
   }
+}
+
+/**
+ * Fill in a source's nickname from data the vendor's own API already provides
+ * (e.g. RiseUp's per-account "accountNickname", straight from the user's RiseUp
+ * app) - but only if the user hasn't already set one manually via the Financial
+ * Sources screen. Never overwrites an existing nickname.
+ */
+export async function autoFillNickname(client, accountNumber, nickname) {
+  if (!nickname || !nickname.trim()) return;
+  await client.query(
+    `INSERT INTO card_vendors (last4_digits, card_nickname)
+     VALUES ($1, $2)
+     ON CONFLICT (last4_digits) DO UPDATE SET card_nickname = $2, updated_at = CURRENT_TIMESTAMP
+     WHERE card_vendors.card_nickname IS NULL`,
+    [accountNumber, nickname.trim()]
+  );
 }
 
 /**
@@ -804,11 +827,16 @@ export async function runScraper(client, scraperOptions, credentials, onProgress
   // Fix non-serializable options
   const startDate = new Date(scraperOptions.startDate);
 
-  // Moneytor is a licensed Open Banking API, not a browser-automation scraper -
-  // skip all of the Puppeteer/israeli-bank-scrapers machinery entirely.
+  // Moneytor and RiseUp are Open Banking / personal-access-token APIs, not
+  // browser-automation scrapers - skip all of the Puppeteer/israeli-bank-scrapers
+  // machinery entirely.
   if (scraperOptions.companyId === 'moneytor') {
     const { scrapeMoneytor } = await import('../../../scrapers/moneytor.js');
     return await scrapeMoneytor(credentials, startDate);
+  }
+  if (scraperOptions.companyId === 'riseup') {
+    const { scrapeRiseup } = await import('../../../scrapers/riseup.js');
+    return await scrapeRiseup(credentials, startDate);
   }
 
   const logRequests = scraperOptions.logRequests ?? false;
@@ -1482,6 +1510,9 @@ export async function processScrapedAccounts({
       }
 
       await claimCardOwnership(client, account.accountNumber, companyId, credentialId, account.balance);
+      if (account.accountNickname) {
+        await autoFillNickname(client, account.accountNumber, account.accountNickname);
+      }
 
       if (!account.txns || !Array.isArray(account.txns)) {
         logger.warn({
@@ -1494,7 +1525,8 @@ export async function processScrapedAccounts({
       for (const txn of account.txns) {
         if (onTransactionProcessed && onTransactionProcessed(null, null, txn) === false) break;
         stats.transactions++;
-        if (isBank) stats.bankTransactions++;
+        const txnIsBank = typeof txn.isBank === 'boolean' ? txn.isBank : isBank;
+        if (txnIsBank) stats.bankTransactions++;
 
         const defaultCurrency = txn.originalCurrency || txn.chargedCurrency || 'ILS';
         const insertResult = await insertTransaction(
@@ -1524,7 +1556,7 @@ export async function processScrapedAccounts({
           cardLast4: account.accountNumber,
           isUpdate: !!insertResult.updated,
           isDuplicate: !!insertResult.duplicated && !insertResult.updated,
-          isBank: isBank,
+          isBank: txnIsBank,
           oldCategory: insertResult.oldCategory,
           installmentsNumber: txn.installmentsNumber || txn.installments?.number,
           installmentsTotal: txn.installmentsTotal || txn.installments?.total,
