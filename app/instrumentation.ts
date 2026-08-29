@@ -89,26 +89,38 @@ export async function register() {
       logger.error({ error: err.message, stack: err.stack }, '[startup] Failed to run migrations');
     }
 
-    // Initialize the Baileys WhatsApp client. Importing the module fires
-    // autoRestoreSession() — which kicks off `initializeClient()` if a
-    // session is on disk. We then `ensureConnected()` with a generous
-    // budget so the *first* user-clicked send doesn't pay the cold-connect
-    // cost (which is what causes the NAS reverse proxy to drop the
-    // response with an HTML 504 even when Baileys eventually relays the
-    // message).
-    //
-    // Failure here must never block startup — if WhatsApp can't be
-    // pre-warmed we just log and move on; the on-demand path still works.
+    // Initialize the Baileys WhatsApp client - but only if whatsapp_enabled
+    // is actually on. Importing the module fires autoRestoreSession(), which
+    // tries to restore a persisted session unconditionally; when that
+    // session is stale/invalidated it enters a repeated QR-refresh/reconnect
+    // loop that has been observed to eventually crash the whole process.
+    // Since whatsapp_enabled=false means we don't want this channel at all,
+    // skip the import/connect entirely rather than let it thrash forever.
     try {
-      logger.info('[startup] Initializing WhatsApp (Baileys) client');
-      const wa = await import('./utils/whatsapp-client.js');
-      // Fire-and-forget: 30s ceiling, unawaited. We don't want startup
-      // blocked on the QR-pending case (no session yet) so we let it
-      // resolve in the background.
-      wa.ensureConnected({ timeoutMs: 30_000 }).then(
-        () => logger.info('[startup] WhatsApp client pre-warmed'),
-        (err: Error) => logger.warn({ err: err.message }, '[startup] WhatsApp pre-warm did not complete (will connect on demand)'),
-      );
+      const { getDB } = await import('./pages/api/db');
+      const client = await getDB();
+      let whatsappEnabled = false;
+      try {
+        const result = await client.query("SELECT value FROM app_settings WHERE key = 'whatsapp_enabled'");
+        const raw = result.rows[0]?.value;
+        whatsappEnabled = raw === true || raw === 'true' || raw === '"true"';
+      } finally {
+        client.release();
+      }
+
+      if (whatsappEnabled) {
+        logger.info('[startup] Initializing WhatsApp (Baileys) client');
+        const wa = await import('./utils/whatsapp-client.js');
+        // Fire-and-forget: 30s ceiling, unawaited. We don't want startup
+        // blocked on the QR-pending case (no session yet) so we let it
+        // resolve in the background.
+        wa.ensureConnected({ timeoutMs: 30_000 }).then(
+          () => logger.info('[startup] WhatsApp client pre-warmed'),
+          (err: Error) => logger.warn({ err: err.message }, '[startup] WhatsApp pre-warm did not complete (will connect on demand)'),
+        );
+      } else {
+        logger.info('[startup] WhatsApp disabled (whatsapp_enabled=false) - skipping client init');
+      }
     } catch (error: unknown) {
       const err = error as Error;
       logger.error({ error: err.message }, '[startup] Failed to initialize WhatsApp client');
@@ -385,10 +397,23 @@ export async function register() {
     // notifyAppStartedWithLockedVault waits internally for the `ready` event
     // (with a 90s ceiling) before sending. We don't want startup blocked on it.
     try {
-      const { notifyAppStartedWithLockedVault } = await import('./utils/whatsappStartupNotify.js');
-      notifyAppStartedWithLockedVault().catch((err: Error) => {
-        logger.warn({ error: err.message }, '[startup] Restart-with-locked-vault notification failed (non-fatal)');
-      });
+      const { getDB } = await import('./pages/api/db');
+      const client = await getDB();
+      let whatsappEnabled = false;
+      try {
+        const result = await client.query("SELECT value FROM app_settings WHERE key = 'whatsapp_enabled'");
+        const raw = result.rows[0]?.value;
+        whatsappEnabled = raw === true || raw === 'true' || raw === '"true"';
+      } finally {
+        client.release();
+      }
+
+      if (whatsappEnabled) {
+        const { notifyAppStartedWithLockedVault } = await import('./utils/whatsappStartupNotify.js');
+        notifyAppStartedWithLockedVault().catch((err: Error) => {
+          logger.warn({ error: err.message }, '[startup] Restart-with-locked-vault notification failed (non-fatal)');
+        });
+      }
     } catch (error: unknown) {
       const err = error as Error;
       logger.warn({ error: err.message }, '[startup] Failed to schedule restart-locked notification');
