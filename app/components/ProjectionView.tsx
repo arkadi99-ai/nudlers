@@ -3,6 +3,7 @@ import { Box, Typography, CircularProgress, Chip, IconButton, Tooltip as MuiTool
 import { useTheme } from '@mui/material/styles';
 import { LineChart } from '@mui/x-charts/LineChart';
 import PageHeader from './PageHeader';
+import MonthCalendarView from './MonthCalendarView';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import RepeatIcon from '@mui/icons-material/Repeat';
@@ -521,6 +522,7 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
 
 const ProjectionView: React.FC = () => {
     const { t } = useTranslation('views');
+    const [viewMode, setViewMode] = useState<'chart' | 'calendar'>('chart');
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<ProjectionData[]>([]);
     const [accounts, setAccounts] = useState<ProjectionViewContentProps['accounts']>([]);
@@ -641,24 +643,53 @@ const ProjectionView: React.FC = () => {
     }, []);
 
     return (
-        <ProjectionViewContent
-            loading={loading}
-            data={data}
-            accounts={accounts}
-            selectedAccount={selectedAccount}
-            setSelectedAccount={setSelectedAccount}
-            categories={categories}
-            isAddDialogOpen={isAddDialogOpen}
-            setIsAddDialogOpen={setIsAddDialogOpen}
-            newRecurring={newRecurring}
-            setNewRecurring={setNewRecurring}
-            snackbar={snackbar}
-            hideSnackbar={hideSnackbar}
-            onRefresh={fetchProjection}
-            onToggleVisibility={handleToggleVisibility}
-            onMarkNotRecurring={handleMarkNotRecurring}
-            onAddRecurring={handleAddRecurring}
-        />
+        <Box>
+            <Box sx={{
+                display: 'flex',
+                justifyContent: { xs: 'center', md: 'flex-end' },
+                p: { xs: 2, md: '16px 32px 0' },
+            }}>
+                <Box className="n-glass" sx={{ display: 'flex', gap: 0.5, p: 0.5, borderRadius: '14px' }}>
+                    <Chip
+                        label={t('projection.viewModeChart')}
+                        onClick={() => setViewMode('chart')}
+                        variant={viewMode === 'chart' ? 'filled' : 'outlined'}
+                        color={viewMode === 'chart' ? 'primary' : 'default'}
+                        sx={{ fontWeight: 600, borderRadius: '10px' }}
+                    />
+                    <Chip
+                        label={t('projection.viewModeCalendar')}
+                        onClick={() => setViewMode('calendar')}
+                        variant={viewMode === 'calendar' ? 'filled' : 'outlined'}
+                        color={viewMode === 'calendar' ? 'primary' : 'default'}
+                        sx={{ fontWeight: 600, borderRadius: '10px' }}
+                    />
+                </Box>
+            </Box>
+
+            {viewMode === 'calendar' ? (
+                <MonthCalendarView />
+            ) : (
+                <ProjectionViewContent
+                    loading={loading}
+                    data={data}
+                    accounts={accounts}
+                    selectedAccount={selectedAccount}
+                    setSelectedAccount={setSelectedAccount}
+                    categories={categories}
+                    isAddDialogOpen={isAddDialogOpen}
+                    setIsAddDialogOpen={setIsAddDialogOpen}
+                    newRecurring={newRecurring}
+                    setNewRecurring={setNewRecurring}
+                    snackbar={snackbar}
+                    hideSnackbar={hideSnackbar}
+                    onRefresh={fetchProjection}
+                    onToggleVisibility={handleToggleVisibility}
+                    onMarkNotRecurring={handleMarkNotRecurring}
+                    onAddRecurring={handleAddRecurring}
+                />
+            )}
+        </Box>
     );
 };
 

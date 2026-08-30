@@ -17,6 +17,7 @@ import TextField from '@mui/material/TextField';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import PageHeader from './PageHeader';
+import AccountStatusCard from './AccountStatusCard';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import BudgetModule from './BudgetModule';
@@ -1061,6 +1062,7 @@ const MonthlySummary: React.FC = () => {
           endDate={endDate}
         />
 
+        <AccountStatusCard />
 
         {loading ? (
           <div style={{
