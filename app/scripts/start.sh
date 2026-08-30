@@ -46,6 +46,15 @@ cleanup_old_screenshots() {
 start_app() {
     echo "Starting Xvfb..."
     export DISPLAY=:99
+    # A container restart (e.g. the app's own `restart: unless-stopped` policy
+    # recovering from a crash) reuses the same container filesystem rather than
+    # a fresh one, so a stale lock from the previous Xvfb process can still be
+    # sitting in /tmp. Without this, Xvfb refuses to start ("Server is already
+    # active for display 99") on the very first restart after any crash -
+    # harmless to the main web server, but breaks any Puppeteer-based scraper
+    # relying on a working DISPLAY. Safe to remove unconditionally: if a real
+    # Xvfb were still using it, this process wouldn't be starting fresh.
+    rm -f /tmp/.X99-lock /tmp/.X11-unix/X99 2>/dev/null || true
     Xvfb :99 -screen 0 ${XVFB_WIDTH:-1280}x${XVFB_HEIGHT:-720}x${XVFB_DEPTH:-24} &
     sleep 1
 

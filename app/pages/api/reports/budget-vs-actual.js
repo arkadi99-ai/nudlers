@@ -1,4 +1,4 @@
-import { getDB } from "../db";
+import { getDB, pool } from "../db";
 import logger from '../../../utils/logger.js';
 import { BANK_VENDORS } from '../../../utils/constants.js';
 
@@ -102,10 +102,14 @@ export default async function handler(req, res) {
       LIMIT 1
     `;
 
+    // Each of these runs on its own pooled connection (via `pool`, not the shared
+    // `client`) - a single pg Client can only run one query at a time, and running
+    // several concurrently on it triggers "client is already executing a query"
+    // (deprecated, will be a hard error in pg@9) and destabilizes the connection.
     const [actualResult, budgetsResult, totalBudgetResult] = await Promise.all([
-      client.query(actualSpendingSql, actualParams),
-      client.query(budgetsSql),
-      client.query(totalBudgetSql)
+      pool.query(actualSpendingSql, actualParams),
+      pool.query(budgetsSql),
+      pool.query(totalBudgetSql)
     ]);
 
     // Create a map of actual spending

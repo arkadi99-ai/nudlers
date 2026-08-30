@@ -1,4 +1,4 @@
-import { getDB } from "../db";
+import { pool } from "../db";
 import { detectRecurringPayments } from "../../../utils/recurringDetection";
 import logger from "../../../utils/logger";
 import { normalizeTransactionDates, generateProjection } from "../../../utils/projectionUtils";
@@ -10,15 +10,18 @@ export default async function handler(req, res) {
         return res.status(405).end(`Method ${req.method} Not Allowed`);
     }
 
-    const client = await getDB();
     try {
-        // Run all independent queries in parallel for maximum efficiency
+        // Run all independent queries in parallel, each on its own pooled connection
+        // (via `pool`, not a single shared client) - a single pg Client can only run
+        // one query at a time, and running several concurrently on it triggers
+        // "client is already executing a query" (deprecated, hard error in pg@9)
+        // and destabilizes the connection.
         const [accountsRes, bankTransRes, manualRes, ccRes, riseupFixedRes] = await Promise.all([
             // 1. Get Accounts. Direct-bank vendors are always a bank account. RiseUp
             // mixes cards and one checking account under a single vendor - include a
             // riseup account here only if it actually has bank-tagged transactions
             // (i.e. it's the checking account, not one of the cards).
-            client.query(`
+            pool.query(`
                 SELECT
                     co.id,
                     co.account_number,
@@ -41,7 +44,7 @@ export default async function handler(req, res) {
             // 2. Get Bank Transactions (for pattern-based recurring detection). RiseUp is
             // excluded here - it has its own authoritative "fixed" classification (query 5
             // below), so running the statistical guesser on it too would double-count.
-            client.query(`
+            pool.query(`
                 WITH excluded AS (
                     SELECT LOWER(TRIM(name)) as name, account_number
                     FROM non_recurring_exclusions
@@ -60,13 +63,13 @@ export default async function handler(req, res) {
                 ORDER BY t.date DESC
             `),
             // 3. Get Manual Recurring
-            client.query(`
+            pool.query(`
                 SELECT name, amount, category, account_number, day_of_month, frequency
                 FROM manual_recurring_payments
                 WHERE is_active = true
             `),
             // 4. Get Future CC Payments
-            client.query(`
+            pool.query(`
                 SELECT 
                     t.name, t.price, t.date, t.processed_date, t.vendor, t.account_number, t.category,
                     co.linked_bank_account_id,
@@ -91,7 +94,7 @@ export default async function handler(req, res) {
             // projected forward onto the same day next month. Scoped to bank-tagged
             // transactions only: fixed subscriptions billed via a card are already
             // covered by the "Future CC Payments" query above once they're next charged.
-            client.query(`
+            pool.query(`
                 SELECT DISTINCT ON (name, account_number)
                     name, price, category, account_number,
                     EXTRACT(DAY FROM date)::int as day_of_month
@@ -162,7 +165,5 @@ export default async function handler(req, res) {
     } catch (error) {
         logger.error({ error: error.message, stack: error.stack }, "Error generating projection");
         res.status(500).json({ error: 'Internal Server Error' });
-    } finally {
-        client.release();
     }
 }

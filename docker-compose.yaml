@@ -26,6 +26,7 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile
+    restart: unless-stopped
     env_file:
       - .env
     environment:

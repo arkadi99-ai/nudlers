@@ -7,10 +7,50 @@ export async function register() {
   // Only run migrations on server startup (not during build or in edge runtime)
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     const logger = (await import('./utils/logger.js')).default;
+
+    // Last-resort safety net: every crash investigated this session (WhatsApp
+    // reconnect loops, an audit-log memory spike, a DB-connection misuse bug)
+    // showed up as a silent process death - no stack trace, nothing in the
+    // logs to diagnose from. Node's default behavior on an uncaught exception
+    // or unhandled rejection IS to print to stderr before exiting, but that
+    // output flows through the process.stdout/stderr monkey-patch installed
+    // just below (to reformat Next.js's own request logs), and this handler
+    // wasn't designed with arbitrary crash-dump text in mind. These two
+    // listeners log through the structured logger directly - a path that
+    // bypasses that monkey-patch entirely - so whatever happens next time is
+    // actually diagnosable. They deliberately do NOT try to keep the process
+    // alive after an uncaughtException (Node's own guidance: the process is
+    // in an unknown state past that point, and a broken app serving traffic
+    // is worse than a clearly-dead one) - recovery is the container's job:
+    // nudlers-app now has `restart: unless-stopped` in docker-compose.yaml,
+    // so Docker brings it back up within seconds either way.
+    process.on('uncaughtException', (err: Error) => {
+      logger.error({ error: err.message, stack: err.stack }, '[fatal] Uncaught exception - process will exit; container should auto-restart');
+    });
+    process.on('unhandledRejection', (reason: unknown) => {
+      const err = reason instanceof Error ? reason : new Error(String(reason));
+      logger.error({ error: err.message, stack: err.stack }, '[fatal] Unhandled promise rejection');
+    });
+
     // Intercept Next.js request logs and redirect through our JSON logger
     const stripAnsi = (str: string) => str.replace(/[\u001b\u009b][[[()#;?]*([0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
 
     const handleLog = (chunk: unknown, originalWrite: Function) => {
+      // This function used to have no error handling of its own, despite sitting
+      // directly on process.stdout/stderr.write - EVERY write in the process goes
+      // through here, including Node's own uncaught-exception stack trace dump
+      // during shutdown. A bug in here (a chunk shape it doesn't expect, a regex
+      // edge case) could throw while trying to relay the one message that would
+      // explain a crash, turning a diagnosable failure into a silent one. Never
+      // let this function's own logic block the original write from happening.
+      try {
+        return handleLogInner(chunk, originalWrite);
+      } catch {
+        return originalWrite(chunk);
+      }
+    };
+
+    const handleLogInner = (chunk: unknown, originalWrite: Function) => {
       const rawMessage = chunk?.toString() || '';
 
       // If no request log is present, just write it as is
