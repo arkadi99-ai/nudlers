@@ -13,8 +13,8 @@ interface LocaleContextValue {
 }
 
 const LocaleContext = createContext<LocaleContextValue>({
-    locale: 'en',
-    direction: 'ltr',
+    locale: 'he',
+    direction: 'rtl',
     setLocale: () => { },
 });
 
@@ -32,9 +32,9 @@ const isLocale = (value: unknown): value is Locale =>
 
 export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [locale, setLocaleState] = useState<Locale>(() => {
-        if (typeof window === 'undefined') return 'en';
+        if (typeof window === 'undefined') return 'he';
         const saved = window.localStorage.getItem('locale');
-        return isLocale(saved) ? saved : 'en';
+        return isLocale(saved) ? saved : 'he';
     });
 
     const direction = directionForLocale(locale);

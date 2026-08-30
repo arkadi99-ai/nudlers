@@ -656,11 +656,31 @@ export async function insertScrapeAudit(client, triggeredBy, vendor, startDate, 
  * @param {number | null} [retryCount]
  * @param {number | null} [durationSeconds]
  */
+// Caps how many per-transaction entries survive into the persisted audit log.
+// A sync of a few dozen/hundred transactions is fine to log in full, but a
+// vendor like RiseUp can report thousands of transactions in a single sync,
+// and storing one JSON entry per transaction bloated a single scrape_events
+// row past 1MB - multiplied across a day's worth of resyncs, this made
+// GET /api/scrape-events return a multi-megabyte response and crash the
+// server. The aggregate counts already on the report (transactions,
+// savedTransactions, etc.) carry the real signal; per-transaction detail is
+// only useful for the SSE stream during the sync itself, not for long-term storage.
+const AUDIT_PROCESSED_TRANSACTIONS_CAP = 100;
+
 export async function updateScrapeAudit(client, auditId, status, message, report = null, retryCount = null, durationSeconds = null) {
   if (!auditId) return;
 
   // If durationSeconds is not provided but we have a report, try to extract it from report
   const finalDuration = durationSeconds ?? report?.durationSeconds ?? report?.duration_seconds ?? null;
+
+  if (report && Array.isArray(report.processedTransactions) && report.processedTransactions.length > AUDIT_PROCESSED_TRANSACTIONS_CAP) {
+    const total = report.processedTransactions.length;
+    report = {
+      ...report,
+      processedTransactions: report.processedTransactions.slice(0, AUDIT_PROCESSED_TRANSACTIONS_CAP),
+      processedTransactionsTruncated: total - AUDIT_PROCESSED_TRANSACTIONS_CAP
+    };
+  }
 
   if (report) {
     await client.query(
