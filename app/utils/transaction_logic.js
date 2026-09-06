@@ -39,3 +39,21 @@ export function getBillingCycleSql(startDay = 10, dateCol = 'date', processedDat
         )
     `;
 }
+
+/**
+ * Israeli credit-card companies show up as a recurring BANK-side line every
+ * month for "your card bill got paid" - real, expected, and already counted
+ * via the card's own itemized purchases. Any report that sums bank-side
+ * transactions as real spending (a Sources & Uses statement, the
+ * unflagged_recurring anomaly detector) needs to exclude these by name, or
+ * every card purchase gets counted twice - once itemized, once as this
+ * lump settlement. Amount-variance alone can't reliably tell "a real
+ * recurring bank expense" from "the bank's own label for a card
+ * settlement" (a real false positive surfaced this: "ישראכרט בע"מ" swings
+ * ₪12k-32k/month, real history since 2024, still looked "recurring").
+ */
+export const CARD_COMPANY_SETTLEMENT_PATTERN = /ישראכרט|כרטיסי אשראי|כאל|לאומי קארד|מקס(?!ים)/;
+
+export function isCardCompanySettlement(name) {
+    return typeof name === 'string' && CARD_COMPANY_SETTLEMENT_PATTERN.test(name);
+}

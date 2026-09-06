@@ -240,6 +240,24 @@ function wireSockEvents(sock) {
         }
     });
 
+    // Family-group categorization replies: a message only ever does
+    // something if it's a direct quote-reply to a question WE sent (see
+    // whatsappCategorizationListener.js) - everything else in the group is
+    // ignored at the top of that function, cheaply, before any DB/AI call.
+    // type !== 'notify' means history-sync replay, not a live message -
+    // skip those (we deliberately run with syncFullHistory: false anyway).
+    sock.ev.on('messages.upsert', async ({ messages, type }) => {
+        if (type !== 'notify') return;
+        for (const msg of messages) {
+            try {
+                const { handleIncomingGroupMessage } = await import('./whatsappCategorizationListener.js');
+                await handleIncomingGroupMessage(msg);
+            } catch (err) {
+                logger.warn({ err: err.message }, '[baileys] messages.upsert handler failed');
+            }
+        }
+    });
+
     // Our public API exposes off()/once() in waitForReady semantics; bridge
     // those through the emitter rather than Baileys's sock.ev to keep them
     // under our control.

@@ -27,8 +27,9 @@ const ProjectionView = dynamic(() => import("./ProjectionView"), { ssr: false })
 const AccountsView = dynamic(() => import("./AccountsView"), { ssr: false });
 const VaultLockScreen = dynamic(() => import("./VaultLockScreen"), { ssr: false });
 const InsightsView = dynamic(() => import("./InsightsView"), { ssr: false });
+const SourcesAndUsesView = dynamic(() => import("./SourcesAndUsesView"), { ssr: false });
 
-type ViewType = 'dashboard' | 'summary' | 'budget' | 'chat' | 'audit' | 'recurring' | 'design' | 'breakdown' | 'projection' | 'accounts' | 'insights';
+type ViewType = 'dashboard' | 'summary' | 'budget' | 'chat' | 'audit' | 'recurring' | 'design' | 'breakdown' | 'projection' | 'accounts' | 'insights' | 'sourcesAndUses';
 
 // Screen context for AI Assistant
 interface ScreenContext {
@@ -152,6 +153,8 @@ const Layout: React.FC<LayoutProps> = ({ children, defaultView = 'summary' }) =>
         return <AccountsView />;
       case 'insights':
         return <InsightsView />;
+      case 'sourcesAndUses':
+        return <SourcesAndUsesView />;
       default:
         return children;
     }

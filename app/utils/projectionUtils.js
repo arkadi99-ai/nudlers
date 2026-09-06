@@ -293,6 +293,120 @@ export function generateProjection(accounts, bankRecurring, manualRecurring, ccP
 }
 
 /**
+ * Builds the shared event-placement model used by every forward-looking
+ * balance walk: fixed monthly commitments (repeat on the same day-of-month,
+ * clamped for short months), already-scheduled card settlements (real
+ * dates), and the 3-month-average variable-spend estimate (already placed
+ * by the caller on the real billing date of the card it came from - see
+ * forecastDataSource.js). Extracted so generateMonthCalendar() and
+ * computeForwardBalanceWindow() can never drift apart on how an event lands
+ * on a given date.
+ */
+function buildForwardEventModel(fixedRecurring, ccPayments, estimatedFutureSpend) {
+    const ccByDay = new Map();
+    for (const cc of ccPayments || []) {
+        if (!cc.date) continue;
+        const key = getLocalMidnight(cc.date).getTime();
+        if (!ccByDay.has(key)) ccByDay.set(key, []);
+        ccByDay.get(key).push({ name: cc.category || 'לא מסווג', category: cc.category || null, amount: cc.amount, type: 'card' });
+    }
+
+    // Keyed by day + category, not just day: two different cards can both
+    // bill on the same day and both carry (say) "groceries" spending - merge
+    // those into one summed line per category per day.
+    const estimateByDayCategory = new Map();
+    for (const est of estimatedFutureSpend || []) {
+        if (!est.date) continue;
+        const dayKey = getLocalMidnight(est.date).getTime();
+        const category = est.category || 'לא מסווג';
+        const mapKey = `${dayKey}|${category}`;
+        if (!estimateByDayCategory.has(mapKey)) {
+            estimateByDayCategory.set(mapKey, { dayKey, name: category, category, amount: 0, type: 'estimate' });
+        }
+        estimateByDayCategory.get(mapKey).amount += est.amount;
+    }
+    const estimateByDay = new Map();
+    for (const entry of estimateByDayCategory.values()) {
+        if (!estimateByDay.has(entry.dayKey)) estimateByDay.set(entry.dayKey, []);
+        estimateByDay.get(entry.dayKey).push({ name: entry.name, category: entry.category, amount: entry.amount, type: 'estimate' });
+    }
+
+    const fixedEventsForDate = (d) => {
+        const dim = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        const events = [];
+        for (const item of fixedRecurring || []) {
+            if (!item.day_of_month) continue;
+            const targetDay = Math.min(item.day_of_month, dim);
+            if (d.getDate() === targetDay) events.push({ name: item.name, category: item.category || null, amount: item.amount, type: 'fixed' });
+        }
+        return events;
+    };
+    const projectedEventsForDate = (d) => [...fixedEventsForDate(d), ...(ccByDay.get(d.getTime()) || [])];
+    const projectedChangeForDate = (d) => projectedEventsForDate(d).reduce((sum, e) => sum + e.amount, 0);
+    const estimateEventsForDate = (d) => estimateByDay.get(d.getTime()) || [];
+    const estimateChangeForDate = (d) => estimateEventsForDate(d).reduce((sum, e) => sum + e.amount, 0);
+
+    return { projectedEventsForDate, projectedChangeForDate, estimateEventsForDate, estimateChangeForDate };
+}
+
+/**
+ * Walks forward from today for a fixed number of days (not bound to a
+ * calendar month) tracking the checking-account balance, and reports the
+ * LOWEST point it reaches - both a "guaranteed" figure (only real fixed
+ * obligations + already-scheduled card settlements) and an "estimated" one
+ * (guaranteed plus the cumulative 3-month-average variable-spend estimate).
+ *
+ * This powers the "safe to invest" forecast: how much can be moved to
+ * savings today without the account dipping below its safety buffer at any
+ * point before the next full credit-card billing cycle completes.
+ *
+ * @param {Object} params
+ * @param {number} params.currentBalance
+ * @param {Array} params.fixedRecurring
+ * @param {Array} params.ccPayments
+ * @param {Array} params.estimatedFutureSpend
+ * @param {number} [params.days=45] - how far forward to walk (45 comfortably covers any card's full ~30-day billing cycle even if it just started)
+ * @param {Date} [params.todayDate]
+ * @returns {{minGuaranteedBalance: number, minGuaranteedDate: string, minEstimatedBalance: number, minEstimatedDate: string}}
+ */
+export function computeForwardBalanceWindow({ currentBalance, fixedRecurring, ccPayments, estimatedFutureSpend = [], days = 45, todayDate = null }) {
+    const today = todayDate ? getLocalMidnight(todayDate) : getLocalMidnight();
+    const { projectedChangeForDate, estimateChangeForDate } = buildForwardEventModel(fixedRecurring, ccPayments, estimatedFutureSpend);
+
+    let guaranteed = currentBalance;
+    let estimateCumulative = 0;
+
+    let minGuaranteedBalance = guaranteed;
+    let minGuaranteedDate = today;
+    let minEstimatedBalance = guaranteed + estimateCumulative;
+    let minEstimatedDate = today;
+
+    const cursor = new Date(today);
+    for (let i = 1; i <= days; i++) {
+        cursor.setDate(cursor.getDate() + 1);
+        guaranteed += projectedChangeForDate(cursor);
+        estimateCumulative += estimateChangeForDate(cursor);
+        const estimated = guaranteed + estimateCumulative;
+
+        if (guaranteed < minGuaranteedBalance) {
+            minGuaranteedBalance = guaranteed;
+            minGuaranteedDate = new Date(cursor);
+        }
+        if (estimated < minEstimatedBalance) {
+            minEstimatedBalance = estimated;
+            minEstimatedDate = new Date(cursor);
+        }
+    }
+
+    return {
+        minGuaranteedBalance: Math.round(minGuaranteedBalance * 100) / 100,
+        minGuaranteedDate: formatISODate(minGuaranteedDate),
+        minEstimatedBalance: Math.round(minEstimatedBalance * 100) / 100,
+        minEstimatedDate: formatISODate(minEstimatedDate),
+    };
+}
+
+/**
  * Builds a full-month, day-by-day checking-account balance for the monthly
  * calendar view: real reconstructed balance for days up to and including
  * today, projected balance for days after today.
@@ -331,57 +445,13 @@ export function generateMonthCalendar({ currentBalance, actualTransactions, fixe
         actualByDay.get(key).push({ name: t.name || 'לא מסווג', category: t.category || null, amount: t.price, type: 'actual' });
     }
 
-    const ccByDay = new Map();
-    for (const cc of ccPayments || []) {
-        if (!cc.date) continue;
-        const key = getLocalMidnight(cc.date).getTime();
-        if (!ccByDay.has(key)) ccByDay.set(key, []);
-        ccByDay.get(key).push({ name: cc.category || 'לא מסווג', category: cc.category || null, amount: cc.amount, type: 'card' });
-    }
-
-    // Estimated spending, already placed by the caller on the real billing date
-    // of the card it came from (see month-calendar.js) - kept entirely separate
-    // from the "guaranteed" balance walk below, then layered on top as its own
+    // Fixed recurring items, scheduled card settlements, and the variable-
+    // spend estimate all share one placement model with computeForwardBalanceWindow()
+    // (see buildForwardEventModel doc comment) - kept entirely separate from
+    // the "guaranteed" balance walk below, then layered on top as its own
     // cumulative total (estimatedBalance), so a delta's sign is never mistaken
     // for the final result's sign.
-    // Keyed by day + category, not just day: two different cards can both bill
-    // on the same day and both carry (say) "groceries" spending - merge those
-    // into one summed line per category per day, matching "by category" as a
-    // single figure rather than one row per contributing card.
-    const estimateByDayCategory = new Map();
-    for (const est of estimatedFutureSpend || []) {
-        if (!est.date) continue;
-        const dayKey = getLocalMidnight(est.date).getTime();
-        const category = est.category || 'לא מסווג';
-        const mapKey = `${dayKey}|${category}`;
-        if (!estimateByDayCategory.has(mapKey)) {
-            estimateByDayCategory.set(mapKey, { dayKey, name: category, category, amount: 0, type: 'estimate' });
-        }
-        estimateByDayCategory.get(mapKey).amount += est.amount;
-    }
-    const estimateByDay = new Map();
-    for (const entry of estimateByDayCategory.values()) {
-        if (!estimateByDay.has(entry.dayKey)) estimateByDay.set(entry.dayKey, []);
-        estimateByDay.get(entry.dayKey).push({ name: entry.name, category: entry.category, amount: entry.amount, type: 'estimate' });
-    }
-
-    // Fixed recurring items repeat every month on the same day-of-month (clamped
-    // for short months) - evaluate this for ANY date, not just within the
-    // requested month, since bridging from "today" to a future/past month may
-    // cross other months' occurrences too (e.g. viewing next month from today
-    // still needs to know about an occurrence landing between the two).
-    const fixedEventsForDate = (d) => {
-        const dim = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
-        const events = [];
-        for (const item of fixedRecurring || []) {
-            if (!item.day_of_month) continue;
-            const targetDay = Math.min(item.day_of_month, dim);
-            if (d.getDate() === targetDay) events.push({ name: item.name, category: item.category || null, amount: item.amount, type: 'fixed' });
-        }
-        return events;
-    };
-    const projectedEventsForDate = (d) => [...fixedEventsForDate(d), ...(ccByDay.get(d.getTime()) || [])];
-    const projectedChangeForDate = (d) => projectedEventsForDate(d).reduce((sum, e) => sum + e.amount, 0);
+    const { projectedEventsForDate, projectedChangeForDate, estimateEventsForDate } = buildForwardEventModel(fixedRecurring, ccPayments, estimatedFutureSpend);
     const actualEventsForDate = (d) => actualByDay.get(d.getTime()) || [];
     const actualChangeForDate = (d) => actualEventsForDate(d).reduce((sum, e) => sum + e.amount, 0);
 
@@ -400,7 +470,7 @@ export function generateMonthCalendar({ currentBalance, actualTransactions, fixe
         while (cursor.getTime() < monthEnd.getTime()) {
             cursor.setDate(cursor.getDate() + 1);
             running += projectedChangeForDate(cursor);
-            estimateCumulative += (estimateByDay.get(cursor.getTime()) || []).reduce((sum, e) => sum + e.amount, 0);
+            estimateCumulative += estimateEventsForDate(cursor).reduce((sum, e) => sum + e.amount, 0);
             balanceAtDate.set(cursor.getTime(), running);
             estimateCumulativeAtDate.set(cursor.getTime(), estimateCumulative);
         }
@@ -444,7 +514,7 @@ export function generateMonthCalendar({ currentBalance, actualTransactions, fixe
         // evenly across every day - so this day's OWN events only include an
         // estimate line if one actually lands here, while estimatedBalance
         // reflects the running cumulative total up to this point.
-        const dayEstimateEvents = isFuture ? (estimateByDay.get(key) || []) : [];
+        const dayEstimateEvents = isFuture ? estimateEventsForDate(d) : [];
         const events = [...dayEvents, ...dayEstimateEvents];
         let estimatedBalance = null;
         if (isFuture && balance !== null) {

@@ -1,11 +1,20 @@
 import { pool } from "../db";
 import logger from "../../../utils/logger";
+import { getForecastInputs } from "../../../utils/forecastDataSource";
+import { computeForwardBalanceWindow } from "../../../utils/projectionUtils";
+import { formatISODate } from "../../../utils/dateUtils";
+
+const DEFAULT_SAFETY_BUFFER = 3000;
+const FORECAST_WINDOW_DAYS = 45;
 
 // GET /api/reports/account-status
 //
 // Powers the main-dashboard "account status" card: current checking balance,
-// total known fixed monthly obligations, and the variable (card) spending
-// due to hit the account on the next scheduled credit-card settlement date.
+// total known fixed monthly obligations, the variable (card) spending due
+// to hit the account on the next scheduled credit-card settlement date, and
+// the "safe to invest" forecast (how much can be moved to savings today
+// without the account dipping below its safety buffer before the next full
+// credit-card billing cycle completes - see computeForwardBalanceWindow()).
 export default async function handler(req, res) {
     if (req.method !== 'GET') {
         res.setHeader('Allow', ['GET']);
@@ -13,7 +22,11 @@ export default async function handler(req, res) {
     }
 
     try {
-        const [balanceRes, fixedRes, ccRes] = await Promise.all([
+        const today = new Date();
+        const windowEnd = new Date(today);
+        windowEnd.setDate(windowEnd.getDate() + FORECAST_WINDOW_DAYS);
+
+        const [balanceRes, fixedRes, ccRes, forecastInputs, bufferRes] = await Promise.all([
             pool.query(`
                 SELECT co.balance, co.balance_updated_at
                 FROM card_ownership co
@@ -58,7 +71,13 @@ export default async function handler(req, res) {
                     (t.processed_date IS NULL AND t.date >= CURRENT_DATE)
                   )
                 ORDER BY date ASC
-            `)
+            `),
+            // Fixed commitments, scheduled CC settlements, and the variable-
+            // spend estimate for the forecast window - shared with the
+            // monthly calendar view (see forecastDataSource.js).
+            getForecastInputs({ rangeStart: formatISODate(today), rangeEnd: formatISODate(windowEnd) }),
+            // User-configured safety buffer (defaults if never set).
+            pool.query(`SELECT value FROM app_settings WHERE key = 'safety_buffer'`)
         ]);
 
         const currentBalance = parseFloat(balanceRes.rows[0]?.balance ?? 0);
@@ -82,12 +101,46 @@ export default async function handler(req, res) {
             };
         }
 
+        const safetyBuffer = bufferRes.rows.length > 0 ? parseFloat(bufferRes.rows[0].value) : DEFAULT_SAFETY_BUFFER;
+
+        // "Safe to invest": how much can move to savings today without the
+        // account dipping below its safety buffer at any point before the
+        // next full credit-card billing cycle completes (already accounts
+        // for real scheduled settlements, installments, fixed obligations,
+        // and estimated variable spend - see computeForwardBalanceWindow()).
+        let forecast = null;
+        if (hasBalance) {
+            const { minEstimatedBalance, minEstimatedDate, minGuaranteedBalance, minGuaranteedDate } = computeForwardBalanceWindow({
+                currentBalance,
+                fixedRecurring: forecastInputs.fixedRecurring,
+                ccPayments: forecastInputs.ccPayments,
+                estimatedFutureSpend: forecastInputs.estimatedFutureSpend,
+                days: FORECAST_WINDOW_DAYS
+            });
+
+            const isRed = minEstimatedBalance < safetyBuffer;
+            forecast = {
+                safetyBuffer,
+                minProjectedBalance: minEstimatedBalance,
+                minProjectedDate: minEstimatedDate,
+                minGuaranteedBalance,
+                minGuaranteedDate,
+                isRed,
+                // Green state: how much is safely movable to savings today.
+                safeToInvest: isRed ? 0 : Math.round((minEstimatedBalance - safetyBuffer) * 100) / 100,
+                // Red state: how much would need depositing from savings to
+                // avoid dipping below the buffer.
+                shortfall: isRed ? Math.round((safetyBuffer - minEstimatedBalance) * 100) / 100 : 0
+            };
+        }
+
         res.status(200).json({
             currentBalance,
             hasBalance,
             balanceUpdatedAt: balanceRes.rows[0]?.balance_updated_at ?? null,
             fixedMonthlyTotal,
-            nextCardSettlement
+            nextCardSettlement,
+            forecast
         });
     } catch (error) {
         logger.error({ error: error.message, stack: error.stack }, "Error generating account status");

@@ -1,6 +1,7 @@
 import { createApiHandler } from "../../../utils/apiHandler";
 import { getDB } from "../db";
 import logger from '../../../utils/logger.js';
+import { updateCategoryByDescription } from "../../../utils/categorization.js";
 
 /**
  * POST /api/categories/update-by-description
@@ -17,49 +18,8 @@ const handler = createApiHandler({
         const { description, newCategory, createRule = true } = req.body;
         const client = await getDB();
         try {
-            await client.query('BEGIN');
-
-            const updateResult = await client.query(`
-        UPDATE transactions 
-        SET category = $2
-        WHERE LOWER(TRIM(name)) = LOWER(TRIM($1))
-      `, [description, newCategory]);
-
-            let ruleCreated = false;
-            let ruleUpdated = false;
-
-            if (createRule) {
-                const existingRule = await client.query(`
-          SELECT id FROM categorization_rules WHERE LOWER(TRIM(name_pattern)) = LOWER(TRIM($1))
-        `, [description]);
-
-                if (existingRule.rows.length > 0) {
-                    await client.query(`
-            UPDATE categorization_rules 
-            SET target_category = $2, updated_at = CURRENT_TIMESTAMP, is_active = true
-            WHERE LOWER(TRIM(name_pattern)) = LOWER(TRIM($1))
-          `, [description, newCategory]);
-                    ruleUpdated = true;
-                } else {
-                    await client.query(`
-            INSERT INTO categorization_rules (name_pattern, target_category, is_active)
-            VALUES ($1, $2, true)
-          `, [description, newCategory]);
-                    ruleCreated = true;
-                }
-            }
-
-            await client.query('COMMIT');
-            return {
-                success: true,
-                transactionsUpdated: updateResult.rowCount,
-                ruleCreated,
-                ruleUpdated,
-                description,
-                newCategory
-            };
+            return await updateCategoryByDescription(client, { description, newCategory, createRule });
         } catch (error) {
-            await client.query('ROLLBACK');
             logger.error({ error: error.message, stack: error.stack }, 'Error updating category by description');
             throw error;
         } finally {

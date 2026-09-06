@@ -75,6 +75,16 @@ function formatLine(row) {
         const spend = formatIls(p.thisWeekSpend);
         return `• *${cat}* השבוע: ₪${spend} (${ratio}× מהרגיל)`;
     }
+    if (row.type === 'rising_trend') {
+        const cat = p.category ?? '?';
+        const amounts = Array.isArray(p.amounts) ? p.amounts.map((a) => `₪${a}`).join(' ← ') : '?';
+        return `• *${cat}* עולה 3 חודשים ברציפות: ${amounts}`;
+    }
+    if (row.type === 'unflagged_recurring') {
+        const merchant = p.merchant ?? '?';
+        const amount = formatIls(p.averageAmount);
+        return `• אולי מנוי ששכחתם ממנו: *${merchant}* (~₪${amount}/חודש)`;
+    }
     // Unknown type — fall back to title, never crash.
     return `• ${row.title}`;
 }

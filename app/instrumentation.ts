@@ -302,6 +302,17 @@ export async function register() {
       logger.warn({ error: err.message }, '[startup] Daily summary cron job initialization failed');
     }
 
+    // Initialize the family WhatsApp-group social agent cron (weekly + monthly).
+    // Self-contained module - see socialAgentCron.js for the schedule; it's a
+    // no-op until whatsapp_group_jid is configured (see /api/whatsapp/groups).
+    try {
+      const { initSocialAgentCron } = await import('./utils/socialAgentCron.js');
+      await initSocialAgentCron();
+    } catch (error: unknown) {
+      const err = error as Error;
+      logger.warn({ error: err.message }, '[startup] Social agent cron initialization failed');
+    }
+
     // Initialize Background Sync cron job
     try {
       logger.info('[startup] Initializing Background Sync cron job');

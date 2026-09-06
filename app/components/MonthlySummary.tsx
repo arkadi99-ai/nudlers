@@ -18,6 +18,8 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import PageHeader from './PageHeader';
 import AccountStatusCard from './AccountStatusCard';
+import SavingsGoalsCard from './SavingsGoalsCard';
+import NeedsAttentionCard from './NeedsAttentionCard';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import BudgetModule from './BudgetModule';
@@ -1063,6 +1065,8 @@ const MonthlySummary: React.FC = () => {
         />
 
         <AccountStatusCard />
+        <SavingsGoalsCard />
+        <NeedsAttentionCard />
 
         {loading ? (
           <div style={{

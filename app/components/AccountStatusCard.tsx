@@ -5,14 +5,26 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../context/LocaleContext';
+
+interface AccountForecast {
+    safetyBuffer: number;
+    minProjectedBalance: number;
+    minProjectedDate: string;
+    isRed: boolean;
+    safeToInvest: number;
+    shortfall: number;
+}
 
 interface AccountStatus {
     currentBalance: number;
     hasBalance: boolean;
     fixedMonthlyTotal: number;
     nextCardSettlement: { date: string; amount: number; cards: string[] } | null;
+    forecast: AccountForecast | null;
 }
 
 const AccountStatusCard: React.FC = () => {
@@ -61,11 +73,13 @@ const AccountStatusCard: React.FC = () => {
         ? theme.palette.text.disabled
         : data.currentBalance >= 0 ? '#10B981' : '#F43F5E';
 
+    const forecast = data.forecast;
+
     return (
+        <Box sx={{ margin: { xs: '12px 4px', md: '0 16px 24px' } }}>
         <Box
             className="n-card n-glass"
             sx={{
-                margin: { xs: '12px 4px', md: '0 16px 24px' },
                 padding: { xs: '16px', md: '24px' },
                 borderRadius: '24px',
                 display: 'grid',
@@ -126,6 +140,42 @@ const AccountStatusCard: React.FC = () => {
                     </Typography>
                 )}
             </Box>
+        </Box>
+
+        {forecast && (
+            <Box
+                sx={{
+                    marginTop: 2,
+                    padding: '16px 20px',
+                    borderRadius: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    backgroundColor: forecast.isRed ? 'rgba(244, 63, 94, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                    border: `1px solid ${forecast.isRed ? 'rgba(244, 63, 94, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
+                }}
+            >
+                {forecast.isRed
+                    ? <WarningAmberIcon sx={{ color: '#F43F5E', fontSize: 26, flexShrink: 0 }} />
+                    : <TrendingUpIcon sx={{ color: '#10B981', fontSize: 26, flexShrink: 0 }} />
+                }
+                <Box>
+                    <Typography sx={{ fontWeight: 700, color: forecast.isRed ? '#F43F5E' : '#10B981' }}>
+                        {forecast.isRed
+                            ? t('summary.accountStatus.forecast.redTitle', { amount: formatCurrency(forecast.shortfall) })
+                            : t('summary.accountStatus.forecast.greenTitle', { amount: formatCurrency(forecast.safeToInvest) })
+                        }
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        {t('summary.accountStatus.forecast.subtitle', {
+                            amount: formatCurrency(forecast.minProjectedBalance),
+                            date: new Date(forecast.minProjectedDate).toLocaleDateString(dateLocale, { day: 'numeric', month: 'long' }),
+                            buffer: formatCurrency(forecast.safetyBuffer)
+                        })}
+                    </Typography>
+                </Box>
+            </Box>
+        )}
         </Box>
     );
 };

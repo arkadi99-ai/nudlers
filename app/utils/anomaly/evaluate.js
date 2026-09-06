@@ -4,6 +4,8 @@ import { detectRecurringPayments } from '../recurringDetection';
 import { detectPriceHikes } from './detectors/priceHike';
 import { detectNewRecurring } from './detectors/newRecurring';
 import { detectCategorySpikes } from './detectors/categorySpike';
+import { detectRisingTrends } from './detectors/risingTrend';
+import { detectUnflaggedRecurring } from './detectors/unflaggedRecurring';
 import { normalizeMerchant } from './normalize';
 
 // User-feedback suppression windows. The schema's status column has four
@@ -31,10 +33,16 @@ function semanticKey(type, payload) {
         const account = payload.accountNumber ?? 'na';
         return `${type}|${merchant}|${account}`;
     }
-    if (type === 'category_spike') {
+    if (type === 'category_spike' || type === 'rising_trend') {
         const cat = (payload.category ?? '').toString().toLowerCase().trim();
         if (!cat) return null;
         return `${type}|${cat}`;
+    }
+    if (type === 'unflagged_recurring') {
+        const merchant = normalizeMerchant(payload.merchant);
+        if (!merchant) return null;
+        const account = payload.accountNumber ?? 'na';
+        return `${type}|${merchant}|${account}`;
     }
     return null;
 }
@@ -93,7 +101,7 @@ export async function evaluateAnomalies() {
         const txResult = await client.query(`
             SELECT identifier, vendor, name, price, category, account_number,
                    date, processed_date, transaction_type,
-                   installments_number, installments_total
+                   installments_number, installments_total, commitment_type
             FROM transactions
             WHERE date >= CURRENT_DATE - INTERVAL '270 days'
         `);
@@ -109,6 +117,7 @@ export async function evaluateAnomalies() {
             transaction_type: r.transaction_type,
             installments_number: r.installments_number,
             installments_total: r.installments_total,
+            commitment_type: r.commitment_type,
         }));
 
         // priceHike runs directly on the transaction stream so it can see
@@ -149,6 +158,26 @@ export async function evaluateAnomalies() {
 
         detected.push(...detectCategorySpikes(
             transactions.map((t) => ({ category: t.category, amount: t.price, date: t.date })),
+        ));
+
+        // rising_trend runs on the full monthly view (a real trend can include
+        // installment-driven spend - that's still real money leaving each
+        // month). unflagged_recurring strips installments first, same as
+        // newRecurring above - an appliance paid off in 6 equal installments
+        // is near-constant-amount by construction and would otherwise look
+        // exactly like a forgotten subscription.
+        detected.push(...detectRisingTrends(
+            transactions.map((t) => ({ category: t.category, amount: t.price, date: t.date })),
+        ));
+        detected.push(...detectUnflaggedRecurring(
+            nonInstallmentTx.map((t) => ({
+                name: t.name,
+                category: t.category,
+                amount: t.price,
+                date: t.date,
+                accountNumber: t.account_number,
+                isFixedCommitment: t.commitment_type === 'fixed',
+            })),
         ));
 
         for (const a of detected) {

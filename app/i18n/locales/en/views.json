@@ -7,6 +7,16 @@
     "endOfPeriod": "That's all for this period ✨",
     "unassigned": "Unassigned"
   },
+  "sourcesAndUses": {
+    "title": "Sources & Uses",
+    "subtitle": "The full monthly statement: where the money came from, and where it went",
+    "sources": "Sources (Income)",
+    "uses": "Uses (Expenses)",
+    "totalIncome": "Total Income",
+    "totalExpenses": "Total Expenses",
+    "net": "Net for the period",
+    "noData": "No data for this period"
+  },
   "insights": {
     "title": "Insights",
     "subtitle": "Things worth a second look",
@@ -16,6 +26,8 @@
     "filterPriceHike": "Price hikes",
     "filterNewRecurring": "New subscriptions",
     "filterCategorySpike": "Category spikes",
+    "filterRisingTrend": "Rising trends",
+    "filterUnflaggedRecurring": "Possibly forgotten subscriptions",
     "actionAcknowledge": "Got it",
     "actionDismiss": "Dismiss",
     "actionNormal": "This is normal",
@@ -40,7 +52,8 @@
       "priceHike": "Last charge {{date}}",
       "newRecurring": "Started {{date}}",
       "categorySpike": "Week of {{date}}",
-      "categorySpikeRaw": "Week {{week}}"
+      "categorySpikeRaw": "Week {{week}}",
+      "risingTrend": "Latest month in trend: {{month}}"
     },
     "actionFailed": "Action failed — try again"
   },
@@ -53,7 +66,31 @@
       "noBalance": "Unknown",
       "fixedMonthlyTotal": "Total Fixed Expenses",
       "nextCardSettlement": "Next Card Settlement",
-      "noUpcomingSettlement": "No upcoming settlement known"
+      "noUpcomingSettlement": "No upcoming settlement known",
+      "forecast": {
+        "greenTitle": "You can deposit {{amount}} to savings",
+        "redTitle": "Heads up - short {{amount}} to keep your buffer",
+        "subtitle": "Lowest projected balance before the next billing cycle ends: {{amount}} on {{date}} (keeping a {{buffer}} buffer)"
+      }
+    },
+    "savingsGoals": {
+      "title": "Savings Goals",
+      "empty": "No savings goals yet - click + to add one",
+      "addTitle": "New Savings Goal",
+      "nameLabel": "Goal name",
+      "targetAmountLabel": "Target amount",
+      "currentAmountLabel": "Current amount (optional)",
+      "targetDateLabel": "Target date (optional)",
+      "save": "Save",
+      "daysRemaining": "{{count}} days left",
+      "overdue": "Date passed"
+    },
+    "needsAttention": {
+      "title": "Needs a look",
+      "subtitle": "Uncategorized or catch-all ('Other') spending from the last month - so no shekel slips by unnoticed",
+      "occurrences": "{{count}} transactions, {{amount}} total",
+      "categorize": "Categorize",
+      "categoryPlaceholder": "Pick or type a category"
     },
     "descriptionTrack": "Track and analyze your expenses",
     "totalIncome": "Total Income",

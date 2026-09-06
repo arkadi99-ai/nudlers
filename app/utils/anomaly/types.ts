@@ -18,7 +18,7 @@
  *  - low    — borderline; in-app only.
  */
 
-export type AnomalyType = 'price_hike' | 'new_recurring' | 'category_spike';
+export type AnomalyType = 'price_hike' | 'new_recurring' | 'category_spike' | 'rising_trend' | 'unflagged_recurring';
 export type AnomalySeverity = 'low' | 'medium' | 'high';
 export type AnomalyStatus = 'open' | 'acknowledged' | 'dismissed' | 'normal';
 

@@ -1516,6 +1516,18 @@ export async function processScrapedAccounts({
   // Warm up history for ALL cards of this vendor (Identifier Map + Business Keys + Name-to-Category map)
   const historyCache = await fetchHistoryCache(client, companyId);
 
+  // Some credentials exist ONLY to report a real account balance (e.g. a
+  // direct bank connection kept alongside a fuller aggregator like RiseUp
+  // that already covers transactions) - inserting transactions from both
+  // would duplicate every bank-side row. Enforced here, not by remembering
+  // never to click sync for that credential (that's what regressed before -
+  // see migration 024's comment).
+  let balanceOnly = false;
+  if (credentialId) {
+    const credRes = await client.query('SELECT balance_only FROM vendor_credentials WHERE id = $1', [credentialId]);
+    balanceOnly = credRes.rows[0]?.balance_only === true;
+  }
+
   try {
     await client.query('BEGIN');
 
@@ -1532,6 +1544,11 @@ export async function processScrapedAccounts({
       await claimCardOwnership(client, account.accountNumber, companyId, credentialId, account.balance);
       if (account.accountNickname) {
         await autoFillNickname(client, account.accountNumber, account.accountNickname);
+      }
+
+      if (balanceOnly) {
+        logger.info({ accountNumber: account.accountNumber, companyId }, '[Scraper] Credential is balance-only - skipping transaction insert');
+        continue;
       }
 
       if (!account.txns || !Array.isArray(account.txns)) {

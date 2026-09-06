@@ -11,10 +11,12 @@
       "vendor": "ספק הכרטיס",
       "nickname": "כינוי",
       "accountType": "סוג",
+      "owner": "בעלים",
       "bankAccount": "חשבון בנק"
     },
     "vendorNone": "ללא",
     "accountTypeNone": "לא הוגדר",
+    "ownerNone": "לא הוגדר",
     "clickToSetVendor": "לחצו לבחירת ספק",
     "noNickname": "ללא כינוי",
     "noNicknameSet": "לא הוגדר כינוי",
@@ -39,6 +41,7 @@
       "vendorUpdated": "ספק הכרטיס עודכן",
       "nicknameSaved": "הכינוי נשמר",
       "accountTypeUpdated": "הסוג עודכן",
+      "ownerUpdated": "הבעלים עודכן",
       "bankAccountUpdated": "חשבון הבנק עודכן",
       "customBankSaved": "החשבון המותאם נשמר"
     }

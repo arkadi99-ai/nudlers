@@ -14,6 +14,8 @@ import { useTranslation } from 'react-i18next';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import VerifiedIcon from '@mui/icons-material/Verified';
@@ -22,7 +24,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { logger } from '../utils/client-logger';
 import { useLocale } from '../context/LocaleContext';
 
-type AnomalyType = 'price_hike' | 'new_recurring' | 'category_spike';
+type AnomalyType = 'price_hike' | 'new_recurring' | 'category_spike' | 'rising_trend' | 'unflagged_recurring';
 type Severity = 'low' | 'medium' | 'high';
 type Status = 'open' | 'acknowledged' | 'dismissed' | 'normal';
 
@@ -48,6 +50,8 @@ const TYPE_META: Record<AnomalyType, { icon: React.ReactNode; tone: string }> = 
     price_hike: { icon: <TrendingUpIcon fontSize="small" />, tone: 'var(--n-warning)' },
     new_recurring: { icon: <AutorenewIcon fontSize="small" />, tone: 'var(--n-primary-500)' },
     category_spike: { icon: <LocalFireDepartmentIcon fontSize="small" />, tone: '#ec4899' },
+    rising_trend: { icon: <ShowChartIcon fontSize="small" />, tone: '#f59e0b' },
+    unflagged_recurring: { icon: <LightbulbIcon fontSize="small" />, tone: '#6366f1' },
 };
 
 const SEVERITY_TONE: Record<Severity, string> = {
@@ -169,7 +173,7 @@ const InsightsView: React.FC = () => {
                     selected={filter === 'all'}
                     onClick={() => setFilter('all')}
                 />
-                {(['price_hike', 'new_recurring', 'category_spike'] as AnomalyType[]).map((typ) => {
+                {(['price_hike', 'new_recurring', 'category_spike', 'rising_trend', 'unflagged_recurring'] as AnomalyType[]).map((typ) => {
                     const n = counts[typ] ?? 0;
                     if (n === 0 && filter !== typ) return null;
                     return (
@@ -337,6 +341,11 @@ function extractTxDateLine(
         return monday
             ? t('views:insights.txDate.categorySpike', { date: fmt(monday) })
             : t('views:insights.txDate.categorySpikeRaw', { week });
+    }
+    if (anomaly.type === 'rising_trend') {
+        const months = anomaly.payload?.months;
+        if (!Array.isArray(months) || months.length === 0) return null;
+        return t('views:insights.txDate.risingTrend', { month: months[months.length - 1] });
     }
     return null;
 }

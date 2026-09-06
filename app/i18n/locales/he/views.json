@@ -7,6 +7,16 @@
     "endOfPeriod": "זה הכל לתקופה זו ✨",
     "unassigned": "ללא קטגוריה"
   },
+  "sourcesAndUses": {
+    "title": "מקורות ושימושים",
+    "subtitle": "דוח חודשי מלא: מאיפה הכסף הגיע, ולאן הוא הלך",
+    "sources": "מקורות (הכנסות)",
+    "uses": "שימושים (הוצאות)",
+    "totalIncome": "סה\"כ הכנסות",
+    "totalExpenses": "סה\"כ הוצאות",
+    "net": "יתרה נטו לתקופה",
+    "noData": "אין נתונים לתקופה זו"
+  },
   "insights": {
     "title": "תובנות",
     "subtitle": "דברים ששווה להעיף מבט שני עליהם",
@@ -16,6 +26,8 @@
     "filterPriceHike": "עליות מחיר",
     "filterNewRecurring": "מנויים חדשים",
     "filterCategorySpike": "קפיצות בקטגוריה",
+    "filterRisingTrend": "מגמת עלייה",
+    "filterUnflaggedRecurring": "מנויים אפשריים שנשכחו",
     "actionAcknowledge": "ראיתי",
     "actionDismiss": "סגור",
     "actionNormal": "זה תקין",
@@ -40,7 +52,8 @@
       "priceHike": "חיוב אחרון ב-{{date}}",
       "newRecurring": "התחיל ב-{{date}}",
       "categorySpike": "שבוע של {{date}}",
-      "categorySpikeRaw": "שבוע {{week}}"
+      "categorySpikeRaw": "שבוע {{week}}",
+      "risingTrend": "חודש אחרון במגמה: {{month}}"
     },
     "actionFailed": "הפעולה נכשלה — נסה שוב"
   },
@@ -53,7 +66,31 @@
       "noBalance": "לא ידוע",
       "fixedMonthlyTotal": "סה\"כ הוצאות קבועות",
       "nextCardSettlement": "חיוב האשראי הבא",
-      "noUpcomingSettlement": "אין חיוב עתידי ידוע"
+      "noUpcomingSettlement": "אין חיוב עתידי ידוע",
+      "forecast": {
+        "greenTitle": "אפשר להפקיד {{amount}} לחיסכון",
+        "redTitle": "שימו לב - חסרים {{amount}} כדי לשמור על הספייר",
+        "subtitle": "היתרה הכי נמוכה שצפויה עד סוף מחזור החיוב הקרוב: {{amount}} בתאריך {{date}} (כולל שמירה על ספייר של {{buffer}})"
+      }
+    },
+    "savingsGoals": {
+      "title": "יעדי חיסכון",
+      "empty": "עדיין אין יעדי חיסכון - לחצו על + כדי להוסיף",
+      "addTitle": "יעד חיסכון חדש",
+      "nameLabel": "שם היעד",
+      "targetAmountLabel": "סכום יעד",
+      "currentAmountLabel": "סכום נוכחי (אופציונלי)",
+      "targetDateLabel": "תאריך יעד (אופציונלי)",
+      "save": "שמירה",
+      "daysRemaining": "נותרו {{count}} ימים",
+      "overdue": "התאריך עבר"
+    },
+    "needsAttention": {
+      "title": "טעון בירור",
+      "subtitle": "הוצאות מהחודש האחרון שלא מסווגות, או מסווגות כ'אחר' - כדי שלא יפספס אף שקל",
+      "occurrences": "{{count}} עסקאות, בסך הכל {{amount}}",
+      "categorize": "לסווג",
+      "categoryPlaceholder": "בחרו או הקלידו קטגוריה"
     },
     "descriptionTrack": "מעקב וניתוח של ההוצאות שלכם",
     "totalIncome": "סה״כ הכנסות",

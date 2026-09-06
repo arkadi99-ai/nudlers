@@ -28,6 +28,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import BackupIcon from '@mui/icons-material/Backup';
 import TimelineIcon from '@mui/icons-material/Timeline';
+import PieChartIcon from '@mui/icons-material/PieChart';
 
 
 import dynamic from 'next/dynamic';
@@ -57,8 +58,8 @@ const SyncStatusModal = dynamic(() => import('./SyncStatusModal'), { ssr: false 
 
 
 interface ResponsiveAppBarProps {
-  currentView?: 'dashboard' | 'summary' | 'budget' | 'chat' | 'audit' | 'recurring' | 'design' | 'breakdown' | 'projection' | 'accounts' | 'insights';
-  onViewChange?: (view: 'dashboard' | 'summary' | 'budget' | 'chat' | 'audit' | 'recurring' | 'design' | 'breakdown' | 'projection' | 'accounts' | 'insights') => void;
+  currentView?: 'dashboard' | 'summary' | 'budget' | 'chat' | 'audit' | 'recurring' | 'design' | 'breakdown' | 'projection' | 'accounts' | 'insights' | 'sourcesAndUses';
+  onViewChange?: (view: 'dashboard' | 'summary' | 'budget' | 'chat' | 'audit' | 'recurring' | 'design' | 'breakdown' | 'projection' | 'accounts' | 'insights' | 'sourcesAndUses') => void;
 }
 
 
@@ -170,6 +171,7 @@ function ResponsiveAppBar({ currentView = 'summary', onViewChange }: ResponsiveA
     { label: t('view.transactions'), icon: <DashboardIcon />, view: 'dashboard' as const, color: 'var(--n-primary)' },
     { label: t('view.breakdown'), icon: <ViewListIcon />, view: 'breakdown' as const, color: 'var(--n-primary)' },
     { label: t('view.insights'), icon: <InsightsIcon />, view: 'insights' as const, color: 'var(--n-primary)' },
+    { label: t('view.sourcesAndUses'), icon: <PieChartIcon />, view: 'sourcesAndUses' as const, color: 'var(--n-primary)' },
     { label: t('view.recurring'), icon: <RepeatIcon />, view: 'recurring' as const, color: 'var(--n-primary)' },
     { label: t('view.projection'), icon: <TimelineIcon />, view: 'projection' as const, color: 'var(--n-primary)' },
 

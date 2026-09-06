@@ -11,10 +11,12 @@
       "vendor": "Card Vendor",
       "nickname": "Nickname",
       "accountType": "Type",
+      "owner": "Owner",
       "bankAccount": "Bank Account"
     },
     "vendorNone": "None",
     "accountTypeNone": "Not set",
+    "ownerNone": "Not set",
     "clickToSetVendor": "Click to set vendor",
     "noNickname": "No nickname",
     "noNicknameSet": "No nickname set",
@@ -39,6 +41,7 @@
       "vendorUpdated": "Vendor updated",
       "nicknameSaved": "Nickname saved",
       "accountTypeUpdated": "Type updated",
+      "ownerUpdated": "Owner updated",
       "bankAccountUpdated": "Bank account updated",
       "customBankSaved": "Custom bank saved"
     }

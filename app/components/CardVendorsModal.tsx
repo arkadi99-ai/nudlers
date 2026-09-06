@@ -73,12 +73,18 @@ export const CARD_VENDORS = {
 // this list is just what shows up in the dropdown for the common cases.
 export const ACCOUNT_TYPES = ['כרטיס אשראי', 'חשבון בנק', 'קופת גמל להשקעה', 'קרן פנסיה', 'אחר'];
 
+// Who a real account/card belongs to - lets features that reason per-person
+// (e.g. attributing a purchase to a specific family member) join on this
+// instead of guessing from a nickname string.
+export const OWNER_TYPES = ['אני', 'אישתי', 'משותף'];
+
 interface CardData {
   last4_digits: string;
   transaction_count: number;
   card_vendor: string | null;
   card_nickname: string | null;
   account_type: string | null;
+  owner: string | null;
   card_vendor_id: number | null;
   card_ownership_id?: number | null;
   linked_bank_account_id?: number | null;
@@ -196,6 +202,7 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
     vendor: string;
     nickname: string;
     accountType: string;
+    owner: string;
     bankAccountId: number | null;
     customBankNumber: string;
     customBankNickname: string;
@@ -203,6 +210,7 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
     vendor: '',
     nickname: '',
     accountType: '',
+    owner: '',
     bankAccountId: null,
     customBankNumber: '',
     customBankNickname: ''
@@ -281,6 +289,7 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
       vendor: card.card_vendor || '',
       nickname: card.card_nickname || '',
       accountType: card.account_type || '',
+      owner: card.owner || '',
       bankAccountId: card.linked_bank_account_id || ((card.custom_bank_account_number || card.custom_bank_account_nickname) ? -1 : null),
       customBankNumber: card.custom_bank_account_number || '',
       customBankNickname: card.custom_bank_account_nickname || '',
@@ -310,6 +319,7 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
             card_vendor: values.vendor,
             card_nickname: values.nickname,
             account_type: values.accountType,
+            owner: values.owner,
             linked_bank_account_id: values.bankAccountId === -1 ? null : values.bankAccountId,
             bank_account_nickname: linkedBank?.nickname || null,
             bank_account_number: linkedBank?.bank_account_number || null,
@@ -336,6 +346,7 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
           card_vendor: values.vendor,
           card_nickname: values.nickname,
           account_type: values.accountType,
+          owner: values.owner,
         }),
       });
 
@@ -549,6 +560,67 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
         </Box>
       )
     },
+    {
+      id: 'owner',
+      label: t('misc:cardVendors.columns.owner'),
+      minWidth: '140px',
+      format: (_: unknown, card: CardData) => editingCard === card.last4_digits ? (
+        <TextField
+          key={`owner-edit-${card.last4_digits}`}
+          className={`edit-group-${card.last4_digits}`}
+          select
+          size="small"
+          autoFocus={focusedField === 'owner'}
+          value={editValues.owner}
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => {
+            const newValue = e.target.value;
+            setEditValues(prev => ({ ...prev, owner: newValue }));
+
+            const newValues = { ...editValues, owner: newValue };
+            if (JSON.stringify(newValues) !== JSON.stringify(originalValues)) {
+              setTimeout(() => {
+                handleSave(editingCard, newValues).then((success) => {
+                  if (success) {
+                    setEditingCard(null);
+                    showSnackbar(t('misc:cardVendors.snackbar.ownerUpdated'), 'success');
+                  }
+                });
+              }, 200);
+            } else {
+              setEditingCard(null);
+            }
+          }}
+          fullWidth
+          sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+          slotProps={{ select: { defaultOpen: focusedField === 'owner' } }}
+        >
+          <MenuItem value="">
+            <em>{t('misc:cardVendors.ownerNone')}</em>
+          </MenuItem>
+          {OWNER_TYPES.map((ownerLabel) => (
+            <MenuItem key={ownerLabel} value={ownerLabel}>{ownerLabel}</MenuItem>
+          ))}
+        </TextField>
+      ) : (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            cursor: 'pointer',
+            padding: '8px 12px',
+            borderRadius: '12px',
+            transition: 'all 0.2s',
+            '&:hover': { backgroundColor: 'rgba(59, 130, 246, 0.1)' },
+          }}
+          onClick={(e) => handleEdit(card, 'owner', e)}
+        >
+          <Typography sx={{ color: card.owner ? theme.palette.text.primary : theme.palette.text.disabled, fontStyle: card.owner ? 'normal' : 'italic' }}>
+            {card.owner || t('misc:cardVendors.ownerNone')}
+          </Typography>
+        </Box>
+      )
+    },
   ], [editingCard, editValues, originalValues, theme, focusedField, t, handleEdit, handleSave, showSnackbar]);
 
   return (
@@ -655,6 +727,18 @@ export default function CardVendorsModal({ open, onClose }: CardVendorsModalProp
                         onClick={() => handleEdit(card)}
                       >
                         {card.account_type || t('misc:cardVendors.accountTypeNone')}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: card.owner ? theme.palette.text.primary : theme.palette.text.disabled,
+                          fontStyle: card.owner ? 'normal' : 'italic',
+                          display: 'block',
+                          cursor: 'pointer'
+                        }}
+                        onClick={() => handleEdit(card)}
+                      >
+                        {card.owner || t('misc:cardVendors.ownerNone')}
                       </Typography>
                     </Box>
 

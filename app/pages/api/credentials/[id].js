@@ -9,8 +9,10 @@ const innerHandler = createApiHandler({
       return "ID parameter is required";
     }
     if (req.method === 'PATCH') {
-      if (typeof req.body?.is_active !== 'boolean') {
-        return "is_active must be a boolean";
+      const hasIsActive = typeof req.body?.is_active === 'boolean';
+      const hasBalanceOnly = typeof req.body?.balance_only === 'boolean';
+      if (!hasIsActive && !hasBalanceOnly) {
+        return "is_active or balance_only (boolean) is required";
       }
     }
     if (req.method === 'PUT') {
@@ -31,18 +33,29 @@ const innerHandler = createApiHandler({
       };
     }
 
-    // PATCH method - update account (supports is_active toggle)
+    // PATCH method - update account (supports is_active and balance_only toggles)
     if (req.method === 'PATCH') {
-      const { is_active } = req.body;
+      const { is_active, balance_only } = req.body;
+      const updates = ['updated_at = CURRENT_TIMESTAMP'];
+      const params = [id];
+
+      if (typeof is_active === 'boolean') {
+        params.push(is_active);
+        updates.push(`is_active = $${params.length}`);
+      }
+      if (typeof balance_only === 'boolean') {
+        params.push(balance_only);
+        updates.push(`balance_only = $${params.length}`);
+      }
 
       return {
         sql: `
           UPDATE vendor_credentials
-          SET is_active = $2, updated_at = CURRENT_TIMESTAMP
+          SET ${updates.join(', ')}
           WHERE id = $1
           RETURNING *
         `,
-        params: [id, is_active]
+        params
       };
     }
 
@@ -129,6 +142,7 @@ const innerHandler = createApiHandler({
         // SECURITY: never return otp_long_term_token; expose only its presence
         has_otp_long_term_token: !!row.otp_long_term_token,
         is_active: row.is_active !== false,
+        balance_only: row.balance_only === true,
         created_at: row.created_at
       };
     }

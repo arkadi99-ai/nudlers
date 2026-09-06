@@ -29,6 +29,7 @@ export default async function handler(req, res) {
           cv.card_vendor,
           cv.card_nickname,
           cv.account_type,
+          cv.owner,
           cv.id as card_vendor_id,
           co.id as card_ownership_id,
           co.linked_bank_account_id,
@@ -48,7 +49,7 @@ export default async function handler(req, res) {
       res.status(200).json(result.rows);
     } else if (req.method === "POST") {
       // Create or update a card vendor mapping
-      const { last4_digits, card_vendor, card_nickname, account_type } = req.body || {};
+      const { last4_digits, card_vendor, card_nickname, account_type, owner } = req.body || {};
 
       if (!last4_digits) {
         return res.status(400).json({ error: "last4_digits is required" });
@@ -58,16 +59,17 @@ export default async function handler(req, res) {
       // is optional now - a bank account or investment fund has no brand,
       // only an account_type.
       const result = await client.query(
-        `INSERT INTO card_vendors (last4_digits, card_vendor, card_nickname, account_type, updated_at)
-         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+        `INSERT INTO card_vendors (last4_digits, card_vendor, card_nickname, account_type, owner, updated_at)
+         VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
          ON CONFLICT (last4_digits)
          DO UPDATE SET
            card_vendor = EXCLUDED.card_vendor,
            card_nickname = EXCLUDED.card_nickname,
            account_type = EXCLUDED.account_type,
+           owner = EXCLUDED.owner,
            updated_at = CURRENT_TIMESTAMP
          RETURNING *`,
-        [last4_digits, card_vendor || null, card_nickname || null, account_type || null]
+        [last4_digits, card_vendor || null, card_nickname || null, account_type || null, owner || null]
       );
 
       res.status(200).json(result.rows[0]);
