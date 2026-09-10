@@ -18,6 +18,19 @@ function monthLabel(d) {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
+const PENDING_QUESTION_EXPIRY_DAYS = 14;
+
+async function expireStalePendingQuestions({ client }) {
+    const res = await client.query(
+        `UPDATE pending_categorization_questions
+         SET status = 'expired'
+         WHERE status = 'open' AND created_at < NOW() - INTERVAL '${PENDING_QUESTION_EXPIRY_DAYS} days'`
+    );
+    if (res.rowCount > 0) {
+        logger.info({ count: res.rowCount }, '[social-agent-cron] Expired stale pending categorization questions');
+    }
+}
+
 async function maybeAskCategorizationQuestion({ client }) {
     const res = await client.query(`SELECT value FROM app_settings WHERE key = $1`, [CATEGORIZATION_QUESTION_LAST_SENT_KEY]);
     const lastSentRaw = res.rows.length > 0 ? String(res.rows[0].value).replace(/"/g, '') : null;
@@ -103,6 +116,8 @@ export async function initSocialAgentCron() {
                     });
                     if (monthly.ran) logger.info({ monthly }, '[social-agent-cron] Monthly check');
                 }
+                await expireStalePendingQuestions({ client });
+
                 // Categorization question: checked every hour during
                 // reasonable daytime hours, internally rate-limited (min 3
                 // days apart) - gentle, not spammy, never a 3am ping.

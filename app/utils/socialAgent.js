@@ -4,6 +4,7 @@ import { getAIClient } from './aiClient.js';
 import { getForecastInputs } from './forecastDataSource.js';
 import { computeForwardBalanceWindow } from './projectionUtils.js';
 import { formatISODate } from './dateUtils.js';
+import { isCardCompanySettlement } from './transaction_logic.js';
 
 const DEFAULT_SAFETY_BUFFER = 3000;
 const FORECAST_WINDOW_DAYS = 45;
@@ -129,16 +130,21 @@ async function getRecentHighSeverityAnomalies() {
 
 async function getNeedsAttentionSummary() {
     const res = await pool.query(`
-        SELECT COUNT(DISTINCT name) as merchant_count, SUM(ABS(price)) as total
+        SELECT name, price, transaction_type
         FROM transactions
         WHERE date >= CURRENT_DATE - INTERVAL '30 days'
           AND price < 0
           AND (COALESCE(TRIM(category), '') = '' OR category IN ('אחר', 'לא מסווג', 'Other', 'Uncategorized'))
     `);
-    const row = res.rows[0];
-    const total = parseFloat(row?.total || 0);
+    const merchants = new Set();
+    let total = 0;
+    for (const row of res.rows) {
+        if (row.transaction_type === 'bank' && isCardCompanySettlement(row.name)) continue;
+        merchants.add(row.name);
+        total += Math.abs(parseFloat(row.price));
+    }
     if (!total) return null;
-    return { merchantCount: parseInt(row.merchant_count, 10), total: Math.round(total) };
+    return { merchantCount: merchants.size, total: Math.round(total) };
 }
 
 /**
@@ -196,7 +202,7 @@ export async function askAboutNextUnclearExpense() {
     }
 
     const res = await pool.query(`
-        SELECT name, price
+        SELECT name, price, transaction_type
         FROM transactions
         WHERE date >= CURRENT_DATE - INTERVAL '30 days'
           AND price < 0
@@ -205,6 +211,11 @@ export async function askAboutNextUnclearExpense() {
 
     const byName = new Map();
     for (const row of res.rows) {
+        // Same exclusion as needs-attention.js / sources-and-uses.js: the
+        // credit-card company's own bank-side settlement line is real and
+        // expected every month, not an unclear expense - asking about it
+        // was a real false positive caught during live testing.
+        if (row.transaction_type === 'bank' && isCardCompanySettlement(row.name)) continue;
         const key = row.name || 'לא מסווג';
         const entry = byName.get(key) || { description: key, total: 0 };
         entry.total += Math.abs(parseFloat(row.price));

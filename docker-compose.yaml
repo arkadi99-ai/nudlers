@@ -63,7 +63,7 @@ services:
         reservations:
           memory: 512M
     volumes:
-      - whatsapp-data:/app/.wwebjs_auth
+      - whatsapp-data:/app/.baileys_auth
 
 volumes:
   db-data:
