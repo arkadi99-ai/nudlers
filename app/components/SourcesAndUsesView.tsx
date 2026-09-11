@@ -21,7 +21,7 @@ interface SourcesAndUsesData {
 }
 
 interface CategoryTransaction { date: string; name: string; amount: number; source: string; isFixed: boolean }
-interface CategoryDrillDown { category: string; total: number; transactions: CategoryTransaction[] }
+interface CategoryDrillDown { total: number; transactions: CategoryTransaction[] }
 
 const BAR_COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#EC4899', '#8B5CF6', '#06B6D4', '#F43F5E', '#84CC16'];
 
@@ -38,7 +38,7 @@ const SourcesAndUsesView: React.FC = () => {
     const [drillDown, setDrillDown] = useState<CategoryDrillDown | null>(null);
     const [drillDownLoading, setDrillDownLoading] = useState(false);
     const [drillDownError, setDrillDownError] = useState(false);
-    const [openCategory, setOpenCategory] = useState<string | null>(null);
+    const [openItem, setOpenItem] = useState<{ kind: 'source' | 'category'; key: string } | null>(null);
 
     const fetchData = useCallback(async (date: Date) => {
         setLoading(true);
@@ -62,19 +62,22 @@ const SourcesAndUsesView: React.FC = () => {
 
     useEffect(() => { queueMicrotask(() => fetchData(monthDate)); }, [monthDate, fetchData]);
 
-    const openCategoryDrillDown = useCallback(async (category: string) => {
+    const openDrillDown = useCallback(async (kind: 'source' | 'category', key: string) => {
         if (!data) return;
-        setOpenCategory(category);
+        setOpenItem({ kind, key });
         setDrillDown(null);
         setDrillDownError(false);
         setDrillDownLoading(true);
         try {
-            const res = await fetch(`/api/reports/sources-and-uses/category-transactions?category=${encodeURIComponent(category)}&startDate=${data.startDate}&endDate=${data.endDate}`);
+            const endpoint = kind === 'source'
+                ? `/api/reports/sources-and-uses/source-transactions?source=${encodeURIComponent(key)}&startDate=${data.startDate}&endDate=${data.endDate}`
+                : `/api/reports/sources-and-uses/category-transactions?category=${encodeURIComponent(key)}&startDate=${data.startDate}&endDate=${data.endDate}`;
+            const res = await fetch(endpoint);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const result = await res.json();
             setDrillDown(result);
         } catch (err) {
-            console.error('Failed to fetch category transactions', err);
+            console.error('Failed to fetch drill-down transactions', err);
             setDrillDownError(true);
         } finally {
             setDrillDownLoading(false);
@@ -82,7 +85,7 @@ const SourcesAndUsesView: React.FC = () => {
     }, [data]);
 
     const closeDrillDown = () => {
-        setOpenCategory(null);
+        setOpenItem(null);
         setDrillDown(null);
         setDrillDownError(false);
     };
@@ -166,7 +169,20 @@ const SourcesAndUsesView: React.FC = () => {
                             ) : (
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                                     {data.sources.map((s, i) => (
-                                        <Box key={s.name}>
+                                        <Box
+                                            key={s.name}
+                                            onClick={() => openDrillDown('source', s.name)}
+                                            sx={{
+                                                cursor: 'pointer',
+                                                borderRadius: '10px',
+                                                p: 0.75,
+                                                mx: -0.75,
+                                                transition: 'background-color 0.15s',
+                                                '&:hover': {
+                                                    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
+                                                }
+                                            }}
+                                        >
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                                                 <Typography variant="body2" sx={{ fontWeight: 500 }}>{s.name}</Typography>
                                                 <Typography variant="body2" sx={{ fontWeight: 700, direction: 'ltr' }}>{formatCurrency(s.total)}</Typography>
@@ -191,7 +207,7 @@ const SourcesAndUsesView: React.FC = () => {
                                     {data.uses.map((u, i) => (
                                         <Box
                                             key={u.category}
-                                            onClick={() => openCategoryDrillDown(u.category)}
+                                            onClick={() => openDrillDown('category', u.category)}
                                             sx={{
                                                 cursor: 'pointer',
                                                 borderRadius: '10px',
@@ -220,8 +236,8 @@ const SourcesAndUsesView: React.FC = () => {
                 </>
             ) : null}
 
-            <Dialog open={!!openCategory} onClose={closeDrillDown} maxWidth="sm" fullWidth>
-                <ModalHeader title={openCategory || ''} onClose={closeDrillDown} />
+            <Dialog open={!!openItem} onClose={closeDrillDown} maxWidth="sm" fullWidth>
+                <ModalHeader title={openItem?.key || ''} onClose={closeDrillDown} />
                 <DialogContent sx={{ pt: 1 }}>
                     {drillDownLoading ? (
                         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -233,7 +249,7 @@ const SourcesAndUsesView: React.FC = () => {
                         <>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, pb: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
                                 <Typography sx={{ fontWeight: 700 }}>{t('sourcesAndUses.categoryTotal')}</Typography>
-                                <Typography sx={{ fontWeight: 800, color: '#F43F5E', direction: 'ltr' }}>{formatCurrency(drillDown.total)}</Typography>
+                                <Typography sx={{ fontWeight: 800, color: openItem?.kind === 'source' ? '#10B981' : '#F43F5E', direction: 'ltr' }}>{formatCurrency(drillDown.total)}</Typography>
                             </Box>
                             {drillDown.transactions.length === 0 ? (
                                 <Typography variant="body2" sx={{ color: 'text.disabled', fontStyle: 'italic' }}>{t('sourcesAndUses.noData')}</Typography>
