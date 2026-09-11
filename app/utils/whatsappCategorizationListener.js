@@ -29,6 +29,7 @@ async function extractCategoryFromReply(replyText) {
             { role: 'user', content: replyText },
         ],
         temperature: 0.2,
+        reasoning: { effort: 'low' },
         max_tokens: 300,
     });
     const text = completion.choices?.[0]?.message?.content?.trim();
