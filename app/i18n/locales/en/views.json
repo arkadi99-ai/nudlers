@@ -2,8 +2,6 @@
   "transactions": {
     "title": "Transactions",
     "description": "View and manage all your bank and credit card transactions",
-    "showAll": "Show All Transactions",
-    "showFavorites": "Show Favorites Only",
     "endOfPeriod": "That's all for this period ✨",
     "unassigned": "Unassigned"
   },
@@ -15,7 +13,8 @@
     "totalIncome": "Total Income",
     "totalExpenses": "Total Expenses",
     "net": "Net for the period",
-    "noData": "No data for this period"
+    "noData": "No data for this period",
+    "loadFailed": "Failed to load data - please try again"
   },
   "insights": {
     "title": "Insights",
@@ -199,6 +198,7 @@
     "balanceProjection": "Balance Projection",
     "addRecurring": "Add Recurring",
     "unifiedView": "Unified View",
+    "hideAccountTooltip": "Hide this account from the projection",
     "accountFallbackName": "Account",
     "totalBalance": "Total Balance",
     "slideHint": "← Slide to explore future dates",
@@ -541,6 +541,7 @@
     "noEvents": "No sync events yet. Trigger a sync from the menu to get started.",
     "noScrapeEvents": "No scrape events found",
     "noAuditEvents": "No audit events found",
+    "loadFailed": "Failed to load the audit log - please try again",
     "noEventsFound": "No events found",
     "success": "Success",
     "failed": "Failed",

@@ -58,8 +58,8 @@ const SyncStatusModal = dynamic(() => import('./SyncStatusModal'), { ssr: false 
 
 
 interface ResponsiveAppBarProps {
-  currentView?: 'dashboard' | 'summary' | 'budget' | 'chat' | 'audit' | 'recurring' | 'design' | 'breakdown' | 'projection' | 'accounts' | 'insights' | 'sourcesAndUses';
-  onViewChange?: (view: 'dashboard' | 'summary' | 'budget' | 'chat' | 'audit' | 'recurring' | 'design' | 'breakdown' | 'projection' | 'accounts' | 'insights' | 'sourcesAndUses') => void;
+  currentView?: 'dashboard' | 'summary' | 'audit' | 'recurring' | 'breakdown' | 'projection' | 'accounts' | 'insights' | 'sourcesAndUses';
+  onViewChange?: (view: 'dashboard' | 'summary' | 'audit' | 'recurring' | 'breakdown' | 'projection' | 'accounts' | 'insights' | 'sourcesAndUses') => void;
 }
 
 

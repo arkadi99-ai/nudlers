@@ -68,7 +68,7 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
     snackbar,
     hideSnackbar,
     onRefresh,
-    onToggleVisibility: _onToggleVisibility,
+    onToggleVisibility,
     onMarkNotRecurring,
     onAddRecurring
 }) => {
@@ -203,14 +203,16 @@ export const ProjectionViewContent: React.FC<ProjectionViewContentProps> = ({
                             variant={selectedAccount === 'total' ? 'filled' : 'outlined'}
                         />
                         {accounts.map(acc => (
-                            <Chip
-                                key={acc.account_number}
-                                label={acc.nickname}
-                                onClick={() => setSelectedAccount(acc.account_number)}
-                                color={selectedAccount === acc.account_number ? 'primary' : 'default'}
-                                variant={selectedAccount === acc.account_number ? 'filled' : 'outlined'}
-                                sx={{ fontWeight: 600, borderRadius: '12px' }}
-                            />
+                            <MuiTooltip key={acc.account_number} title={t('projection.hideAccountTooltip')}>
+                                <Chip
+                                    label={acc.nickname}
+                                    onClick={() => setSelectedAccount(acc.account_number)}
+                                    onDelete={acc.id !== undefined ? (e) => onToggleVisibility(acc.id!, e) : undefined}
+                                    color={selectedAccount === acc.account_number ? 'primary' : 'default'}
+                                    variant={selectedAccount === acc.account_number ? 'filled' : 'outlined'}
+                                    sx={{ fontWeight: 600, borderRadius: '12px' }}
+                                />
+                            </MuiTooltip>
                         ))}
                     </Box>
 

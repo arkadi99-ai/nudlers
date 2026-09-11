@@ -21,9 +21,8 @@ const handler = createApiHandler({
     if (req.method === 'PUT' &&
       req.body?.price === undefined &&
       req.body?.category === undefined &&
-      req.body?.is_favorite === undefined &&
       req.body?.notes === undefined) {
-      return "Either price, category, favoriting status, or notes are required for updates";
+      return "Either price, category, or notes are required for updates";
     }
   },
   query: async (req) => {
@@ -63,7 +62,6 @@ const handler = createApiHandler({
             category_source,
             rule_matched,
             transaction_type,
-            is_favorite,
             notes
           FROM transactions 
           WHERE identifier = $1 AND vendor = $2
@@ -100,12 +98,6 @@ const handler = createApiHandler({
 
       // Mark as manually edited
       updates.push(`category_source = 'cache'`);
-    }
-
-    if (req.body.is_favorite !== undefined) {
-      updates.push(`is_favorite = $${paramIndex}`);
-      params.push(req.body.is_favorite);
-      paramIndex++;
     }
 
     if (req.body.notes !== undefined) {

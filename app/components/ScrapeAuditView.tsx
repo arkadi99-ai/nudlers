@@ -31,6 +31,7 @@ interface ScrapeEvent {
 export default function ScrapeAuditView() {
     const [events, setEvents] = useState<ScrapeEvent[]>([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(false);
     const [currentTab, setCurrentTab] = useState(0);
     const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
     const theme = useTheme();
@@ -41,11 +42,13 @@ export default function ScrapeAuditView() {
     const fetchEvents = async () => {
         try {
             setLoading(true);
+            setError(false);
             const res = await fetch('/api/scrape-events?limit=200');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             setEvents(data);
         } catch {
-            // noop
+            setError(true);
         } finally {
             setLoading(false);
         }
@@ -127,6 +130,10 @@ export default function ScrapeAuditView() {
                 {loading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', p: 8 }}>
                         <CircularProgress />
+                    </Box>
+                ) : error ? (
+                    <Box sx={{ p: 4, textAlign: 'center' }}>
+                        <Typography sx={{ color: 'error.main' }}>{t('audit.loadFailed')}</Typography>
                     </Box>
                 ) : displayEvents.length === 0 ? (
                     <Box sx={{ p: 4, textAlign: 'center' }}>

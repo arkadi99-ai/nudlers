@@ -27,8 +27,6 @@
     "applyToAll": "החלה על כל העסקאות עם תיאור זה"
   },
   "tooltips": {
-    "favorite": "סימון כמועדף",
-    "unfavorite": "הסרה מהמועדפים",
     "editTransaction": "עריכת עסקה",
     "deleteTransaction": "מחיקת עסקה",
     "openNotes": "פתיחת הערות",

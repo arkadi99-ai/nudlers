@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, IconButton, CircularProgress } from '@mui/material';
+import { Box, Typography, IconButton, CircularProgress, Alert } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -30,18 +30,23 @@ const SourcesAndUsesView: React.FC = () => {
     const [monthDate, setMonthDate] = useState(() => new Date());
     const [data, setData] = useState<SourcesAndUsesData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
 
     const fetchData = useCallback(async (date: Date) => {
         setLoading(true);
+        setError(false);
         try {
             const start = new Date(date.getFullYear(), date.getMonth(), 1);
             const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
             const fmt = (d: Date) => d.toISOString().slice(0, 10);
             const res = await fetch(`/api/reports/sources-and-uses?startDate=${fmt(start)}&endDate=${fmt(end)}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const result = await res.json();
             setData(result);
         } catch (err) {
             console.error('Failed to fetch sources and uses', err);
+            setError(true);
+            setData(null);
         } finally {
             setLoading(false);
         }
@@ -80,6 +85,8 @@ const SourcesAndUsesView: React.FC = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
                     <CircularProgress size={24} />
                 </Box>
+            ) : error ? (
+                <Alert severity="error" sx={{ my: 2 }}>{t('sourcesAndUses.loadFailed')}</Alert>
             ) : data ? (
                 <>
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>

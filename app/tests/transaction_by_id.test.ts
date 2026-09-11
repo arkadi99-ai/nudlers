@@ -155,22 +155,6 @@ describe('Transaction by ID API', () => {
             expect(params).toContain('Transport');
         });
 
-        it('should update is_favorite', async () => {
-            mockClient.query.mockResolvedValue({ rowCount: 1 });
-
-            const req = {
-                method: 'PUT',
-                query: { id: 'txn123|visaCal' },
-                body: { is_favorite: true }
-            };
-            await handler(req as any, mockRes as any);
-
-            const [sql, params] = mockClient.query.mock.calls[0];
-            expect(sql).toContain('is_favorite = $3');
-            expect(params).toContain(true);
-            expect(mockRes.status).toHaveBeenCalledWith(200);
-        });
-
         it('should update notes', async () => {
             mockClient.query.mockResolvedValue({ rowCount: 1 });
 

@@ -10,8 +10,6 @@ import { formatNumber } from '../utils/format';
 import { dateUtils } from '../utils/dateUtils';
 import { useCategories } from '../utils/useCategories';
 import { useCardVendors } from '../utils/useCardVendors';
-import StarIcon from '@mui/icons-material/Star';
-import StarBorderIcon from '@mui/icons-material/StarBorder';
 import NotesIcon from '@mui/icons-material/Notes';
 import { CardVendorIcon } from '../../CardVendorsModal';
 import { getTableHeaderCellStyle, getTableBodyCellStyle, TABLE_ROW_HOVER_STYLE, getTableRowHoverBackground } from '../utils/tableStyles';
@@ -48,7 +46,6 @@ export interface Transaction {
   charged_currency?: string;
   account_number?: string;
   processed_date?: string;
-  is_favorite?: boolean;
   notes?: string;
 }
 
@@ -97,10 +94,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar<'success' | 'error' | 'info'>();
   const [confirmDeleteTransaction, setConfirmDeleteTransaction] = React.useState<Transaction | null>(null);
   const [editingNotes, setEditingNotes] = React.useState<{ identifier: string; vendor: string; content: string } | null>(null);
-
-  const handleToggleFavorite = React.useCallback((transaction: Transaction) => {
-    onUpdate?.(transaction, { is_favorite: !transaction.is_favorite });
-  }, [onUpdate]);
 
   const handleNotesUpdate = React.useCallback((transaction: Transaction, notes: string) => {
     onUpdate?.(transaction, { notes });
@@ -275,7 +268,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
               theme={theme}
               onEdit={() => handleEditClick(t)}
               onDelete={onDelete ? () => setConfirmDeleteTransaction(t) : undefined}
-              onToggleFavorite={() => handleToggleFavorite(t)}
               onNotesUpdate={(notes) => handleNotesUpdate(t, notes)}
               getCardVendor={getCardVendor}
               getCardNickname={getCardNickname}
@@ -334,7 +326,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                       handleSaveClick={handleSaveClick}
                       handleCancelClick={handleCancelClick}
                       setConfirmDeleteTransaction={onDelete ? setConfirmDeleteTransaction : undefined}
-                      onToggleFavorite={handleToggleFavorite}
                       onNotesUpdate={handleNotesUpdate}
                       editingNotes={isRowNotes ? editingNotes : null}
                       setEditingNotes={setEditingNotes}
@@ -370,7 +361,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                   handleSaveClick={handleSaveClick}
                   handleCancelClick={handleCancelClick}
                   setConfirmDeleteTransaction={onDelete ? setConfirmDeleteTransaction : undefined}
-                  onToggleFavorite={handleToggleFavorite}
                   onNotesUpdate={handleNotesUpdate}
                   editingNotes={isRowNotes ? editingNotes : null}
                   setEditingNotes={setEditingNotes}
@@ -419,7 +409,6 @@ interface TransactionRowProps {
   setConfirmDeleteTransaction?: (t: Transaction) => void;
   getCardVendor: (accountNumber: string | undefined | null) => string | null;
   getCardNickname: (accountNumber: string | undefined | null) => string | null | undefined;
-  onToggleFavorite: (t: Transaction) => void;
   onNotesUpdate: (t: Transaction, notes: string) => void;
   editingNotes: { identifier: string; vendor: string; content: string } | null;
   setEditingNotes: (val: { identifier: string; vendor: string; content: string } | null) => void;
@@ -449,7 +438,6 @@ const TransactionRow = React.memo(({
   setConfirmDeleteTransaction,
   getCardVendor: _getCardVendor,
   getCardNickname: _getCardNickname,
-  onToggleFavorite,
   onNotesUpdate,
   editingNotes,
   setEditingNotes,
@@ -467,27 +455,6 @@ const TransactionRow = React.memo(({
     <TableRow onClick={() => handleRowClick(transaction)} style={TABLE_ROW_HOVER_STYLE} onMouseEnter={(e) => e.currentTarget.style.background = getTableRowHoverBackground(theme)} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
       <TableCell style={{ ...cellStyle, maxWidth: '300px' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Tooltip title={transaction.is_favorite ? t('tx:tooltips.unfavorite') : t('tx:tooltips.favorite')}>
-            <IconButton
-              size="small"
-              onClick={(e) => { e.stopPropagation(); onToggleFavorite(transaction); }}
-              sx={{
-                color: transaction.is_favorite ? '#fbbf24' : theme.palette.text.disabled,
-                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                p: '4px',
-                '&:hover': {
-                  transform: 'scale(1.2) rotate(5deg)',
-                  color: '#fbbf24',
-                  background: 'rgba(251, 191, 36, 0.08)'
-                },
-                '& svg': {
-                  filter: transaction.is_favorite ? 'drop-shadow(0 0 2px rgba(251, 191, 36, 0.4))' : 'none'
-                }
-              }}
-            >
-              {transaction.is_favorite ? <StarIcon fontSize="small" /> : <StarBorderIcon fontSize="small" />}
-            </IconButton>
-          </Tooltip>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>{transaction.name}</Typography>
             {transaction.notes && (
@@ -613,7 +580,6 @@ interface TransactionMobileCardProps {
   setEditPrice?: (val: string) => void;
   onSave?: () => void;
   onCancel?: () => void;
-  onToggleFavorite?: () => void;
   onNotesUpdate?: (notes: string) => void;
   isBankView?: boolean;
 }
@@ -623,7 +589,6 @@ const TransactionMobileCardContent = ({
   theme,
   onEdit,
   onDelete,
-  onToggleFavorite,
   onNotesUpdate,
   getCardVendor,
   getCardNickname,
@@ -648,21 +613,6 @@ const TransactionMobileCardContent = ({
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-          <IconButton
-            size="small"
-            onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(); }}
-            sx={{
-              color: transaction.is_favorite ? '#fbbf24' : theme.palette.text.disabled,
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-              p: '4px',
-              '&:hover': {
-                transform: 'scale(1.1)',
-                color: '#fbbf24',
-              }
-            }}
-          >
-            {transaction.is_favorite ? <StarIcon fontSize="small" /> : <StarBorderIcon fontSize="small" />}
-          </IconButton>
           <Box sx={{ ml: 1, minWidth: 0 }}>
             <Typography variant="subtitle2" noWrap sx={{ fontWeight: 700 }}>{transaction.name}</Typography>
             {showDate && <Typography

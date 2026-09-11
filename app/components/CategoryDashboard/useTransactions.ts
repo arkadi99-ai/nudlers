@@ -25,7 +25,6 @@ export function useTransactions() {
   const pageRef = React.useRef(0);
   const [hasMore, setHasMore] = React.useState(true);
   const [loadingMore, setLoadingMore] = React.useState(false);
-  const [favoritesOnly, setFavoritesOnly] = React.useState(false);
   const scrollThrottleRef = React.useRef(false);
   // Mirror transactions.length in a ref so fetchers can read it without stale closures
   const transactionsLengthRef = React.useRef(0);
@@ -66,9 +65,6 @@ export function useTransactions() {
       url.searchParams.append("sortOrder", sortOrder);
       url.searchParams.append("limit", PAGE_SIZE.toString());
       url.searchParams.append("offset", (currentPage * PAGE_SIZE).toString());
-      if (favoritesOnly) {
-        url.searchParams.append("favoritesOnly", "true");
-      }
 
       const response = await fetch(url.toString());
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -103,7 +99,7 @@ export function useTransactions() {
         }
       }
     }
-  }, [selectedYear, selectedMonth, sortBy, sortOrder, favoritesOnly]);
+  }, [selectedYear, selectedMonth, sortBy, sortOrder]);
 
   const handleSearch = React.useCallback(async (e?: React.FormEvent, isLoadMore: boolean = false) => {
     e?.preventDefault();
@@ -140,9 +136,6 @@ export function useTransactions() {
 
       queryParams += `&sortBy=${sortBy}&sortOrder=${sortOrder}`;
       queryParams += `&limit=${PAGE_SIZE}&offset=${currentPage * PAGE_SIZE}`;
-      if (favoritesOnly) {
-        queryParams += `&favoritesOnly=true`;
-      }
 
       const response = await fetch(`/api/transactions?${queryParams}`);
       if (response.ok) {
@@ -174,7 +167,7 @@ export function useTransactions() {
     fetchTransactionsWithRange, dateRangeMode,
     customStartDate, customEndDate,
     selectedYear, selectedMonth,
-    sortBy, sortOrder, favoritesOnly, showNotification
+    sortBy, sortOrder, showNotification
   ]);
 
   const handleSort = (field: string) => {
@@ -216,14 +209,14 @@ export function useTransactions() {
     };
   }, [startDate, endDate, billingCycle, fetchTransactionsWithRange, searchQuery, handleSearch]);
 
-  // Initial data fetch — fires only on date/sort/favorites changes.
+  // Initial data fetch — fires only on date/sort changes.
   // Search fires only on explicit submit (handleSearch), never per keystroke,
   // so we go through refreshRef (kept current above) instead of depending on searchQuery/handleSearch.
   React.useEffect(() => {
     if (!startDate || !endDate) return;
     queueMicrotask(() => refreshRef.current());
-    // sortBy/sortOrder/favoritesOnly trigger a refetch via refreshRef; searchQuery/handleSearch intentionally excluded so typing doesn't fetch
-  }, [startDate, endDate, billingCycle, sortBy, sortOrder, favoritesOnly]);
+    // sortBy/sortOrder trigger a refetch via refreshRef; searchQuery/handleSearch intentionally excluded so typing doesn't fetch
+  }, [startDate, endDate, billingCycle, sortBy, sortOrder]);
 
   // Stable event listener - attached once, never re-attached
   React.useEffect(() => {
@@ -308,8 +301,6 @@ export function useTransactions() {
     handleRefreshClick,
     handleDeleteTransaction,
     handleUpdateTransaction,
-    handleScroll,
-    favoritesOnly,
-    setFavoritesOnly
+    handleScroll
   };
 }

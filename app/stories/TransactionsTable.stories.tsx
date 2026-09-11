@@ -45,7 +45,6 @@ const mockTransactions: Transaction[] = [
         category: 'Subscriptions',
         vendor: 'Visa',
         account_number: '1234',
-        is_favorite: true,
         notes: 'Monthly iCloud storage'
     },
     {
@@ -55,8 +54,7 @@ const mockTransactions: Transaction[] = [
         date: '2024-03-01',
         category: 'Health',
         vendor: 'Mastercard',
-        account_number: '5678',
-        is_favorite: false
+        account_number: '5678'
     },
     {
         identifier: '3',
@@ -66,7 +64,6 @@ const mockTransactions: Transaction[] = [
         category: 'Income',
         vendor: 'Bank',
         account_number: '9012',
-        is_favorite: false,
         notes: 'February Salary'
     },
     {
@@ -76,8 +73,7 @@ const mockTransactions: Transaction[] = [
         date: '2024-02-28',
         category: 'Food',
         vendor: 'Amex',
-        account_number: '3456',
-        is_favorite: true
+        account_number: '3456'
     },
     {
         identifier: '5',
@@ -86,8 +82,7 @@ const mockTransactions: Transaction[] = [
         date: '2024-02-27',
         category: 'Entertainment',
         vendor: 'Visa',
-        account_number: '1234',
-        is_favorite: false
+        account_number: '1234'
     }
 ];
 

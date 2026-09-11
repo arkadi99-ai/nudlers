@@ -2,8 +2,6 @@
   "transactions": {
     "title": "עסקאות",
     "description": "צפו ונהלו את כל עסקאות הבנק וכרטיסי האשראי שלכם",
-    "showAll": "הצגת כל העסקאות",
-    "showFavorites": "הצגת מועדפים בלבד",
     "endOfPeriod": "זה הכל לתקופה זו ✨",
     "unassigned": "ללא קטגוריה"
   },
@@ -15,7 +13,8 @@
     "totalIncome": "סה\"כ הכנסות",
     "totalExpenses": "סה\"כ הוצאות",
     "net": "יתרה נטו לתקופה",
-    "noData": "אין נתונים לתקופה זו"
+    "noData": "אין נתונים לתקופה זו",
+    "loadFailed": "טעינת הנתונים נכשלה - נסו שוב"
   },
   "insights": {
     "title": "תובנות",
@@ -199,6 +198,7 @@
     "balanceProjection": "תחזית יתרה",
     "addRecurring": "הוספת תשלום קבוע",
     "unifiedView": "תצוגה מאוחדת",
+    "hideAccountTooltip": "הסתרת החשבון הזה מהתחזית",
     "accountFallbackName": "חשבון",
     "totalBalance": "יתרה כוללת",
     "slideHint": "← החליקו לצפייה בתאריכים עתידיים",
@@ -541,6 +541,7 @@
     "noEvents": "אין אירועי סנכרון. הפעילו סנכרון מהתפריט כדי להתחיל.",
     "noScrapeEvents": "לא נמצאו אירועי סנכרון",
     "noAuditEvents": "לא נמצאו אירועי יומן",
+    "loadFailed": "טעינת היומן נכשלה - נסו שוב",
     "noEventsFound": "לא נמצאו אירועים",
     "success": "הצלחה",
     "failed": "נכשל",

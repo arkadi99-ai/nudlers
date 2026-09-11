@@ -1218,7 +1218,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                 </Box>
               ) : rules.length === 0 ? (
                 <Box style={{ textAlign: 'center', padding: '32px', color: theme.palette.text.secondary }}>
-                  <Typography>'{t('categoryMgmt:rules.noRules')}'</Typography>
+                  <Typography>{t('categoryMgmt:rules.noRules')}</Typography>
                 </Box>
               ) : (
                 <Grid container spacing={2}>
@@ -1411,14 +1411,14 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
               >
                 <CheckIcon sx={{ fontSize: 64, color: '#22c55e', marginBottom: 2 }} />
                 <Typography variant="h5" sx={{ fontWeight: 600, marginBottom: 1 }}>
-                  All Done!
+                  {t('categoryMgmt:quick.allDone')}
                 </Typography>
                 <Typography color={theme.palette.text.secondary}>
-                  All transactions have been categorized.
+                  {t('categoryMgmt:quick.allDoneSubtitle')}
                 </Typography>
                 {totalQuickProcessed > 0 && (
                   <Typography color={theme.palette.text.secondary} sx={{ marginTop: 1 }}>
-                    You categorized {totalQuickProcessed} description(s) in this session.
+                    {t('categoryMgmt:quick.sessionTotal', { count: totalQuickProcessed })}
                   </Typography>
                 )}
               </Box>
@@ -1435,10 +1435,10 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
               >
                 <CheckIcon sx={{ fontSize: 64, color: '#22c55e', marginBottom: 2 }} />
                 <Typography variant="h5" sx={{ fontWeight: 600, marginBottom: 1 }}>
-                  Session Complete!
+                  {t('categoryMgmt:quick.sessionComplete')}
                 </Typography>
                 <Typography color={theme.palette.text.secondary}>
-                  You categorized {totalQuickProcessed} description(s).
+                  {t('categoryMgmt:quick.sessionCompleteSubtitle', { count: totalQuickProcessed })}
                 </Typography>
               </Box>
             ) : (
@@ -1446,10 +1446,10 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                 {/* Header with remaining count */}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
                   <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    Assign Categories
+                    {t('categoryMgmt:quick.assignCategories')}
                   </Typography>
                   <Chip
-                    label={`${uncategorizedDescriptions.length - currentQuickIndex} remaining`}
+                    label={t('categoryMgmt:quick.remainingCount', { count: uncategorizedDescriptions.length - currentQuickIndex })}
                     size="small"
                     sx={{
                       backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -1503,7 +1503,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1, flexShrink: 0, marginLeft: 2 }}>
                       <Chip
-                        label={`${uncategorizedDescriptions[currentQuickIndex]?.count} txns`}
+                        label={t('categoryMgmt:quick.txnsBadge', { count: uncategorizedDescriptions[currentQuickIndex]?.count })}
                         size="small"
                         sx={{
                           backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -1579,7 +1579,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                       fontWeight: 500
                     }}
                   >
-                    Skip for now
+                    {t('categoryMgmt:quick.skipForNow')}
                   </Button>
                 </Box>
 
@@ -1588,7 +1588,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                   variant="subtitle2"
                   sx={{ color: theme.palette.text.secondary, marginBottom: 1, fontWeight: 500 }}
                 >
-                  Select a category:
+                  {t('categoryMgmt:quick.selectCategoryHint')}
                 </Typography>
 
                 <Box
@@ -1694,7 +1694,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                         }
                       }}
                     >
-                      Add New
+                      {t('categoryMgmt:quick.addNewButton')}
                     </Button>
                   )}
                 </Box>

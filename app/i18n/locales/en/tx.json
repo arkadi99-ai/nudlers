@@ -27,8 +27,6 @@
     "applyToAll": "Apply to all transactions with this description"
   },
   "tooltips": {
-    "favorite": "Mark as favorite",
-    "unfavorite": "Remove from favorites",
     "editTransaction": "Edit transaction",
     "deleteTransaction": "Delete transaction",
     "openNotes": "Open notes",

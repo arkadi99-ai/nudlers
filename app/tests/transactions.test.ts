@@ -220,23 +220,6 @@ describe('Transactions API Endpoint', () => {
             expect(params).toContain('%gas%');
         });
 
-        it('should filter by favoritesOnly = true', async () => {
-            mockReq = {
-                method: 'GET',
-                query: {
-                    startDate: '2023-01-01',
-                    endDate: '2023-01-31',
-                    favoritesOnly: 'true'
-                }
-            };
-            mockClient.query.mockResolvedValue({ rowCount: 0, rows: [] });
-
-            await handler(mockReq, mockRes);
-
-            const [sql] = mockClient.query.mock.calls[0];
-            expect(sql).toContain('t.is_favorite = true');
-        });
-
         it('should support pagination (limit and offset)', async () => {
             mockReq = {
                 method: 'GET',

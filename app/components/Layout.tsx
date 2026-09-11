@@ -16,12 +16,9 @@ const DRAWER_WIDTH = 400;
 
 // Lazy load view components - only loaded when the user navigates to them
 const MonthlySummary = dynamic(() => import("./MonthlySummary"), { ssr: false });
-const BudgetDashboard = dynamic(() => import("./BudgetDashboard"), { ssr: false });
 const AIAssistant = dynamic(() => import("./AIAssistant"), { ssr: false });
 const ScrapeAuditView = dynamic(() => import("./ScrapeAuditView"), { ssr: false });
 const RecurringPaymentsView = dynamic(() => import("./RecurringPaymentsView"), { ssr: false });
-const ChatView = dynamic(() => import("./ChatView"), { ssr: false });
-const DesignSystemShowcase = dynamic(() => import("./DesignSystemShowcase"), { ssr: false });
 const BreakdownView = dynamic(() => import("./BreakdownView"), { ssr: false });
 const ProjectionView = dynamic(() => import("./ProjectionView"), { ssr: false });
 const AccountsView = dynamic(() => import("./AccountsView"), { ssr: false });
@@ -29,7 +26,7 @@ const VaultLockScreen = dynamic(() => import("./VaultLockScreen"), { ssr: false 
 const InsightsView = dynamic(() => import("./InsightsView"), { ssr: false });
 const SourcesAndUsesView = dynamic(() => import("./SourcesAndUsesView"), { ssr: false });
 
-type ViewType = 'dashboard' | 'summary' | 'budget' | 'chat' | 'audit' | 'recurring' | 'design' | 'breakdown' | 'projection' | 'accounts' | 'insights' | 'sourcesAndUses';
+type ViewType = 'dashboard' | 'summary' | 'audit' | 'recurring' | 'breakdown' | 'projection' | 'accounts' | 'insights' | 'sourcesAndUses';
 
 // Screen context for AI Assistant
 interface ScreenContext {
@@ -135,16 +132,10 @@ const Layout: React.FC<LayoutProps> = ({ children, defaultView = 'summary' }) =>
     switch (currentView) {
       case 'summary':
         return <MonthlySummary />;
-      case 'budget':
-        return <BudgetDashboard />;
-      case 'chat':
-        return <ChatView />;
       case 'audit':
         return <ScrapeAuditView />;
       case 'recurring':
         return <RecurringPaymentsView />;
-      case 'design':
-        return <DesignSystemShowcase />;
       case 'breakdown':
         return <BreakdownView />;
       case 'projection':
@@ -261,7 +252,7 @@ const LayoutContent: React.FC<{
               {renderView()}
             </ErrorBoundary>
           </Box>
-          {currentView !== 'chat' && <Footer />}
+          <Footer />
           <AIAssistant screenContext={screenContext} />
           <GlobalEasterEggManager />
         </Box>
