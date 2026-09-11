@@ -84,6 +84,42 @@ async function fetchFixedTransactionIds(token, cashflowMonth) {
   return ids;
 }
 
+/**
+ * Fetches the CURRENT cashflow month's budget and sums every 'fixed'-type
+ * envelope's originalAmount (RiseUp's own planned/expected figure for the
+ * month - not balancedAmount, which only reconciles once the month closes).
+ * This is RiseUp's own authoritative "total fixed expenses" number, the same
+ * one shown in the RiseUp app itself - used instead of reconstructing an
+ * approximation from our own stored transactions, which reliably drifts:
+ * commitment_type is a per-transaction snapshot taken once at scrape time,
+ * so a merchant billing multiple concurrent fixed charges (e.g. two
+ * insurance policies under one company name), a completed installment plan
+ * whose last payment already happened, or an envelope RiseUp itself no
+ * longer tracks as "fixed" this month, all cause a locally-reconstructed
+ * total to diverge from what RiseUp currently says. Never throws - a fetch
+ * failure here shouldn't fail the whole sync, just skip the snapshot.
+ */
+async function fetchCurrentMonthFixedTotal(token) {
+  try {
+    const url = `${RISEUP_BASE_URL}/api/external/budget/current`;
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' }
+    });
+    if (!response.ok) {
+      logger.warn({ status: response.status }, '[RiseUp] Current-month budget fetch failed, skipping fixed-expenses snapshot');
+      return null;
+    }
+    const data = await response.json();
+    const total = (data.envelopes || [])
+      .filter(e => e.type === 'fixed')
+      .reduce((sum, e) => sum + (e.originalAmount || 0), 0);
+    return { month: data.budgetDate, total };
+  } catch (err) {
+    logger.warn({ error: err.message }, '[RiseUp] Unexpected error fetching current-month budget total');
+    return null;
+  }
+}
+
 function groupByAccount(rawTransactions, fixedTransactionIds) {
   const byAccount = new Map();
   for (const raw of rawTransactions) {
@@ -145,7 +181,8 @@ export async function scrapeRiseup(credentials, startDate) {
     }
 
     logger.info({ count: allTransactions.length, months: months.length, fixedCount: fixedTransactionIds.size }, '[RiseUp] Fetched transactions');
-    return { success: true, accounts: groupByAccount(allTransactions, fixedTransactionIds) };
+    const fixedExpensesSnapshot = await fetchCurrentMonthFixedTotal(token);
+    return { success: true, accounts: groupByAccount(allTransactions, fixedTransactionIds), fixedExpensesSnapshot };
   } catch (err) {
     logger.error({ error: err.message }, '[RiseUp] Unexpected error fetching transactions');
     return { success: false, errorType: 'ScrapingError', errorMessage: err.message };

@@ -856,7 +856,19 @@ export async function runScraper(client, scraperOptions, credentials, onProgress
   }
   if (scraperOptions.companyId === 'riseup') {
     const { scrapeRiseup } = await import('../../../scrapers/riseup.js');
-    return await scrapeRiseup(credentials, startDate);
+    const result = await scrapeRiseup(credentials, startDate);
+    if (result?.success && result.fixedExpensesSnapshot && client) {
+      try {
+        await client.query(
+          `INSERT INTO app_settings (key, value) VALUES ($1, $2)
+           ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = CURRENT_TIMESTAMP`,
+          ['riseup_fixed_expenses_snapshot', JSON.stringify({ ...result.fixedExpensesSnapshot, capturedAt: new Date().toISOString() })]
+        );
+      } catch (err) {
+        logger.warn({ error: err.message }, '[Scraper] Failed to persist RiseUp fixed-expenses snapshot');
+      }
+    }
+    return result;
   }
 
   const logRequests = scraperOptions.logRequests ?? false;

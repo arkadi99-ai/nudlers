@@ -26,7 +26,7 @@ export default async function handler(req, res) {
         const windowEnd = new Date(today);
         windowEnd.setDate(windowEnd.getDate() + FORECAST_WINDOW_DAYS);
 
-        const [balanceRes, fixedRes, ccRes, forecastInputs, bufferRes] = await Promise.all([
+        const [balanceRes, fixedRes, ccRes, forecastInputs, bufferRes, snapshotRes] = await Promise.all([
             pool.query(`
                 SELECT co.balance, co.balance_updated_at
                 FROM card_ownership co
@@ -41,31 +41,43 @@ export default async function handler(req, res) {
                 ORDER BY co.balance_updated_at DESC NULLS LAST
                 LIMIT 1
             `),
-            // RiseUp's own "fixed" commitments - bank AND card. Deliberately
-            // broader than forecastDataSource.js's own fixed-items query (which
-            // stays bank-only, on purpose: card-side fixed items already ride
-            // along inside ccRes/ccPayments once they've actually billed, so
-            // adding them there too would double-count against the balance
-            // forecast). This one is display-only (the "total fixed expenses"
-            // label), so it can safely be the fuller, more honest number -
-            // most of a household's fixed commitments (insurance, subscriptions,
-            // phone, gym) are paid by card, not bank standing order, and a
-            // "total fixed expenses" that silently excluded all of those would
-            // undercount by a lot. DISTINCT ON always takes the MOST RECENT
-            // real charge per (name, account, payment method) - never an
-            // average - so a real-world change (e.g. a rent increase) is
-            // reflected the moment it's first billed, not smoothed away.
-            // Expenses only (negative amounts).
+            // Local fallback estimate of "fixed" commitments (bank AND card),
+            // used only when we don't yet have a fresh snapshot of RiseUp's
+            // OWN computed total (see riseup_fixed_expenses_snapshot below -
+            // that's the preferred source, since it's RiseUp's own already-
+            // reconciled figure). This reconstruction has known edge cases we
+            // can't fully close locally: a merchant can bill multiple genuinely
+            // separate fixed charges on the same date (e.g. two insurance
+            // policies under one company name) - handled by summing every
+            // charge on each merchant's own most recent date, not just one row.
+            // An installment plan whose last payment already happened should
+            // NOT be projected forward - excluded via installments_number <
+            // installments_total. Amount is always the MOST RECENT real charge,
+            // never an average, so a rent increase is reflected immediately.
+            // 100-day window (not 45) to safely cover bi-monthly bills (water,
+            // some gas invoices) without requiring a live RiseUp call.
             pool.query(`
-                SELECT DISTINCT ON (name, account_number, transaction_type)
-                    name, price
-                FROM transactions
-                WHERE vendor = 'riseup'
-                  AND transaction_type IN ('bank', 'credit_card')
-                  AND commitment_type = 'fixed'
-                  AND price < 0
-                  AND date >= CURRENT_DATE - INTERVAL '45 days'
-                ORDER BY name, account_number, transaction_type, date DESC
+                WITH recent_fixed AS (
+                    SELECT name, account_number, transaction_type, date, price, installments_number, installments_total
+                    FROM transactions
+                    WHERE vendor = 'riseup'
+                      AND transaction_type IN ('bank', 'credit_card')
+                      AND commitment_type = 'fixed'
+                      AND price < 0
+                      AND date >= CURRENT_DATE - INTERVAL '100 days'
+                ),
+                latest_date_per_merchant AS (
+                    SELECT name, account_number, transaction_type, MAX(date) as latest_date
+                    FROM recent_fixed
+                    GROUP BY name, account_number, transaction_type
+                )
+                SELECT rf.price
+                FROM recent_fixed rf
+                JOIN latest_date_per_merchant l
+                  ON rf.name = l.name AND rf.account_number = l.account_number
+                  AND rf.transaction_type = l.transaction_type AND rf.date = l.latest_date
+                WHERE rf.installments_total IS NULL OR rf.installments_total <= 1
+                   OR rf.installments_number < rf.installments_total
             `),
             // Already-scheduled future credit-card settlement debits, same query
             // shape as projection.js's "Future CC Payments".
@@ -89,13 +101,35 @@ export default async function handler(req, res) {
             // monthly calendar view (see forecastDataSource.js).
             getForecastInputs({ rangeStart: formatISODate(today), rangeEnd: formatISODate(windowEnd) }),
             // User-configured safety buffer (defaults if never set).
-            pool.query(`SELECT value FROM app_settings WHERE key = 'safety_buffer'`)
+            pool.query(`SELECT value FROM app_settings WHERE key = 'safety_buffer'`),
+            // RiseUp's own computed "fixed expenses" total for the current
+            // cashflow month, captured at sync time (see fetchCurrentMonthFixedTotal
+            // in scrapers/riseup.js) - preferred over the local reconstruction
+            // above whenever it's fresh, since RiseUp already does the real
+            // reconciliation (completed installments, multi-charge merchants,
+            // envelope re-categorization) that a local heuristic can only
+            // approximate.
+            pool.query(`SELECT value FROM app_settings WHERE key = 'riseup_fixed_expenses_snapshot'`)
         ]);
 
         const currentBalance = parseFloat(balanceRes.rows[0]?.balance ?? 0);
         const hasBalance = balanceRes.rows.length > 0;
 
-        const fixedMonthlyTotal = fixedRes.rows.reduce((sum, r) => sum + Math.abs(parseFloat(r.price)), 0);
+        const FIXED_SNAPSHOT_MAX_AGE_DAYS = 35;
+        const snapshot = snapshotRes.rows[0]?.value ?? null;
+        const snapshotAgeDays = snapshot?.capturedAt
+            ? (Date.now() - new Date(snapshot.capturedAt).getTime()) / (1000 * 60 * 60 * 24)
+            : Infinity;
+
+        let fixedMonthlyTotal;
+        let fixedMonthlyTotalSource;
+        if (snapshot && typeof snapshot.total === 'number' && snapshotAgeDays <= FIXED_SNAPSHOT_MAX_AGE_DAYS) {
+            fixedMonthlyTotal = Math.abs(snapshot.total);
+            fixedMonthlyTotalSource = 'riseup';
+        } else {
+            fixedMonthlyTotal = fixedRes.rows.reduce((sum, r) => sum + Math.abs(parseFloat(r.price)), 0);
+            fixedMonthlyTotalSource = 'estimated';
+        }
 
         // Group scheduled CC settlements by their exact date, find the nearest one.
         let nextCardSettlement = null;
@@ -151,6 +185,7 @@ export default async function handler(req, res) {
             hasBalance,
             balanceUpdatedAt: balanceRes.rows[0]?.balance_updated_at ?? null,
             fixedMonthlyTotal,
+            fixedMonthlyTotalSource,
             nextCardSettlement,
             forecast
         });
