@@ -22,13 +22,20 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';
+
 import { fetchCategories } from './CategoryDashboard/utils/categoryUtils';
 import CategoryAutocomplete from './CategoryAutocomplete';
 import AccountDisplay from './AccountDisplay';
 import Table from './Table';
 import PageHeader from './PageHeader';
+import ModalHeader from './ModalHeader';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../context/LocaleContext';
+import { useDateSelection } from '../context/DateSelectionContext';
 
 interface Installment {
     name: string;
@@ -97,11 +104,15 @@ const RecurringPaymentsView: React.FC = () => {
         });
     };
 
+    const { selectedYear, setSelectedYear, selectedMonth, setSelectedMonth, uniqueYears, uniqueMonths } = useDateSelection();
+    const month = `${selectedYear}-${selectedMonth}`;
+
     const [loading, setLoading] = useState(true);
     const [installments, setInstallments] = useState<Installment[]>([]);
     const [recurring, setRecurring] = useState<RecurringTransaction[]>([]);
     const [exclusions, setExclusions] = useState<Exclusion[]>([]);
     const [activeTab, setActiveTab] = useState(0);
+    const [hiddenDialogOpen, setHiddenDialogOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
@@ -159,15 +170,6 @@ const RecurringPaymentsView: React.FC = () => {
 
             setError(null);
 
-            if (activeTab === 2) {
-                const response = await fetch('/api/reports/non-recurring-exclusions');
-                if (!response.ok) throw new Error('Failed to fetch exclusions');
-                const data = await response.json();
-                setExclusions(data.exclusions || []);
-                setTotalExclusions(data.total || 0);
-                return;
-            }
-
             const type = activeTab === 0 ? 'installments' : 'recurring';
             const sortBy = activeTab === 0 ? installmentSortBy : recurringSortBy;
             const sortOrder = activeTab === 0 ? installmentSortOrder : recurringSortOrder;
@@ -178,6 +180,7 @@ const RecurringPaymentsView: React.FC = () => {
 
             const params = new URLSearchParams({
                 type,
+                month,
                 sortBy,
                 sortOrder,
                 limit: String(PAGE_SIZE),
@@ -223,7 +226,25 @@ const RecurringPaymentsView: React.FC = () => {
     useEffect(() => {
         queueMicrotask(() => fetchData(false));
         // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchData is stable; including it would cause re-runs when refs change
-    }, [activeTab, installmentSortBy, installmentSortOrder, recurringSortBy, recurringSortOrder]);
+    }, [activeTab, month, installmentSortBy, installmentSortOrder, recurringSortBy, recurringSortOrder]);
+
+    const fetchExclusions = async () => {
+        try {
+            const response = await fetch('/api/reports/non-recurring-exclusions');
+            if (!response.ok) throw new Error('Failed to fetch exclusions');
+            const data = await response.json();
+            setExclusions(data.exclusions || []);
+            setTotalExclusions(data.total || 0);
+        } catch (err) {
+            logger.error('Failed to fetch non-recurring exclusions', err as Error);
+        }
+    };
+
+    // Fetched once up front just to show a count on the "hidden items" link -
+    // full list is (re)loaded when the dialog itself opens.
+    useEffect(() => {
+        queueMicrotask(() => fetchExclusions());
+    }, []);
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setActiveTab(newValue);
@@ -328,6 +349,7 @@ const RecurringPaymentsView: React.FC = () => {
             if (!response.ok) throw new Error('Failed to mark as non-recurring');
             showSnackbar(t('recurring.snackbarMarkedNonRecurring', { name: item.name }), 'success');
             fetchData(false);
+            fetchExclusions();
             window.dispatchEvent(new CustomEvent('dataRefresh'));
         } catch (err) {
             logger.error('Error marking as non-recurring', err as Error);
@@ -348,6 +370,7 @@ const RecurringPaymentsView: React.FC = () => {
             if (!response.ok) throw new Error('Failed to restore payment');
             showSnackbar(t('recurring.snackbarRestored', { name: item.name }), 'success');
             fetchData(false);
+            fetchExclusions();
             window.dispatchEvent(new CustomEvent('dataRefresh'));
         } catch (err) {
             logger.error('Error restoring exclusion', err as Error);
@@ -368,6 +391,40 @@ const RecurringPaymentsView: React.FC = () => {
                 description={t('recurring.description')}
                 icon={<RepeatIcon sx={{ fontSize: '32px', color: '#ffffff' }} />}
             />
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 2, mb: 2 }}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <select
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(e.target.value)}
+                        className="n-glass n-select"
+                        style={{ minWidth: '110px' }}
+                        aria-label={t('recurring.ariaYear')}
+                    >
+                        {uniqueYears.map(y => <option key={y} value={y}>{y}</option>)}
+                    </select>
+                    <select
+                        value={selectedMonth}
+                        onChange={(e) => setSelectedMonth(e.target.value)}
+                        className="n-glass n-select"
+                        style={{ minWidth: '140px' }}
+                        aria-label={t('recurring.ariaMonth')}
+                    >
+                        {uniqueMonths.map(m => (
+                            <option key={m} value={m}>
+                                {new Date(`2024-${m}-01`).toLocaleDateString(dateLocale, { month: 'long' })}
+                            </option>
+                        ))}
+                    </select>
+                </Box>
+                <Button
+                    size="small"
+                    startIcon={<VisibilityOffIcon sx={{ fontSize: '16px' }} />}
+                    onClick={() => setHiddenDialogOpen(true)}
+                    sx={{ textTransform: 'none', fontWeight: 600, color: 'text.secondary' }}
+                >
+                    {t('recurring.hiddenItemsLink', { count: totalExclusions ?? 0 })}
+                </Button>
+            </Box>
             <Box sx={{
                 borderRadius: '32px',
                 border: `1px solid ${theme.palette.divider}`,
@@ -394,7 +451,6 @@ const RecurringPaymentsView: React.FC = () => {
                     >
                         <Tab label={t('recurring.tabInstallments', { count: totalInstallments || t('recurring.loadingPlaceholder') })} icon={<CreditScoreIcon sx={{ fontSize: '18px' }} />} iconPosition="start" />
                         <Tab label={t('recurring.tabRecurring', { count: totalRecurring || t('recurring.loadingPlaceholder') })} icon={<RepeatIcon sx={{ fontSize: '18px' }} />} iconPosition="start" />
-                        <Tab label={t('recurring.tabHidden', { count: totalExclusions === null ? t('recurring.loadingPlaceholder') : totalExclusions })} icon={<VisibilityOffIcon sx={{ fontSize: '18px' }} />} iconPosition="start" />
                     </Tabs>
                 </Box>
 
@@ -411,12 +467,7 @@ const RecurringPaymentsView: React.FC = () => {
                         gap: 2
                     }}>
                         <InfoOutlinedIcon sx={{ color: 'primary.main', fontSize: '20px' }} />
-                        {activeTab === 0
-                            ? t('recurring.infoInstallments')
-                            : activeTab === 1
-                                ? t('recurring.infoRecurring')
-                                : t('recurring.infoHidden')
-                        }
+                        {activeTab === 0 ? t('recurring.infoInstallments') : t('recurring.infoRecurring')}
                     </Typography>
                     {error ? (
                         <Box sx={{ p: 4, textAlign: 'center', color: 'error.main' }}>{t('recurring.errorPrefix', { message: error })}</Box>
@@ -611,7 +662,7 @@ const RecurringPaymentsView: React.FC = () => {
                                             );
                                         }}
                                     />
-                                ) : activeTab === 1 ? (
+                                ) : (
                                     <Table
                                         rows={recurring}
                                         rowKey={(row) => `${row.name}-${row.month_count}`}
@@ -744,70 +795,13 @@ const RecurringPaymentsView: React.FC = () => {
                                             );
                                         }}
                                     />
-                                ) : (
-                                    <Table
-                                        rows={exclusions}
-                                        rowKey={(row) => String(row.id)}
-                                        emptyMessage={t('recurring.emptyHidden')}
-                                        stickyHeader
-                                        maxHeight="none"
-                                        columns={[
-                                            { id: 'name', label: t('recurring.columnName'), format: (val) => <span style={{ fontWeight: 600 }}>{val}</span> },
-                                            {
-                                                id: 'account_number',
-                                                label: t('recurring.columnAccount'),
-                                                format: (_, row) => renderAccountInfo(row)
-                                            },
-                                            {
-                                                id: 'created_at',
-                                                label: t('recurring.columnDisabledOn'),
-                                                format: (val) => formatDate(val)
-                                            },
-                                            {
-                                                id: 'actions',
-                                                label: '',
-                                                align: 'right',
-                                                format: (_, row) => (
-                                                    <Tooltip title={t('recurring.tooltipRestore')}>
-                                                        <IconButton size="small" onClick={() => handleRestoreExclusion(row)} color="primary">
-                                                            <DeleteIcon fontSize="small" />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                )
-                                            }
-                                        ]}
-                                        mobileCardRenderer={(row) => (
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <Box>
-                                                    <Typography variant="subtitle2" sx={{
-                                                        fontWeight: 700
-                                                    }}>{row.name}</Typography>
-                                                    <Box sx={{ mt: 0.5 }}>
-                                                        {renderAccountInfo(row)}
-                                                    </Box>
-                                                    <Typography
-                                                        variant="caption"
-                                                        sx={{
-                                                            color: "text.secondary",
-                                                            display: "block",
-                                                            mt: 0.5
-                                                        }}>
-                                                        {t('recurring.disabledLabel', { date: formatDate(row.created_at) })}
-                                                    </Typography>
-                                                </Box>
-                                                <IconButton size="small" onClick={() => handleRestoreExclusion(row)} color="primary">
-                                                    <DeleteIcon fontSize="small" />
-                                                </IconButton>
-                                            </Box>
-                                        )}
-                                    />
                                 )}
-                                {(loadingMore || (loading && (activeTab === 2 ? exclusions.length > 0 : (installments.length > 0 || recurring.length > 0)))) && (
+                                {(loadingMore || (loading && (installments.length > 0 || recurring.length > 0))) && (
                                     <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
                                         <CircularProgress size={32} thickness={4} />
                                     </Box>
                                 )}
-                                {!loading && activeTab !== 2 && !(activeTab === 0 ? hasMoreInstallments : hasMoreRecurring) && (installments.length > 0 || recurring.length > 0) && (
+                                {!loading && !(activeTab === 0 ? hasMoreInstallments : hasMoreRecurring) && (installments.length > 0 || recurring.length > 0) && (
                                     <Box sx={{ p: 4, textAlign: 'center' }}>
                                         <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
                                             {t('recurring.endOfList')}
@@ -819,6 +813,70 @@ const RecurringPaymentsView: React.FC = () => {
                     )}
                 </Box>
             </Box>
+            <Dialog open={hiddenDialogOpen} onClose={() => setHiddenDialogOpen(false)} maxWidth="sm" fullWidth>
+                <ModalHeader title={t('recurring.hiddenDialogTitle')} onClose={() => setHiddenDialogOpen(false)} />
+                <DialogContent sx={{ pt: 1 }}>
+                    <Alert severity="info" sx={{ mb: 2, borderRadius: '12px' }}>
+                        {t('recurring.hiddenDialogExplanation')}
+                    </Alert>
+                    <Table
+                        rows={exclusions}
+                        rowKey={(row) => String(row.id)}
+                        emptyMessage={t('recurring.emptyHidden')}
+                        stickyHeader
+                        maxHeight="50vh"
+                        columns={[
+                            { id: 'name', label: t('recurring.columnName'), format: (val) => <span style={{ fontWeight: 600 }}>{val}</span> },
+                            {
+                                id: 'account_number',
+                                label: t('recurring.columnAccount'),
+                                format: (_, row) => renderAccountInfo(row)
+                            },
+                            {
+                                id: 'created_at',
+                                label: t('recurring.columnDisabledOn'),
+                                format: (val) => formatDate(val)
+                            },
+                            {
+                                id: 'actions',
+                                label: '',
+                                align: 'right',
+                                format: (_, row) => (
+                                    <Tooltip title={t('recurring.tooltipRestore')}>
+                                        <IconButton size="small" onClick={() => handleRestoreExclusion(row)} color="primary">
+                                            <DeleteIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                )
+                            }
+                        ]}
+                        mobileCardRenderer={(row) => (
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Box>
+                                    <Typography variant="subtitle2" sx={{
+                                        fontWeight: 700
+                                    }}>{row.name}</Typography>
+                                    <Box sx={{ mt: 0.5 }}>
+                                        {renderAccountInfo(row)}
+                                    </Box>
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            color: "text.secondary",
+                                            display: "block",
+                                            mt: 0.5
+                                        }}>
+                                        {t('recurring.disabledLabel', { date: formatDate(row.created_at) })}
+                                    </Typography>
+                                </Box>
+                                <IconButton size="small" onClick={() => handleRestoreExclusion(row)} color="primary">
+                                    <DeleteIcon fontSize="small" />
+                                </IconButton>
+                            </Box>
+                        )}
+                    />
+                </DialogContent>
+            </Dialog>
             <SnackbarFeedback
                 snackbar={snackbar}
                 onClose={hideSnackbar}

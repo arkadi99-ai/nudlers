@@ -7,6 +7,9 @@ import { detectRecurringPayments } from "../../../utils/recurringDetection";
  *
  * Query Parameters:
  * - type: 'installments' | 'recurring' | 'all' (default: 'all')
+ * - month: 'YYYY-MM' (default: current month) - only items relevant to this
+ *   month are returned (an installment's next/final payment falls in it, or
+ *   a recurring merchant charged or is expected to charge in it)
  * - status: 'active' | 'completed' | 'all' (for installments, default: 'all')
  * - frequency: 'monthly' | 'bi-monthly' | 'all' (for recurring, default: 'all')
  * - limit: number (default: 50, max: 500)
@@ -32,6 +35,9 @@ export default async function handler(req, res) {
       type = 'all',
       status = 'all',
       frequency = 'all',
+      month, // "YYYY-MM", defaults to the current month - which item is
+             // "relevant" is judged relative to this, not to today's date,
+             // so browsing a past month shows what was relevant back then
       limit = '50',
       offset = '0',
       sortBy,
@@ -41,6 +47,7 @@ export default async function handler(req, res) {
     const limitVal = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 500);
     const offsetVal = Math.max(parseInt(offset, 10) || 0, 0);
     const sortDir = sortOrder.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+    const selectedMonth = /^\d{4}-\d{2}$/.test(month || '') ? month : new Date().toISOString().slice(0, 7);
 
     let installments = [];
     let totalInstallments = 0;
@@ -148,9 +155,15 @@ export default async function handler(req, res) {
           COALESCE(SUM(ABS(l.price)) FILTER (WHERE l.status = 'active') OVER(), 0) as active_amount
         FROM final_installments l
         LEFT JOIN vendor_credentials vc ON l.account_number = vc.bank_account_number AND l.transaction_type = 'bank'
+        -- Relevance is judged by month, not just "still open": an installment
+        -- plan belongs to whichever month its next (or, once finished, its
+        -- final) payment falls in - so browsing the current month naturally
+        -- shows only what's actually active right now, and old completed
+        -- plans only resurface if you explicitly go back to look at that month.
+        WHERE TO_CHAR(COALESCE(l.next_payment_date, l.last_payment_date), 'YYYY-MM') = $3
         ORDER BY ${installmentOrderClause}
         LIMIT $1 OFFSET $2
-      `, type === 'installments' ? [limitVal, offsetVal] : [1000, 0]);
+      `, type === 'installments' ? [limitVal, offsetVal, selectedMonth] : [1000, 0, selectedMonth]);
 
       totalInstallments = installmentsResult.rows.length > 0
         ? parseInt(installmentsResult.rows[0].total_count, 10)
@@ -198,6 +211,14 @@ export default async function handler(req, res) {
 
       // Use the smart detection utility (fuzzy matching, monthly/bi-monthly)
       let detectedRecurring = detectRecurringPayments(candidatesResult.rows);
+
+      // Relevance is judged by month, same as installments above: a
+      // recurring merchant belongs to a given month if it actually charged
+      // that month, or (for the current/a future month) is expected to.
+      const monthOf = (d) => new Date(d).toISOString().slice(0, 7);
+      detectedRecurring = detectedRecurring.filter(r =>
+        r.months.includes(selectedMonth) || monthOf(r.next_payment_date) === selectedMonth
+      );
 
       // Apply frequency filter
       if (frequency !== 'all') {
