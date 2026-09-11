@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -35,6 +35,7 @@ import SkipNextIcon from '@mui/icons-material/SkipNext';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutlineOutlined';
 import SearchIcon from '@mui/icons-material/Search';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { useCategoryColors } from '../utils/categoryUtils';
 import ModalHeader from '../../ModalHeader';
 import Table from '@mui/material/Table';
@@ -117,6 +118,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
   const [editingRule, setEditingRule] = useState<CategorizationRule | null>(null);
   const [newRule, setNewRule] = useState({ name_pattern: '', target_category: '' });
   const [isApplyingRules, setIsApplyingRules] = useState(false);
+  const [isImportingRiseup, setIsImportingRiseup] = useState(false);
   const [renamingCategory, setRenamingCategory] = useState<string | null>(null);
   const [renameNewName, setRenameNewName] = useState('');
   const [deletingCategory, setDeletingCategory] = useState<string | null>(null);
@@ -127,6 +129,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
   const [editMappingTarget, setEditMappingTarget] = useState('');
   const [newMappingSource, setNewMappingSource] = useState('');
   const [newMappingTarget, setNewMappingTarget] = useState('');
+  const riseupFileInputRef = useRef<HTMLInputElement>(null);
   const categoryColors = useCategoryColors();
   const theme = useTheme();
   const { t } = useTranslation(['categoryMgmt', 'common']);
@@ -802,6 +805,48 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
     }
   };
 
+  const handleImportRiseupFile = async (file: File) => {
+    try {
+      setIsImportingRiseup(true);
+      setError(null);
+
+      const arrayBuffer = await file.arrayBuffer();
+      let binary = '';
+      const bytes = new Uint8Array(arrayBuffer);
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+      const fileBase64 = btoa(binary);
+
+      const response = await fetch('/api/categories/import-riseup-export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileBase64 }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error || 'Failed to import file');
+      }
+
+      const result = await response.json();
+      setSuccess(t('categoryMgmt:success.riseupImported', {
+        mappings: result.confidentMappings,
+        rulesInserted: result.rulesInserted,
+        transactions: result.transactionsUpdated
+      }));
+
+      await fetchRules();
+      await fetchCategories();
+      onCategoriesUpdated();
+
+      setTimeout(() => setSuccess(null), 8000);
+    } catch (error) {
+      logger.error('Error importing RiseUp export', error);
+      setError(error instanceof Error ? error.message : t('categoryMgmt:errors.failedToImportRiseup'));
+    } finally {
+      setIsImportingRiseup(false);
+    }
+  };
+
   return (
     <Dialog
       open={open}
@@ -1197,6 +1242,44 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
                 }}
               >
                 {isApplyingRules ? <CircularProgress size={20} color="inherit" /> : t('categoryMgmt:rules.applyToExisting')}
+              </Button>
+            </Box>
+
+            <Divider style={{ margin: '24px 0' }} />
+
+            <Box style={{ marginBottom: '24px' }}>
+              <Typography variant="subtitle1" style={{ marginBottom: '4px', fontWeight: 600 }}>
+                {t('categoryMgmt:rules.importRiseupTitle')}
+              </Typography>
+              <Typography variant="body2" color={theme.palette.text.secondary} style={{ marginBottom: '12px' }}>
+                {t('categoryMgmt:rules.importRiseupDescription')}
+              </Typography>
+              <input
+                ref={riseupFileInputRef}
+                type="file"
+                accept=".xlsx"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImportRiseupFile(file);
+                  e.target.value = '';
+                }}
+              />
+              <Button
+                variant="outlined"
+                startIcon={isImportingRiseup ? <CircularProgress size={20} color="inherit" /> : <UploadFileIcon />}
+                onClick={() => riseupFileInputRef.current?.click()}
+                disabled={isImportingRiseup}
+                style={{
+                  borderColor: 'var(--n-info)',
+                  color: 'var(--n-info)',
+                  borderRadius: '12px',
+                  padding: '10px 24px',
+                  textTransform: 'none',
+                  fontWeight: 600
+                }}
+              >
+                {t('categoryMgmt:rules.importRiseupButton')}
               </Button>
             </Box>
 

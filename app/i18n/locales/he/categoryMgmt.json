@@ -32,7 +32,10 @@
     "ruleIfContains": "אם שם העסקה מכיל \"{{pattern}}\"",
     "ruleThenSet": "אז הגדר את הקטגוריה ל-\"{{category}}\"",
     "editRuleTitle": "עריכת כלל",
-    "updateButton": "עדכון"
+    "updateButton": "עדכון",
+    "importRiseupTitle": "ייבוא סיווג מקובץ תזרים של RiseUp",
+    "importRiseupDescription": "העלו קובץ ייצוא תזרים (xlsx) מתוך אפליקציית RiseUp - הסיווג שביצעתם שם ייקבע ככלל קבוע, ויוחל מיד על עסקאות קיימות.",
+    "importRiseupButton": "ייבוא קובץ"
   },
   "mappings": {
     "sectionTitle": "מיפויי קטגוריות",
@@ -104,6 +107,7 @@
     "failedToUpdateRule": "עדכון הכלל נכשל",
     "failedToDeleteRule": "מחיקת הכלל נכשלה",
     "failedToApplyRules": "החלת הכללים נכשלה",
+    "failedToImportRiseup": "ייבוא קובץ ה-RiseUp נכשל",
     "unknown": "אירעה שגיאה לא ידועה"
   },
   "success": {
@@ -114,6 +118,7 @@
     "ruleUpdated": "הכלל עודכן בהצלחה",
     "ruleDeleted": "הכלל נמחק בהצלחה",
     "rulesApplied": "{{rules}} כללים הוחלו בהצלחה על {{transactions}} עסקאות",
+    "riseupImported": "נמצאו {{mappings}} סיווגים אמינים בקובץ - נוצרו {{rulesInserted}} כללים חדשים, ו-{{transactions}} עסקאות עודכנו",
     "quickUpdated": "{{count}} עסקאות עודכנו ל-\"{{category}}\"",
     "mappingCreated": "המיפוי נוצר בהצלחה",
     "mappingUpdated": "המיפוי עודכן בהצלחה",

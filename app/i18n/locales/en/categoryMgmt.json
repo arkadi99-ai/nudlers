@@ -32,7 +32,10 @@
     "ruleIfContains": "IF transaction name contains \"{{pattern}}\"",
     "ruleThenSet": "THEN set category to \"{{category}}\"",
     "editRuleTitle": "Edit Rule",
-    "updateButton": "Update"
+    "updateButton": "Update",
+    "importRiseupTitle": "Import categorization from a RiseUp cashflow file",
+    "importRiseupDescription": "Upload a cashflow export (xlsx) from the RiseUp app - the categorization you did there becomes a permanent rule, and is applied immediately to existing transactions.",
+    "importRiseupButton": "Import file"
   },
   "mappings": {
     "sectionTitle": "Category Mappings",
@@ -104,6 +107,7 @@
     "failedToUpdateRule": "Failed to update rule",
     "failedToDeleteRule": "Failed to delete rule",
     "failedToApplyRules": "Failed to apply rules",
+    "failedToImportRiseup": "Failed to import the RiseUp file",
     "unknown": "Unknown error occurred"
   },
   "success": {
@@ -114,6 +118,7 @@
     "ruleUpdated": "Rule updated successfully",
     "ruleDeleted": "Rule deleted successfully",
     "rulesApplied": "Successfully applied {{rules}} rules to {{transactions}} transactions",
+    "riseupImported": "Found {{mappings}} reliable categorizations in the file - created {{rulesInserted}} new rules, and updated {{transactions}} transactions",
     "quickUpdated": "Updated {{count}} transaction(s) to \"{{category}}\"",
     "mappingCreated": "Mapping created successfully",
     "mappingUpdated": "Mapping updated successfully",
