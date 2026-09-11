@@ -7,6 +7,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../context/LocaleContext';
+import { formatISODate } from '../utils/dateUtils';
 import ModalHeader from './ModalHeader';
 
 interface SourceRow { name: string; total: number; count: number; percentOfIncome: number }
@@ -46,8 +47,7 @@ const SourcesAndUsesView: React.FC = () => {
         try {
             const start = new Date(date.getFullYear(), date.getMonth(), 1);
             const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-            const fmt = (d: Date) => d.toISOString().slice(0, 10);
-            const res = await fetch(`/api/reports/sources-and-uses?startDate=${fmt(start)}&endDate=${fmt(end)}`);
+            const res = await fetch(`/api/reports/sources-and-uses?startDate=${formatISODate(start)}&endDate=${formatISODate(end)}`);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const result = await res.json();
             setData(result);

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { logger } from '../utils/client-logger';
+import { formatISODate } from '../utils/dateUtils';
 
 export type DateRangeMode = 'calendar' | 'billing' | 'custom';
 
@@ -212,12 +213,11 @@ export const DateSelectionProvider: React.FC<{ children: React.ReactNode }> = ({
             const now = new Date();
             const threeMonthsAgo = new Date(now);
             threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-            const formatDate = (d: Date) => d.toISOString().split('T')[0];
 
             // Check local storage for custom dates if you want persistence, otherwise default
             // Functional setters keep this callback dependency-free so init only runs once
-            setCustomStartDate(prev => prev || formatDate(threeMonthsAgo));
-            setCustomEndDate(prev => prev || formatDate(now));
+            setCustomStartDate(prev => prev || formatISODate(threeMonthsAgo));
+            setCustomEndDate(prev => prev || formatISODate(now));
 
         } catch (error) {
             logger.error('Error initializing DateSelectionContext', error);
@@ -267,9 +267,8 @@ export const DateSelectionProvider: React.FC<{ children: React.ReactNode }> = ({
                 const now = new Date();
                 const threeMonthsAgo = new Date(now);
                 threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-                const formatDate = (d: Date) => d.toISOString().split('T')[0];
-                setCustomStartDate(formatDate(threeMonthsAgo));
-                setCustomEndDate(formatDate(now));
+                setCustomStartDate(formatISODate(threeMonthsAgo));
+                setCustomEndDate(formatISODate(now));
             }
         }
     }, [customStartDate, customEndDate]);
