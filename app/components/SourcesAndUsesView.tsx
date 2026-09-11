@@ -114,6 +114,41 @@ const SourcesAndUsesView: React.FC = () => {
             </Box>
             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>{t('sourcesAndUses.subtitle')}</Typography>
 
+            {data && !loading && !error && (
+                <Box
+                    className="n-card n-glass"
+                    sx={{
+                        p: 3,
+                        borderRadius: '20px',
+                        mb: 3,
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+                        gap: 2,
+                    }}
+                >
+                    <Box>
+                        <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, mb: 0.5 }}>{t('sourcesAndUses.totalIncome')}</Typography>
+                        <Typography sx={{ fontWeight: 800, fontSize: { xs: '1.5rem', md: '1.75rem' }, color: '#10B981', direction: 'ltr' }}>{formatCurrency(data.totals.income)}</Typography>
+                    </Box>
+                    <Box>
+                        <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, mb: 0.5 }}>{t('sourcesAndUses.totalExpenses')}</Typography>
+                        <Typography sx={{ fontWeight: 800, fontSize: { xs: '1.5rem', md: '1.75rem' }, color: '#F43F5E', direction: 'ltr' }}>{formatCurrency(data.totals.expenses)}</Typography>
+                    </Box>
+                    <Box>
+                        <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, mb: 0.5 }}>{t('sourcesAndUses.net')}</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                            {data.totals.net >= 0
+                                ? <TrendingUpIcon sx={{ color: '#10B981', fontSize: 22 }} />
+                                : <TrendingDownIcon sx={{ color: '#F43F5E', fontSize: 22 }} />
+                            }
+                            <Typography sx={{ fontWeight: 800, fontSize: { xs: '1.5rem', md: '1.75rem' }, color: data.totals.net >= 0 ? '#10B981' : '#F43F5E', direction: 'ltr' }}>
+                                {formatCurrency(data.totals.net)}
+                            </Typography>
+                        </Box>
+                    </Box>
+                </Box>
+            )}
+
             {loading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
                     <CircularProgress size={24} />
@@ -144,10 +179,6 @@ const SourcesAndUsesView: React.FC = () => {
                                     ))}
                                 </Box>
                             )}
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-                                <Typography sx={{ fontWeight: 700 }}>{t('sourcesAndUses.totalIncome')}</Typography>
-                                <Typography sx={{ fontWeight: 800, color: '#10B981', direction: 'ltr' }}>{formatCurrency(data.totals.income)}</Typography>
-                            </Box>
                         </Box>
 
                         {/* Uses */}
@@ -184,34 +215,6 @@ const SourcesAndUsesView: React.FC = () => {
                                     ))}
                                 </Box>
                             )}
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-                                <Typography sx={{ fontWeight: 700 }}>{t('sourcesAndUses.totalExpenses')}</Typography>
-                                <Typography sx={{ fontWeight: 800, color: '#F43F5E', direction: 'ltr' }}>{formatCurrency(data.totals.expenses)}</Typography>
-                            </Box>
-                        </Box>
-                    </Box>
-
-                    {/* Net summary */}
-                    <Box
-                        className="n-card n-glass"
-                        sx={{
-                            p: 3,
-                            borderRadius: '20px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 2,
-                            backgroundColor: data.totals.net >= 0 ? 'rgba(16, 185, 129, 0.08)' : 'rgba(244, 63, 94, 0.08)',
-                        }}
-                    >
-                        {data.totals.net >= 0
-                            ? <TrendingUpIcon sx={{ color: '#10B981', fontSize: 28 }} />
-                            : <TrendingDownIcon sx={{ color: '#F43F5E', fontSize: 28 }} />
-                        }
-                        <Box>
-                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>{t('sourcesAndUses.net')}</Typography>
-                            <Typography sx={{ fontWeight: 800, fontSize: '1.5rem', color: data.totals.net >= 0 ? '#10B981' : '#F43F5E', direction: 'ltr' }}>
-                                {formatCurrency(data.totals.net)}
-                            </Typography>
                         </Box>
                     </Box>
                 </>
