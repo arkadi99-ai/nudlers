@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     try {
         const result = await pool.query(`
             SELECT
-                t.date, t.name, t.price, t.transaction_type,
+                t.date, t.name, t.price, t.transaction_type, t.commitment_type,
                 COALESCE(cv.card_nickname, vc_card.nickname, t.vendor) as source_name
             FROM transactions t
             LEFT JOIN card_ownership co ON t.vendor = co.vendor AND (CASE WHEN t.vendor = 'riseup' THEN t.account_number ELSE RIGHT(t.account_number, 4) END) = (CASE WHEN co.vendor = 'riseup' THEN co.account_number ELSE RIGHT(co.account_number, 4) END)
@@ -42,7 +42,8 @@ export default async function handler(req, res) {
                 date: r.date,
                 name: r.name,
                 amount: parseFloat(r.price),
-                source: r.source_name
+                source: r.source_name,
+                isFixed: r.commitment_type === 'fixed'
             }));
 
         const total = Math.round(transactions.reduce((sum, t) => sum + Math.abs(t.amount), 0) * 100) / 100;

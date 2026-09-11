@@ -47,6 +47,7 @@ export interface Transaction {
   account_number?: string;
   processed_date?: string;
   notes?: string;
+  commitment_type?: string;
 }
 
 export interface TransactionsTableProps {
@@ -481,7 +482,19 @@ const TransactionRow = React.memo(({
       <TableCell style={cellStyle}>
         {editingTransaction?.identifier === transaction.identifier && !hideActions ? (
           <CategoryAutocomplete value={editCategory} onChange={setEditCategory} options={availableCategories} applyToAll={applyToAll} onApplyToAllChange={setApplyToAll} showApplyToAll={editCategory !== editingTransaction.category} />
-        ) : <span style={{ cursor: 'pointer', color: 'var(--n-info)' }} onClick={(e) => { e.stopPropagation(); handleEditClick(transaction); }}>{transaction.category}</span>}
+        ) : (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <span style={{ cursor: 'pointer', color: 'var(--n-info)' }} onClick={(e) => { e.stopPropagation(); handleEditClick(transaction); }}>{transaction.category}</span>
+            {transaction.commitment_type === 'fixed' && (
+              <Tooltip title={t('tx:table.fixedExpenseTooltip')}>
+                <Box
+                  component="span"
+                  sx={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: 'var(--n-warning, #f59e0b)', flexShrink: 0 }}
+                />
+              </Tooltip>
+            )}
+          </Box>
+        )}
       </TableCell>
       <TableCell align="right" style={{
         ...cellStyle,
@@ -637,7 +650,16 @@ const TransactionMobileCardContent = ({
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         {isEditing ? (
           <CategoryAutocomplete value={editCategory || ''} onChange={setEditCategory || (() => { })} options={availableCategories || []} applyToAll={applyToAll || false} onApplyToAllChange={setApplyToAll || (() => { })} showApplyToAll={editCategory !== transaction.category} />
-        ) : <Typography variant="caption" sx={{ color: 'var(--n-info)', background: 'rgba(59, 130, 246, 0.1)', p: '2px 8px', borderRadius: 1 }}>{transaction.category}</Typography>}
+        ) : (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <Typography variant="caption" sx={{ color: 'var(--n-info)', background: 'rgba(59, 130, 246, 0.1)', p: '2px 8px', borderRadius: 1 }}>{transaction.category}</Typography>
+            {transaction.commitment_type === 'fixed' && (
+              <Typography variant="caption" sx={{ color: 'var(--n-warning, #f59e0b)', fontWeight: 700, fontSize: '0.65rem' }}>
+                {t('tx:table.fixedExpenseBadge')}
+              </Typography>
+            )}
+          </Box>
+        )}
       </Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>

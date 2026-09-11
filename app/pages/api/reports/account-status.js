@@ -41,19 +41,31 @@ export default async function handler(req, res) {
                 ORDER BY co.balance_updated_at DESC NULLS LAST
                 LIMIT 1
             `),
-            // RiseUp's own "fixed" bank-side commitments - same source as the
-            // projection/calendar views, so all three stay consistent with
-            // each other. Expenses only (negative amounts).
+            // RiseUp's own "fixed" commitments - bank AND card. Deliberately
+            // broader than forecastDataSource.js's own fixed-items query (which
+            // stays bank-only, on purpose: card-side fixed items already ride
+            // along inside ccRes/ccPayments once they've actually billed, so
+            // adding them there too would double-count against the balance
+            // forecast). This one is display-only (the "total fixed expenses"
+            // label), so it can safely be the fuller, more honest number -
+            // most of a household's fixed commitments (insurance, subscriptions,
+            // phone, gym) are paid by card, not bank standing order, and a
+            // "total fixed expenses" that silently excluded all of those would
+            // undercount by a lot. DISTINCT ON always takes the MOST RECENT
+            // real charge per (name, account, payment method) - never an
+            // average - so a real-world change (e.g. a rent increase) is
+            // reflected the moment it's first billed, not smoothed away.
+            // Expenses only (negative amounts).
             pool.query(`
-                SELECT DISTINCT ON (name, account_number)
+                SELECT DISTINCT ON (name, account_number, transaction_type)
                     name, price
                 FROM transactions
                 WHERE vendor = 'riseup'
-                  AND transaction_type = 'bank'
+                  AND transaction_type IN ('bank', 'credit_card')
                   AND commitment_type = 'fixed'
                   AND price < 0
                   AND date >= CURRENT_DATE - INTERVAL '45 days'
-                ORDER BY name, account_number, date DESC
+                ORDER BY name, account_number, transaction_type, date DESC
             `),
             // Already-scheduled future credit-card settlement debits, same query
             // shape as projection.js's "Future CC Payments".

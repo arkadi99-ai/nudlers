@@ -15,7 +15,8 @@
     "net": "Net for the period",
     "noData": "No data for this period",
     "loadFailed": "Failed to load data - please try again",
-    "categoryTotal": "Total for this category"
+    "categoryTotal": "Total for this category",
+    "fixed": "Fixed"
   },
   "insights": {
     "title": "Insights",

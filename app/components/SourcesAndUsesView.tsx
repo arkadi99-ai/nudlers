@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, IconButton, CircularProgress, Alert, Dialog, DialogContent } from '@mui/material';
+import { Box, Typography, IconButton, CircularProgress, Alert, Dialog, DialogContent, Chip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -20,7 +20,7 @@ interface SourcesAndUsesData {
     totals: { income: number; expenses: number; net: number };
 }
 
-interface CategoryTransaction { date: string; name: string; amount: number; source: string }
+interface CategoryTransaction { date: string; name: string; amount: number; source: string; isFixed: boolean }
 interface CategoryDrillDown { category: string; total: number; transactions: CategoryTransaction[] }
 
 const BAR_COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#EC4899', '#8B5CF6', '#06B6D4', '#F43F5E', '#84CC16'];
@@ -239,7 +239,16 @@ const SourcesAndUsesView: React.FC = () => {
                                     {drillDown.transactions.map((tx, i) => (
                                         <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.75, borderBottom: i < drillDown.transactions.length - 1 ? `1px solid ${theme.palette.divider}` : 'none' }}>
                                             <Box sx={{ minWidth: 0 }}>
-                                                <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>{tx.name}</Typography>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>{tx.name}</Typography>
+                                                    {tx.isFixed && (
+                                                        <Chip
+                                                            label={t('sourcesAndUses.fixed')}
+                                                            size="small"
+                                                            sx={{ height: 18, fontSize: '0.65rem', fontWeight: 700 }}
+                                                        />
+                                                    )}
+                                                </Box>
                                                 <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                                                     {new Date(tx.date).toLocaleDateString(dateLocale, { day: 'numeric', month: 'short' })}
                                                     {tx.source ? ` · ${tx.source}` : ''}

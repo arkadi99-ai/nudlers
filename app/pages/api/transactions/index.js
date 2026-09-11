@@ -135,6 +135,7 @@ const getTransactions = createApiHandler({
             bankVendor,
             bankAccountNumber,
             transactionType = 'all',
+            commitmentType,
             uncategorizedOnly,
             sortBy = 'date',
             sortOrder = 'desc',
@@ -232,6 +233,11 @@ const getTransactions = createApiHandler({
         if (uncategorizedOnly === 'true') {
             conditions.push(`(t.category IS NULL OR t.category = '' OR t.category = 'N/A')`);
         }
+        if (commitmentType === 'fixed') {
+            conditions.push(`t.commitment_type = 'fixed'`);
+        } else if (commitmentType === 'variable') {
+            conditions.push(`(t.commitment_type IS NULL OR t.commitment_type != 'fixed')`);
+        }
 
         // 5. Bank Account specific filters (supporting transactions_by_bank_account logic)
         if (bankAccountId && bankAccountId !== 'null') {
@@ -282,6 +288,7 @@ const getTransactions = createApiHandler({
           t.category_source,
           t.rule_matched,
           t.transaction_type,
+          t.commitment_type,
           t.notes,
           vc.nickname as vendor_nickname,
           vc.card6_digits as card6_digits_encrypted

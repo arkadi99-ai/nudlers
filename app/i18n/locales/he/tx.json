@@ -2,6 +2,8 @@
   "table": {
     "columnDescription": "תיאור",
     "columnCategory": "קטגוריה",
+    "fixedExpenseTooltip": "הוצאה קבועה",
+    "fixedExpenseBadge": "קבוע",
     "columnAmount": "סכום",
     "columnInstallments": "תשלום",
     "columnCard": "מקור",
