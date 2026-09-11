@@ -483,16 +483,20 @@ const TransactionRow = React.memo(({
         {editingTransaction?.identifier === transaction.identifier && !hideActions ? (
           <CategoryAutocomplete value={editCategory} onChange={setEditCategory} options={availableCategories} applyToAll={applyToAll} onApplyToAllChange={setApplyToAll} showApplyToAll={editCategory !== editingTransaction.category} />
         ) : (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <span style={{ cursor: 'pointer', color: 'var(--n-info)' }} onClick={(e) => { e.stopPropagation(); handleEditClick(transaction); }}>{transaction.category}</span>
-            {transaction.commitment_type === 'fixed' && (
-              <Tooltip title={t('tx:table.fixedExpenseTooltip')}>
-                <Box
-                  component="span"
-                  sx={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: 'var(--n-warning, #f59e0b)', flexShrink: 0 }}
-                />
-              </Tooltip>
-            )}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2px', cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); handleEditClick(transaction); }}>
+            <Typography
+              variant="caption"
+              sx={{
+                fontWeight: 700,
+                fontSize: '0.65rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.02em',
+                color: transaction.commitment_type === 'fixed' ? 'var(--n-warning, #f59e0b)' : 'text.secondary'
+              }}
+            >
+              {transaction.commitment_type === 'fixed' ? t('tx:table.fixedExpenseBadge') : t('tx:table.variableExpenseBadge')}
+            </Typography>
+            <span style={{ color: 'var(--n-info)' }}>{transaction.category}</span>
           </Box>
         )}
       </TableCell>
@@ -651,13 +655,20 @@ const TransactionMobileCardContent = ({
         {isEditing ? (
           <CategoryAutocomplete value={editCategory || ''} onChange={setEditCategory || (() => { })} options={availableCategories || []} applyToAll={applyToAll || false} onApplyToAllChange={setApplyToAll || (() => { })} showApplyToAll={editCategory !== transaction.category} />
         ) : (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-            <Typography variant="caption" sx={{ color: 'var(--n-info)', background: 'rgba(59, 130, 246, 0.1)', p: '2px 8px', borderRadius: 1 }}>{transaction.category}</Typography>
-            {transaction.commitment_type === 'fixed' && (
-              <Typography variant="caption" sx={{ color: 'var(--n-warning, #f59e0b)', fontWeight: 700, fontSize: '0.65rem' }}>
-                {t('tx:table.fixedExpenseBadge')}
-              </Typography>
-            )}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <Typography
+              variant="caption"
+              sx={{
+                fontWeight: 700,
+                fontSize: '0.65rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.02em',
+                color: transaction.commitment_type === 'fixed' ? 'var(--n-warning, #f59e0b)' : 'text.secondary'
+              }}
+            >
+              {transaction.commitment_type === 'fixed' ? t('tx:table.fixedExpenseBadge') : t('tx:table.variableExpenseBadge')}
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'var(--n-info)', background: 'rgba(59, 130, 246, 0.1)', p: '2px 8px', borderRadius: 1, alignSelf: 'flex-start' }}>{transaction.category}</Typography>
           </Box>
         )}
       </Box>

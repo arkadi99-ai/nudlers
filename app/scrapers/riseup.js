@@ -110,8 +110,15 @@ async function fetchCurrentMonthFixedTotal(token) {
       return null;
     }
     const data = await response.json();
+    // 'fixed' envelopes are NOT expense-only - RiseUp uses the same envelope
+    // type for fixed recurring INCOME too (e.g. salary), distinguished only
+    // via each envelope's own actuals[].isIncome. Confirmed against a real
+    // live response: two 'fixed' envelopes for salary/regular income carried
+    // large negative originalAmount values that, left in, silently netted
+    // against real fixed expenses and produced a badly wrong (too low) total.
+    const isIncomeEnvelope = (e) => e.actuals?.length > 0 && e.actuals.every(a => a.isIncome === true);
     const total = (data.envelopes || [])
-      .filter(e => e.type === 'fixed')
+      .filter(e => e.type === 'fixed' && !isIncomeEnvelope(e))
       .reduce((sum, e) => sum + (e.originalAmount || 0), 0);
     return { month: data.budgetDate, total };
   } catch (err) {

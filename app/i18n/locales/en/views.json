@@ -3,7 +3,12 @@
     "title": "Transactions",
     "description": "View and manage all your bank and credit card transactions",
     "endOfPeriod": "That's all for this period ✨",
-    "unassigned": "Unassigned"
+    "unassigned": "Unassigned",
+    "commitmentFilter": {
+      "all": "All",
+      "fixed": "Fixed",
+      "variable": "Variable"
+    }
   },
   "sourcesAndUses": {
     "title": "Sources & Uses",

@@ -17,6 +17,7 @@ export function useTransactions() {
   const { showNotification } = useNotification();
 
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [commitmentType, setCommitmentType] = React.useState<'all' | 'fixed' | 'variable'>('all');
   const [isSearching, setIsSearching] = React.useState(false);
   const [transactions, setTransactions] = React.useState<Expense[]>([]);
   const [loadingTransactions, setLoadingTransactions] = React.useState(false);
@@ -65,6 +66,9 @@ export function useTransactions() {
       url.searchParams.append("sortOrder", sortOrder);
       url.searchParams.append("limit", PAGE_SIZE.toString());
       url.searchParams.append("offset", (currentPage * PAGE_SIZE).toString());
+      if (commitmentType !== 'all') {
+        url.searchParams.append("commitmentType", commitmentType);
+      }
 
       const response = await fetch(url.toString());
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -99,7 +103,7 @@ export function useTransactions() {
         }
       }
     }
-  }, [selectedYear, selectedMonth, sortBy, sortOrder]);
+  }, [selectedYear, selectedMonth, sortBy, sortOrder, commitmentType]);
 
   const handleSearch = React.useCallback(async (e?: React.FormEvent, isLoadMore: boolean = false) => {
     e?.preventDefault();
@@ -136,6 +140,9 @@ export function useTransactions() {
 
       queryParams += `&sortBy=${sortBy}&sortOrder=${sortOrder}`;
       queryParams += `&limit=${PAGE_SIZE}&offset=${currentPage * PAGE_SIZE}`;
+      if (commitmentType !== 'all') {
+        queryParams += `&commitmentType=${commitmentType}`;
+      }
 
       const response = await fetch(`/api/transactions?${queryParams}`);
       if (response.ok) {
@@ -167,7 +174,7 @@ export function useTransactions() {
     fetchTransactionsWithRange, dateRangeMode,
     customStartDate, customEndDate,
     selectedYear, selectedMonth,
-    sortBy, sortOrder, showNotification
+    sortBy, sortOrder, showNotification, commitmentType
   ]);
 
   const handleSort = (field: string) => {
@@ -209,14 +216,14 @@ export function useTransactions() {
     };
   }, [startDate, endDate, billingCycle, fetchTransactionsWithRange, searchQuery, handleSearch]);
 
-  // Initial data fetch — fires only on date/sort changes.
+  // Initial data fetch — fires only on date/sort/filter changes.
   // Search fires only on explicit submit (handleSearch), never per keystroke,
   // so we go through refreshRef (kept current above) instead of depending on searchQuery/handleSearch.
   React.useEffect(() => {
     if (!startDate || !endDate) return;
     queueMicrotask(() => refreshRef.current());
-    // sortBy/sortOrder trigger a refetch via refreshRef; searchQuery/handleSearch intentionally excluded so typing doesn't fetch
-  }, [startDate, endDate, billingCycle, sortBy, sortOrder]);
+    // sortBy/sortOrder/commitmentType trigger a refetch via refreshRef; searchQuery/handleSearch intentionally excluded so typing doesn't fetch
+  }, [startDate, endDate, billingCycle, sortBy, sortOrder, commitmentType]);
 
   // Stable event listener - attached once, never re-attached
   React.useEffect(() => {
@@ -293,6 +300,8 @@ export function useTransactions() {
     hasMore,
     searchQuery,
     setSearchQuery,
+    commitmentType,
+    setCommitmentType,
     isSearching,
     sortBy,
     sortOrder,

@@ -3,7 +3,12 @@
     "title": "עסקאות",
     "description": "צפו ונהלו את כל עסקאות הבנק וכרטיסי האשראי שלכם",
     "endOfPeriod": "זה הכל לתקופה זו ✨",
-    "unassigned": "ללא קטגוריה"
+    "unassigned": "ללא קטגוריה",
+    "commitmentFilter": {
+      "all": "הכל",
+      "fixed": "קבועות",
+      "variable": "משתנות"
+    }
   },
   "sourcesAndUses": {
     "title": "מקורות ושימושים",

@@ -2,8 +2,8 @@
   "table": {
     "columnDescription": "Description",
     "columnCategory": "Category",
-    "fixedExpenseTooltip": "Fixed expense",
-    "fixedExpenseBadge": "Fixed",
+    "fixedExpenseBadge": "Fixed Expenses",
+    "variableExpenseBadge": "Variable Expenses",
     "columnAmount": "Amount",
     "columnInstallments": "Inst.",
     "columnCard": "Source",

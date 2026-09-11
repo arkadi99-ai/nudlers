@@ -5,6 +5,8 @@ import Box from '@mui/material/Box';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { ModalData } from './types';
 import { useCategoryColors } from './utils/categoryUtils';
 import ExpensesModal from './components/ExpensesModal';
@@ -41,6 +43,8 @@ const CategoryDashboard: React.FC = () => {
     hasMore,
     searchQuery,
     setSearchQuery,
+    commitmentType,
+    setCommitmentType,
     isSearching,
     sortBy,
     sortOrder,
@@ -139,6 +143,27 @@ const CategoryDashboard: React.FC = () => {
           startDate={startDate}
           endDate={endDate}
         />
+
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+          <ToggleButtonGroup
+            value={commitmentType}
+            exclusive
+            size="small"
+            onChange={(_e, value) => { if (value) setCommitmentType(value); }}
+            sx={{
+              '& .MuiToggleButton-root': {
+                textTransform: 'none',
+                fontWeight: 600,
+                borderRadius: '12px !important',
+                padding: '4px 16px'
+              }
+            }}
+          >
+            <ToggleButton value="all">{t('transactions.commitmentFilter.all')}</ToggleButton>
+            <ToggleButton value="fixed">{t('transactions.commitmentFilter.fixed')}</ToggleButton>
+            <ToggleButton value="variable">{t('transactions.commitmentFilter.variable')}</ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
 
         <Box
           onScroll={handleScroll}
