@@ -14,7 +14,8 @@
     "totalExpenses": "Total Expenses",
     "net": "Net for the period",
     "noData": "No data for this period",
-    "loadFailed": "Failed to load data - please try again"
+    "loadFailed": "Failed to load data - please try again",
+    "categoryTotal": "Total for this category"
   },
   "insights": {
     "title": "Insights",

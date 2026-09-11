@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, IconButton, CircularProgress, Alert } from '@mui/material';
+import { Box, Typography, IconButton, CircularProgress, Alert, Dialog, DialogContent } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -7,6 +7,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../context/LocaleContext';
+import ModalHeader from './ModalHeader';
 
 interface SourceRow { name: string; total: number; count: number; percentOfIncome: number }
 interface UseRow { category: string; total: number; count: number; percentOfExpenses: number }
@@ -18,6 +19,9 @@ interface SourcesAndUsesData {
     uses: UseRow[];
     totals: { income: number; expenses: number; net: number };
 }
+
+interface CategoryTransaction { date: string; name: string; amount: number; source: string }
+interface CategoryDrillDown { category: string; total: number; transactions: CategoryTransaction[] }
 
 const BAR_COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#EC4899', '#8B5CF6', '#06B6D4', '#F43F5E', '#84CC16'];
 
@@ -31,6 +35,10 @@ const SourcesAndUsesView: React.FC = () => {
     const [data, setData] = useState<SourcesAndUsesData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const [drillDown, setDrillDown] = useState<CategoryDrillDown | null>(null);
+    const [drillDownLoading, setDrillDownLoading] = useState(false);
+    const [drillDownError, setDrillDownError] = useState(false);
+    const [openCategory, setOpenCategory] = useState<string | null>(null);
 
     const fetchData = useCallback(async (date: Date) => {
         setLoading(true);
@@ -53,6 +61,31 @@ const SourcesAndUsesView: React.FC = () => {
     }, []);
 
     useEffect(() => { queueMicrotask(() => fetchData(monthDate)); }, [monthDate, fetchData]);
+
+    const openCategoryDrillDown = useCallback(async (category: string) => {
+        if (!data) return;
+        setOpenCategory(category);
+        setDrillDown(null);
+        setDrillDownError(false);
+        setDrillDownLoading(true);
+        try {
+            const res = await fetch(`/api/reports/sources-and-uses/category-transactions?category=${encodeURIComponent(category)}&startDate=${data.startDate}&endDate=${data.endDate}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const result = await res.json();
+            setDrillDown(result);
+        } catch (err) {
+            console.error('Failed to fetch category transactions', err);
+            setDrillDownError(true);
+        } finally {
+            setDrillDownLoading(false);
+        }
+    }, [data]);
+
+    const closeDrillDown = () => {
+        setOpenCategory(null);
+        setDrillDown(null);
+        setDrillDownError(false);
+    };
 
     const goToMonth = (delta: number) => {
         setMonthDate(prev => new Date(prev.getFullYear(), prev.getMonth() + delta, 1));
@@ -125,7 +158,20 @@ const SourcesAndUsesView: React.FC = () => {
                             ) : (
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                                     {data.uses.map((u, i) => (
-                                        <Box key={u.category}>
+                                        <Box
+                                            key={u.category}
+                                            onClick={() => openCategoryDrillDown(u.category)}
+                                            sx={{
+                                                cursor: 'pointer',
+                                                borderRadius: '10px',
+                                                p: 0.75,
+                                                mx: -0.75,
+                                                transition: 'background-color 0.15s',
+                                                '&:hover': {
+                                                    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
+                                                }
+                                            }}
+                                        >
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                                                 <Typography variant="body2" sx={{ fontWeight: 500 }}>{u.category}</Typography>
                                                 <Typography variant="body2" sx={{ fontWeight: 700, direction: 'ltr' }}>{formatCurrency(u.total)}</Typography>
@@ -170,6 +216,44 @@ const SourcesAndUsesView: React.FC = () => {
                     </Box>
                 </>
             ) : null}
+
+            <Dialog open={!!openCategory} onClose={closeDrillDown} maxWidth="sm" fullWidth>
+                <ModalHeader title={openCategory || ''} onClose={closeDrillDown} />
+                <DialogContent sx={{ pt: 1 }}>
+                    {drillDownLoading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                            <CircularProgress size={24} />
+                        </Box>
+                    ) : drillDownError ? (
+                        <Alert severity="error">{t('sourcesAndUses.loadFailed')}</Alert>
+                    ) : drillDown ? (
+                        <>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, pb: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+                                <Typography sx={{ fontWeight: 700 }}>{t('sourcesAndUses.categoryTotal')}</Typography>
+                                <Typography sx={{ fontWeight: 800, color: '#F43F5E', direction: 'ltr' }}>{formatCurrency(drillDown.total)}</Typography>
+                            </Box>
+                            {drillDown.transactions.length === 0 ? (
+                                <Typography variant="body2" sx={{ color: 'text.disabled', fontStyle: 'italic' }}>{t('sourcesAndUses.noData')}</Typography>
+                            ) : (
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                    {drillDown.transactions.map((tx, i) => (
+                                        <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.75, borderBottom: i < drillDown.transactions.length - 1 ? `1px solid ${theme.palette.divider}` : 'none' }}>
+                                            <Box sx={{ minWidth: 0 }}>
+                                                <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>{tx.name}</Typography>
+                                                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                                    {new Date(tx.date).toLocaleDateString(dateLocale, { day: 'numeric', month: 'short' })}
+                                                    {tx.source ? ` · ${tx.source}` : ''}
+                                                </Typography>
+                                            </Box>
+                                            <Typography variant="body2" sx={{ fontWeight: 700, direction: 'ltr', flexShrink: 0, ml: 2 }}>{formatCurrency(tx.amount)}</Typography>
+                                        </Box>
+                                    ))}
+                                </Box>
+                            )}
+                        </>
+                    ) : null}
+                </DialogContent>
+            </Dialog>
         </Box>
     );
 };
